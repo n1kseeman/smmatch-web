@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Для бизнеса — SMMATCH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav">
+        <a href="../index.html">Главная</a>
+        <a href="../specialists/index.html">Специалисты</a>
+        <a href="../cases/index.html">Кейсы</a>
+        <a class="active" href="../business/index.html">Для бизнеса</a>
+        <a href="../blog/index.html">Блог</a>
+      </nav>
+      <div class="actions">
+        <a class="btn btn-ghost" href="../specialists/index.html">Найти специалиста</a>
+        <a class="btn btn-primary" href="../task/new/index.html">Разместить задачу</a>
+        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      </div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav>
+      <a href="../index.html">Главная</a>
+      <a href="../specialists/index.html">Специалисты</a>
+      <a href="../cases/index.html">Кейсы</a>
+      <a href="../business/index.html">Для бизнеса</a>
+      <a href="../blog/index.html">Блог</a>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="page-hero">
+      <span class="pill">Для бизнеса</span>
+      <h1>Почему бизнесу нужен системный SMM и как платформа это закрывает</h1>
+      <p>Мы соединяем проверенных специалистов, безопасную сделку, прозрачные метрики и AI-подбор. Вместо хаотичного фриланса вы получаете управляемый рост.</p>
+    </section>
+
+    <section class="section grid-3">
+      <article class="card"><h3>Проверка и верификация</h3><p class="meta">Проверяем соцсети, кейсы и профиль специалиста до публикации.</p></article>
+      <article class="card"><h3>Безопасная сделка</h3><p class="meta">Деньги резервируются и переводятся только после подтверждения этапа работ.</p></article>
+      <article class="card"><h3>Прозрачная аналитика</h3><p class="meta">Единый дашборд: охваты, CPM, CTR, заявки, продажи.</p></article>
+    </section>
+    <section class="section">
+      <div class="chips">
+        <a class="chip" href="../safety/index.html">Механика безопасной сделки</a>
+        <a class="chip" href="../verification/index.html">Верификация специалистов</a>
+        <a class="chip" href="../pricing/index.html">Тарифы и комиссия</a>
+        <a class="chip" href="../ai/match/index.html">AI Match</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="pill">Кейсы по нишам</span>
+        <h2 class="section-title">Результаты в популярных категориях</h2>
+      </div>
+      <div class="cases-grid">
+        <article class="card case-card"><strong>Кафе</strong><div class="kpi-line"><span>Рост охватов</span><strong>+230%</strong></div><div class="kpi-line"><span>Подписки</span><strong>+4 100</strong></div></article>
+        <article class="card case-card"><strong>Салоны</strong><div class="kpi-line"><span>Заявки</span><strong>+174%</strong></div><div class="kpi-line"><span>CPL</span><strong>-29%</strong></div></article>
+        <article class="card case-card"><strong>Цветы</strong><div class="kpi-line"><span>Продажи</span><strong>+96%</strong></div><div class="kpi-line"><span>Просмотры reels</span><strong>860K</strong></div></article>
+        <article class="card case-card"><strong>Рестораны</strong><div class="kpi-line"><span>Бронирования</span><strong>+61%</strong></div><div class="kpi-line"><span>ER</span><strong>7.5%</strong></div></article>
+      </div>
+    </section>
+
+    <section class="section roi-grid">
+      <article class="card">
+        <h2>ROI-калькулятор SMM</h2>
+        <p class="meta">Оцените потенциальное число лидов и оборот на основе вашего бюджета.</p>
+        <form data-roi-form>
+          <div class="field">
+            <label for="budget">Бюджет на SMM/таргет (₽ в месяц)</label>
+            <input id="budget" name="budget" type="number" value="80000" required>
+          </div>
+          <div class="field">
+            <label for="avg_check">Средний чек (₽)</label>
+            <input id="avg_check" name="avg_check" type="number" value="2500" required>
+          </div>
+          <div class="field">
+            <label for="conversion">Конверсия лида в клиента (%)</label>
+            <input id="conversion" name="conversion" type="number" value="18" required>
+          </div>
+          <button class="btn btn-primary" type="submit">Рассчитать</button>
+        </form>
+      </article>
+      <article class="card">
+        <h2>Прогноз</h2>
+        <p class="meta" data-roi-result>
+          <strong>152</strong> потенциальных лидов в месяц<br>
+          <strong>27</strong> клиентов при текущей конверсии<br>
+          <strong>67 500 ₽</strong> прогноз оборота
+        </p>
+        <p class="meta">Расчет ориентировочный. Точный результат зависит от ниши, оффера, качества контента и рекламы.</p>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="pill">FAQ</span>
+        <h2 class="section-title">Частые вопросы</h2>
+      </div>
+      <div class="grid-3">
+        <article class="card"><h3>Как быстро можно стартовать?</h3><p class="meta">Обычно 2-5 дней от брифа до старта работ.</p></article>
+        <article class="card"><h3>Есть ли гарантия безопасности?</h3><p class="meta">Да, через механику холда платежей и подтверждения этапов.</p></article>
+        <article class="card"><h3>Можно ли сменить специалиста?</h3><p class="meta">Да, в любой момент через поддержку платформы.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

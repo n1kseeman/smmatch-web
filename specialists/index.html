@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог специалистов — SMMATCH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav">
+        <a href="../index.html">Главная</a>
+        <a class="active" href="../specialists/index.html">Специалисты</a>
+        <a href="../cases/index.html">Кейсы</a>
+        <a href="../business/index.html">Для бизнеса</a>
+        <a href="../blog/index.html">Блог</a>
+      </nav>
+      <div class="actions">
+        <a class="btn btn-ghost" href="../dashboard/specialist/index.html">Я специалист</a>
+        <a class="btn btn-primary" href="../task/new/index.html">Разместить задачу</a>
+        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      </div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav>
+      <a href="../index.html">Главная</a>
+      <a href="../specialists/index.html">Специалисты</a>
+      <a href="../cases/index.html">Кейсы</a>
+      <a href="../business/index.html">Для бизнеса</a>
+      <a href="../blog/index.html">Блог</a>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="page-hero">
+      <span class="pill">Каталог специалистов</span>
+      <h1>Найдите исполнителя под вашу нишу и бюджет</h1>
+      <p>Фильтруйте по категориям, платформам, городу, стоимости, опыту и индустрии. Все карточки содержат рейтинг, verified, кейсы и ключевые метрики.</p>
+    </section>
+
+    <section class="section layout">
+      <aside class="card sidebar">
+        <div class="filter-group">
+          <h4>Категории</h4>
+          <div class="options">
+            <span class="option active">SMM</span><span class="option">Reels maker</span><span class="option">Таргетолог</span><span class="option">Контент-менеджер</span><span class="option">Дизайнер</span><span class="option">Монтажер</span><span class="option">UGC creator</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Платформы</h4>
+          <div class="options">
+            <span class="option active">Instagram</span><span class="option">TikTok</span><span class="option">Telegram</span><span class="option">VK</span><span class="option">YouTube</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Город</h4>
+          <div class="options">
+            <span class="option active">Минск</span><span class="option">Москва</span><span class="option">Алматы</span><span class="option">Онлайн</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Цена: до 700$</h4>
+          <input class="range" type="range" min="300" max="1500" value="700">
+          <div class="meta">до 300$ • 300-700$ • 700-1500$</div>
+        </div>
+        <div class="filter-group">
+          <h4>Опыт</h4>
+          <div class="options">
+            <span class="option">Новичок</span><span class="option active">Middle</span><span class="option">Senior</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Ниша</h4>
+          <div class="options">
+            <span class="option active">Кафе</span><span class="option">Цветы</span><span class="option">Beauty</span><span class="option">Ecommerce</span><span class="option">Рестораны</span><span class="option">Спорт</span><span class="option">Недвижимость</span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="catalog-grid">
+        <article class="card catalog-card">
+          <div class="avatar"></div>
+          <div>
+            <h3>Екатерина Петрова</h3>
+            <div class="meta">SMM-специалист • Минск • 4.9 (82)</div>
+            <div class="verified">Verified профиль</div>
+            <p class="meta">Помогаю брендам в HoReCa расти через Reels, контент-воронки и системный SMM.</p>
+            <div class="chips"><span class="chip">Instagram</span><span class="chip">Reels</span><span class="chip">Telegram</span></div>
+          </div>
+          <div class="catalog-side">
+            <div>
+              <div class="price">от 45 000 ₽ / мес</div>
+              <div class="meta">20 кейсов</div>
+            </div>
+            <div class="catalog-metrics">
+              <span>ER: 7.2%</span>
+              <span>CTR: 3.8%</span>
+              <span>Рост: +210%</span>
+            </div>
+            <a class="btn btn-primary" href="../u/username/index.html">Написать</a>
+          </div>
+        </article>
+
+        <article class="card catalog-card">
+          <div class="avatar"></div>
+          <div>
+            <h3>Иван Белов</h3>
+            <div class="meta">Таргетолог • Москва • 5.0 (49)</div>
+            <div class="verified">Verified профиль</div>
+            <p class="meta">Запускаю performance-рекламу в Meta и VK, строю прогнозируемую воронку лидов.</p>
+            <div class="chips"><span class="chip">Meta Ads</span><span class="chip">VK Ads</span><span class="chip">Ecommerce</span></div>
+          </div>
+          <div class="catalog-side">
+            <div>
+              <div class="price">от 60 000 ₽ / мес</div>
+              <div class="meta">31 кейс</div>
+            </div>
+            <div class="catalog-metrics">
+              <span>CPM: 2.8$</span>
+              <span>CTR: 4.1%</span>
+              <span>ROMI: +172%</span>
+            </div>
+            <a class="btn btn-primary" href="../u/username/index.html">Написать</a>
+          </div>
+        </article>
+
+        <article class="card catalog-card">
+          <div class="avatar"></div>
+          <div>
+            <h3>Алина Жумабек</h3>
+            <div class="meta">Reels maker • Алматы • 4.8 (57)</div>
+            <div class="verified">Verified профиль</div>
+            <p class="meta">Снимаю и монтирую short-video с фокусом на удержание, охваты и переходы в директ.</p>
+            <div class="chips"><span class="chip">TikTok</span><span class="chip">UGC</span><span class="chip">Съемка</span></div>
+          </div>
+          <div class="catalog-side">
+            <div>
+              <div class="price">от 40 000 ₽ / мес</div>
+              <div class="meta">14 кейсов</div>
+            </div>
+            <div class="catalog-metrics">
+              <span>Просмотры: 3.2M</span>
+              <span>ER: 8.6%</span>
+              <span>Подписки: +5 700</span>
+            </div>
+            <a class="btn btn-primary" href="../u/username/index.html">Написать</a>
+          </div>
+        </article>
+
+        <article class="card catalog-card">
+          <div class="avatar"></div>
+          <div>
+            <h3>Мария Орлова</h3>
+            <div class="meta">Контент-менеджер • Онлайн • 4.9 (64)</div>
+            <div class="verified">Verified профиль</div>
+            <p class="meta">Строю контент-стратегию и календарь публикаций для beauty, кафе и ресторанов.</p>
+            <div class="chips"><span class="chip">Контент-план</span><span class="chip">Stories</span><span class="chip">Telegram</span></div>
+          </div>
+          <div class="catalog-side">
+            <div>
+              <div class="price">от 35 000 ₽ / мес</div>
+              <div class="meta">22 кейса</div>
+            </div>
+            <div class="catalog-metrics">
+              <span>Retention: +33%</span>
+              <span>Охваты: +190%</span>
+              <span>CPL: -28%</span>
+            </div>
+            <a class="btn btn-primary" href="../u/username/index.html">Написать</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

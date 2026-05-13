@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создание задачи — SMMATCH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav">
+        <a href="../../index.html">Главная</a>
+        <a href="../../specialists/index.html">Специалисты</a>
+        <a href="../../cases/index.html">Кейсы</a>
+        <a href="../../business/index.html">Для бизнеса</a>
+        <a href="../../blog/index.html">Блог</a>
+      </nav>
+      <div class="actions">
+        <a class="btn btn-ghost" href="../../specialists/index.html">Каталог</a>
+        <a class="btn btn-primary" href="../../dashboard/business/index.html">Кабинет бизнеса</a>
+        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      </div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav>
+      <a href="../../index.html">Главная</a>
+      <a href="../../specialists/index.html">Специалисты</a>
+      <a href="../../cases/index.html">Кейсы</a>
+      <a href="../../business/index.html">Для бизнеса</a>
+      <a href="../../blog/index.html">Блог</a>
+    </div>
+  </div>
+
+  <main class="container section roi-grid">
+    <article class="card">
+      <h1>Создать задачу</h1>
+      <p class="meta">Заполните mini-бриф, и AI Match предложит релевантных специалистов.</p>
+      <form>
+        <div class="field">
+          <label for="niche">Ниша бизнеса</label>
+          <select id="niche">
+            <option>Кафе</option>
+            <option>Цветы</option>
+            <option>Beauty</option>
+            <option>E-commerce</option>
+            <option>Рестораны</option>
+            <option>Спорт</option>
+            <option>Недвижимость</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="budget">Бюджет</label>
+          <select id="budget">
+            <option>до 300$</option>
+            <option>300-700$</option>
+            <option>700-1500$</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="platforms">Соцсети</label>
+          <select id="platforms">
+            <option>Instagram + Telegram</option>
+            <option>TikTok + Instagram</option>
+            <option>VK + Telegram</option>
+            <option>YouTube Shorts + Instagram</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="goals">Цели проекта</label>
+          <textarea id="goals" placeholder="Например: увеличить заявки в директ, поднять охваты reels и снизить CPL."></textarea>
+        </div>
+        <div class="field">
+          <label>Нужен ли таргет?</label>
+          <select><option>Да</option><option>Нет</option><option>Не уверен</option></select>
+        </div>
+        <div class="field">
+          <label>Нужен ли контент?</label>
+          <select><option>Да</option><option>Нет</option><option>Частично</option></select>
+        </div>
+        <div class="field">
+          <label>Нужны ли reels?</label>
+          <select><option>Да</option><option>Нет</option><option>1-2 в неделю</option></select>
+        </div>
+        <button type="submit" class="btn btn-primary">Опубликовать задачу</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>AI Match (preview)</h2>
+      <p class="meta">После заполнения брифа алгоритм анализирует вашу задачу, кейсы специалистов и историю результатов по нише.</p>
+        <div class="step-list">
+          <div class="step-item"><div class="step-index">1</div><div><strong>Анализ задачи</strong><div class="meta">Цели, бюджет, гео, платформы.</div></div></div>
+          <div class="step-item"><div class="step-index">2</div><div><strong>Скоринг кейсов</strong><div class="meta">Сравнение с похожими бизнесами.</div></div></div>
+          <div class="step-item"><div class="step-index">3</div><div><strong>Рекомендации</strong><div class="meta">Топ-5 специалистов под ваш запрос.</div></div></div>
+        </div>
+        <div class="chips">
+          <a class="chip" href="../../ai/match/index.html">Открыть AI Match</a>
+          <a class="chip" href="../../ai/instagram-audit/index.html">AI Instagram Audit</a>
+          <a class="chip" href="../../ai/content-generator/index.html">AI Content Generator</a>
+        </div>
+
+        <h3>Предложенные кандидаты</h3>
+      <div class="card">
+        <strong>Екатерина Петрова</strong>
+        <div class="meta">Match score: 93% • HoReCa • Reels + SMM</div>
+      </div>
+      <div class="card">
+        <strong>Иван Белов</strong>
+        <div class="meta">Match score: 89% • Таргет + аналитика</div>
+      </div>
+      <div class="card">
+        <strong>Мария Орлова</strong>
+        <div class="meta">Match score: 86% • Контент-стратегия</div>
+      </div>
+    </article>
+  </main>
+
+  <script src="../../js/app.js"></script>
+</body>
+</html>
