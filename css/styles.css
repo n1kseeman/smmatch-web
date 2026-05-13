@@ -10,6 +10,7 @@
   --ok: #2ed39a;
   --warn: #ffb457;
   --danger: #ff6f8e;
+  --topbar-height: 76px;
   --radius-lg: 26px;
   --radius-md: 18px;
   --radius-sm: 12px;
@@ -46,6 +47,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   overscroll-behavior-y: none;
+  padding-top: var(--topbar-height);
 }
 
 a {
@@ -93,9 +95,11 @@ img {
 }
 
 .topbar-wrap {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 60;
+  left: 0;
+  right: 0;
+  z-index: 220;
   backdrop-filter: blur(14px);
   background: rgba(6, 8, 22, 0.74);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -1102,6 +1106,10 @@ textarea {
 }
 
 @media (max-width: 760px) {
+  :root {
+    --topbar-height: 74px;
+  }
+
   .nav,
   .actions .btn-ghost:not(.keep-mobile):not(.mobile-menu-btn) {
     display: none;
@@ -1135,7 +1143,7 @@ textarea {
     max-width: none;
     margin: 0;
     min-height: 100dvh;
-    z-index: 120;
+    z-index: 180;
     align-content: start;
     gap: 12px;
     padding: calc(env(safe-area-inset-top) + 84px) 20px calc(env(safe-area-inset-bottom) + 24px);
