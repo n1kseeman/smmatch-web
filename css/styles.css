@@ -111,6 +111,8 @@ img {
   justify-content: space-between;
   gap: 20px;
   padding: 16px 0;
+  position: relative;
+  z-index: 260;
 }
 
 .brand {
@@ -853,6 +855,7 @@ textarea {
   height: 44px;
   padding: 0;
   position: relative;
+  z-index: 300;
   border-radius: 12px;
   border-color: rgba(196, 184, 255, 0.35);
   background: linear-gradient(160deg, rgba(19, 25, 52, 0.9), rgba(9, 12, 28, 0.95));
