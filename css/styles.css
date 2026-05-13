@@ -10,7 +10,7 @@
   --ok: #2ed39a;
   --warn: #ffb457;
   --danger: #ff6f8e;
-  --topbar-height: 76px;
+  --topbar-height: 64px;
   --radius-lg: 26px;
   --radius-md: 18px;
   --radius-sm: 12px;
@@ -109,8 +109,8 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 16px 0;
+  gap: 16px;
+  padding: 8px 0;
   position: relative;
   z-index: 260;
 }
@@ -128,7 +128,7 @@ img {
 
 .brand-logo {
   display: block;
-  width: clamp(126px, 10.5vw, 172px);
+  width: clamp(102px, 9vw, 146px);
   height: auto;
   object-fit: contain;
   object-position: left center;
@@ -162,7 +162,14 @@ img {
 .actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+.topbar .btn {
+  padding: 8px 14px;
+  font-size: 0.86rem;
+  min-height: 36px;
+  border-radius: 10px;
 }
 
 .btn {
@@ -1480,7 +1487,7 @@ textarea {
 
 @media (max-width: 760px) {
   :root {
-    --topbar-height: 74px;
+    --topbar-height: 62px;
   }
 
   .nav,
@@ -1493,7 +1500,7 @@ textarea {
   }
 
   .brand-logo {
-    width: clamp(108px, 35vw, 148px);
+    width: clamp(90px, 31vw, 122px);
   }
 
   .actions .keep-mobile {
@@ -1507,6 +1514,8 @@ textarea {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    width: 40px;
+    height: 40px;
   }
 
   .mobile-nav {
@@ -1523,7 +1532,7 @@ textarea {
     z-index: 180;
     align-content: start;
     gap: 12px;
-    padding: calc(env(safe-area-inset-top) + 84px) 20px calc(env(safe-area-inset-bottom) + 24px);
+    padding: calc(env(safe-area-inset-top) + 70px) 20px calc(env(safe-area-inset-bottom) + 24px);
     background:
       radial-gradient(circle at 14% 16%, rgba(123, 108, 255, 0.26), transparent 35%),
       radial-gradient(circle at 88% 9%, rgba(38, 198, 255, 0.16), transparent 30%),
