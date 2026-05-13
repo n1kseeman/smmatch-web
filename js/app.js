@@ -49,6 +49,22 @@
     return String(value || "").trim().toLowerCase();
   }
 
+  const VISUAL_LIBRARY = {
+    social: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?auto=format&fit=crop&w=1400&q=80",
+    analytics: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80",
+    team: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
+    phone: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=1400&q=80",
+    strategy: "https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&w=1400&q=80",
+    workspace: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80",
+    content: "https://images.unsplash.com/photo-1611262588024-d12430b98920?auto=format&fit=crop&w=1400&q=80",
+    reels: "https://images.pexels.com/photos/5744245/pexels-photo-5744245.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    icons: "https://images.pexels.com/photos/6458062/pexels-photo-6458062.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    brand: "https://images.pexels.com/photos/11681097/pexels-photo-11681097.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    meeting: "https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    camera: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    growth: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  };
+
   function showToast(message, type = "ok") {
     const existing = document.querySelector(".app-toast");
     if (existing) existing.remove();
@@ -392,6 +408,101 @@
       item.classList.add("auto-reveal");
       item.style.transitionDelay = `${Math.min(index % 6, 5) * 0.05}s`;
       observer.observe(item);
+    });
+  }
+
+  function pickVisualByText(text) {
+    const source = normalize(text);
+    if (!source) return VISUAL_LIBRARY.social;
+    if (
+      source.includes("reels") ||
+      source.includes("tiktok") ||
+      source.includes("short") ||
+      source.includes("ugc") ||
+      source.includes("монтаж")
+    ) {
+      return VISUAL_LIBRARY.reels;
+    }
+    if (
+      source.includes("таргет") ||
+      source.includes("аналит") ||
+      source.includes("roi") ||
+      source.includes("метрик") ||
+      source.includes("конверс")
+    ) {
+      return VISUAL_LIBRARY.analytics;
+    }
+    if (source.includes("кейс") || source.includes("результат") || source.includes("продаж") || source.includes("рост")) {
+      return VISUAL_LIBRARY.growth;
+    }
+    if (
+      source.includes("блог") ||
+      source.includes("контент") ||
+      source.includes("стратег") ||
+      source.includes("сторител")
+    ) {
+      return VISUAL_LIBRARY.content;
+    }
+    if (source.includes("специалист") || source.includes("бизнес") || source.includes("команд")) {
+      return VISUAL_LIBRARY.meeting;
+    }
+    if (source.includes("вериф") || source.includes("безопас") || source.includes("сделк")) {
+      return VISUAL_LIBRARY.brand;
+    }
+    if (source.includes("съемк") || source.includes("камера") || source.includes("креатив")) {
+      return VISUAL_LIBRARY.camera;
+    }
+    if (source.includes("платформ") || source.includes("instagram") || source.includes("vk") || source.includes("telegram")) {
+      return VISUAL_LIBRARY.phone;
+    }
+    return VISUAL_LIBRARY.social;
+  }
+
+  function initPageHeroVisuals() {
+    const hero = document.querySelector(".page-hero");
+    if (!hero || hero.querySelector(".hero-collage") || isPath("/roi-calculator/")) return;
+    if (isPath("/dashboard/") || isPath("/auth/")) return;
+
+    const title = hero.querySelector("h1")?.textContent || "";
+    const collage = document.createElement("div");
+    collage.className = "hero-collage";
+    const visuals = [
+      pickVisualByText(title),
+      VISUAL_LIBRARY.analytics,
+      VISUAL_LIBRARY.reels
+    ];
+
+    visuals.forEach((url) => {
+      const item = document.createElement("div");
+      item.className = "hero-collage-item";
+      item.style.setProperty("--hero-photo", `url("${url}")`);
+      collage.appendChild(item);
+    });
+
+    hero.classList.add("with-collage");
+    hero.appendChild(collage);
+  }
+
+  function initCardVisualBoost() {
+    const cards = document.querySelectorAll("main .card");
+    if (!cards.length) return;
+
+    cards.forEach((card) => {
+      if (
+        card.querySelector(".card-photo, .case-image, .specialist-thumb, .blog-thumb, .avatar, .profile-avatar, .roi-hero-board")
+      ) {
+        return;
+      }
+      if (card.querySelector("form, table, input, select, textarea, .chat, .panel-list, .kpi-cards")) return;
+      if (card.closest(".roi-layout, .roi-hero, .roi-help-grid")) return;
+      if (card.classList.contains("stat-box")) return;
+
+      const title = card.querySelector("h1, h2, h3, h4, strong")?.textContent || card.textContent.slice(0, 120);
+      const photo = document.createElement("div");
+      photo.className = "card-photo";
+      photo.style.setProperty("--card-photo", `url("${pickVisualByText(title)}")`);
+      card.insertBefore(photo, card.firstChild);
+      card.classList.add("card-has-photo");
     });
   }
 
@@ -2085,5 +2196,7 @@
   renderSpecialistFinance();
   renderSpecialistSettings();
   initQuickActions();
+  initPageHeroVisuals();
+  initCardVisualBoost();
   initGlobalAnimations();
 })();
