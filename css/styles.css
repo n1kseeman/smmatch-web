@@ -27,8 +27,13 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: "Manrope", sans-serif;
+  font-size: 16px;
   color: var(--text);
   background:
     radial-gradient(circle at 12% 10%, rgba(123, 108, 255, 0.28), transparent 28%),
@@ -40,6 +45,23 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 10px;
+  font-family: "Sora", sans-serif;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 12px;
 }
 
 img {
@@ -127,12 +149,20 @@ img {
   font-family: inherit;
   font-weight: 700;
   font-size: 0.92rem;
+  line-height: 1.2;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid rgba(177, 164, 255, 0.85);
+  outline-offset: 2px;
 }
 
 .btn-primary {
@@ -284,7 +314,7 @@ img {
 }
 
 .section {
-  padding: 26px 0;
+  padding: 30px 0;
 }
 
 .section-head {
@@ -317,7 +347,15 @@ img {
   border: 1px solid var(--line);
   background: rgba(16, 20, 42, 0.66);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 18px;
+}
+
+.card > :first-child {
+  margin-top: 0;
+}
+
+.card > :last-child {
+  margin-bottom: 0;
 }
 
 .service-card h3 {
@@ -400,6 +438,7 @@ img {
 .meta {
   color: var(--muted);
   font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 .price {
@@ -692,7 +731,7 @@ img {
 
 .field {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 label {
@@ -710,6 +749,17 @@ textarea {
   color: #eef2ff;
   padding: 10px 11px;
   font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(177, 164, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(123, 108, 255, 0.2);
+  background: rgba(11, 16, 35, 0.95);
 }
 
 textarea {
@@ -780,6 +830,11 @@ textarea {
   border-bottom: 1px solid var(--line);
   padding: 10px 8px;
   font-size: 0.9rem;
+}
+
+.table th {
+  color: #f0f3ff;
+  font-weight: 700;
 }
 
 .mobile-menu-btn {
