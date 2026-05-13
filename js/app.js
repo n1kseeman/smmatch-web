@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "smmatch_state_v1";
+  const STATE_VERSION = 2;
 
   const path = window.location.pathname;
   const isPath = (chunk) => path.includes(chunk);
@@ -51,209 +52,25 @@
   }
 
   function seedState() {
-    const businessUserId = "user_business_demo";
-    const specialistUserId = "user_specialist_demo";
-
-    const specialists = [
-      {
-        id: "spec_ekaterina",
-        userId: specialistUserId,
-        name: "Екатерина Петрова",
-        city: "Минск",
-        rating: 4.9,
-        reviewsCount: 82,
-        specialization: "SMM-специалист",
-        experience: "middle",
-        description: "Помогаю брендам в HoReCa расти через Reels, контент-воронки и системный SMM.",
-        about:
-          "7 лет в digital. Работаю с кафе, ресторанами, beauty и e-commerce. Делаю связку контент + short-video + performance.",
-        priceRub: 45000,
-        priceUsd: 600,
-        platforms: ["instagram", "reels", "telegram", "tiktok"],
-        niches: ["кафе", "рестораны", "beauty"],
-        skills: ["reels", "таргет", "контент", "монтаж", "storytelling"],
-        stats: { er: "7.2%", ctr: "3.8%", cpm: "$2.9", views: "2.1M", followersGrowth: "+4200", reachGrowth: "+230%" },
-        socials: {
-          instagram: "https://instagram.com/",
-          tiktok: "https://www.tiktok.com/",
-          telegram: "https://telegram.org/",
-          behance: "https://www.behance.net/"
-        },
-        cases: [
-          { title: "Кофейня в Минске", result1: "Охваты: +230%", result2: "Подписки: +4 100", period: "2 месяца" },
-          { title: "Салон красоты", result1: "Лиды: +174%", result2: "CPL: -31%", period: "11 недель" },
-          { title: "Цветочный магазин", result1: "Продажи: +96%", result2: "Видео: 840K", period: "6 недель" }
-        ]
-      },
-      {
-        id: "spec_ivan",
-        userId: null,
-        name: "Иван Белов",
-        city: "Москва",
-        rating: 5.0,
-        reviewsCount: 49,
-        specialization: "Таргетолог",
-        experience: "senior",
-        description: "Запускаю performance-рекламу в Meta и VK, строю прогнозируемую воронку лидов.",
-        about: "9 лет в performance-маркетинге. Фокус: ROMI, CPL и масштабирование связок.",
-        priceRub: 60000,
-        priceUsd: 850,
-        platforms: ["instagram", "vk", "telegram"],
-        niches: ["ecommerce", "рестораны", "недвижимость"],
-        skills: ["таргет", "аналитика", "meta ads", "vk ads", "креативы"],
-        stats: { er: "6.1%", ctr: "4.1%", cpm: "$2.8", views: "1.3M", followersGrowth: "+2900", reachGrowth: "+172%" },
-        socials: {
-          instagram: "https://instagram.com/",
-          tiktok: "https://www.tiktok.com/",
-          telegram: "https://telegram.org/",
-          behance: "https://www.behance.net/"
-        },
-        cases: [
-          { title: "E-commerce бренд", result1: "ROAS: 3.8", result2: "CAC: -22%", period: "10 недель" }
-        ]
-      },
-      {
-        id: "spec_alina",
-        userId: null,
-        name: "Алина Жумабек",
-        city: "Алматы",
-        rating: 4.8,
-        reviewsCount: 57,
-        specialization: "Reels maker",
-        experience: "middle",
-        description: "Снимаю и монтирую short-video с фокусом на удержание, охваты и переходы в директ.",
-        about: "5 лет в short-video продакшене, работаю с TikTok и Instagram.",
-        priceRub: 40000,
-        priceUsd: 550,
-        platforms: ["instagram", "tiktok"],
-        niches: ["beauty", "кафе", "спорт"],
-        skills: ["ugc", "съемка", "монтаж", "hooks"],
-        stats: { er: "8.6%", ctr: "3.2%", cpm: "$3.4", views: "3.2M", followersGrowth: "+5700", reachGrowth: "+190%" },
-        socials: {
-          instagram: "https://instagram.com/",
-          tiktok: "https://www.tiktok.com/",
-          telegram: "https://telegram.org/",
-          behance: "https://www.behance.net/"
-        },
-        cases: [
-          { title: "Flower Atelier", result1: "Видео: 860K", result2: "Продажи: +96%", period: "6 недель" }
-        ]
-      },
-      {
-        id: "spec_maria",
-        userId: null,
-        name: "Мария Орлова",
-        city: "Онлайн",
-        rating: 4.9,
-        reviewsCount: 64,
-        specialization: "Контент-менеджер",
-        experience: "middle",
-        description: "Строю контент-стратегию и календарь публикаций для beauty, кафе и ресторанов.",
-        about: "Пишу контент под продажи и удержание, строю контент-матрицу на 90 дней.",
-        priceRub: 35000,
-        priceUsd: 500,
-        platforms: ["instagram", "telegram", "vk"],
-        niches: ["beauty", "кафе", "рестораны"],
-        skills: ["контент", "stories", "telegram", "smm"],
-        stats: { er: "7.0%", ctr: "3.0%", cpm: "$3.1", views: "1.1M", followersGrowth: "+3100", reachGrowth: "+145%" },
-        socials: {
-          instagram: "https://instagram.com/",
-          tiktok: "https://www.tiktok.com/",
-          telegram: "https://telegram.org/",
-          behance: "https://www.behance.net/"
-        },
-        cases: [
-          { title: "Beauty Studio", result1: "Заявки: +145%", result2: "Retention: +33%", period: "8 недель" }
-        ]
-      }
-    ];
-
-    const initialTasks = [
-      {
-        id: "task_seed_1",
-        title: "Ведение Instagram + Reels",
-        niche: "Кафе",
-        budgetTier: "300-700$",
-        budgetValue: 600,
-        platforms: "Instagram + Telegram",
-        goals: "Рост охватов и заявок в директ",
-        needTarget: "Да",
-        needContent: "Да",
-        needReels: "Да",
-        status: "active",
-        businessUserId,
-        assignedSpecialistId: "spec_ekaterina",
-        responses: [
-          { specialistId: "spec_ekaterina", score: 93 },
-          { specialistId: "spec_maria", score: 86 },
-          { specialistId: "spec_ivan", score: 82 }
-        ],
-        createdAt: nowIso()
-      }
-    ];
-
-    const initialPayments = [
-      { id: "pay_seed_1", taskId: "task_seed_1", amount: 60000, status: "Холд", date: nowIso() }
-    ];
-
-    const initialConversations = [
-      {
-        id: "conv_seed_1",
-        businessUserId,
-        specialistId: "spec_ekaterina",
-        messages: [
-          { id: uid("msg"), senderRole: "specialist", text: "Добрый день, отправила контент-план на неделю.", ts: nowIso() },
-          { id: uid("msg"), senderRole: "business", text: "Спасибо, добавим акцент на завтраки.", ts: nowIso() }
-        ]
-      }
-    ];
-
     return {
-      version: 1,
-      users: [
-        {
-          id: businessUserId,
-          role: "business",
-          name: "Demo Business",
-          email: "business@smmatch.local",
-          password: "demo12345"
-        },
-        {
-          id: specialistUserId,
-          role: "specialist",
-          specialistId: "spec_ekaterina",
-          name: "Екатерина Петрова",
-          email: "specialist@smmatch.local",
-          password: "demo12345"
-        }
-      ],
-      currentUserId: businessUserId,
-      specialists,
-      tasks: initialTasks,
-      favoritesByUser: {
-        [businessUserId]: ["spec_ekaterina", "spec_ivan", "spec_alina"]
-      },
-      conversations: initialConversations,
-      reviews: [
-        {
-          id: "review_seed_1",
-          businessUserId,
-          specialistId: "spec_ekaterina",
-          rating: 5,
-          comment: "Сильная аналитика и рост охватов, быстро реагирует на задачи.",
-          createdAt: nowIso()
-        }
-      ],
-      payments: initialPayments,
+      version: STATE_VERSION,
+      users: [],
+      currentUserId: null,
+      specialists: [],
+      tasks: [],
+      favoritesByUser: {},
+      conversations: [],
+      reviews: [],
+      payments: [],
       ai: {
-        lastMatchTaskId: "task_seed_1",
+        lastMatchTaskId: null,
         lastAudit: null,
         lastContentIdeas: null
       },
       ui: {
-        selectedSpecialistId: "spec_ekaterina",
-        selectedBusinessConversationId: "conv_seed_1",
-        selectedSpecialistConversationId: "conv_seed_1"
+        selectedSpecialistId: null,
+        selectedBusinessConversationId: null,
+        selectedSpecialistConversationId: null
       }
     };
   }
@@ -269,6 +86,11 @@
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") {
         throw new Error("Invalid state");
+      }
+      if (parsed.version !== STATE_VERSION) {
+        const seeded = seedState();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+        return seeded;
       }
       return parsed;
     } catch (error) {
@@ -423,12 +245,14 @@
   }
 
   function renderCatalogCard(specialist, rootPrefix) {
+    const ratingText =
+      specialist.reviewsCount > 0 ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})` : "без оценок";
     return `
       <article class="card catalog-card">
         <div class="avatar"></div>
         <div>
           <h3>${specialist.name}</h3>
-          <div class="meta">${specialist.specialization} • ${specialist.city} • ${specialist.rating.toFixed(1)} (${specialist.reviewsCount})</div>
+          <div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div>
           <div class="verified">Verified профиль</div>
           <p class="meta">${specialist.description}</p>
           <div class="chips">
@@ -506,7 +330,13 @@
       });
 
       if (!filtered.length) {
-        catalogGrid.innerHTML = `<article class="card"><h3>Ничего не найдено</h3><p class="meta">Попробуйте снять часть фильтров или увеличить бюджет.</p></article>`;
+        const emptyTitle = state.specialists.length
+          ? "Ничего не найдено"
+          : "Профили специалистов пока не добавлены";
+        const emptyText = state.specialists.length
+          ? "Попробуйте снять часть фильтров или увеличить бюджет."
+          : "После регистрации и заполнения профилей карточки появятся здесь.";
+        catalogGrid.innerHTML = `<article class="card"><h3>${emptyTitle}</h3><p class="meta">${emptyText}</p></article>`;
         return;
       }
 
@@ -564,6 +394,13 @@
     if (!wrapper) return;
     wrapper.querySelectorAll(".card").forEach((item) => item.remove());
     const responses = task.responses || [];
+    if (!responses.length) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<div class="meta">Рекомендации появятся после добавления профилей специалистов.</div>`;
+      wrapper.appendChild(card);
+      return;
+    }
     responses.forEach((response) => {
       const specialist = findSpecialistById(response.specialistId);
       if (!specialist) return;
@@ -599,6 +436,8 @@
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
+      const user = requireLoggedInBusiness();
+      if (!user) return;
       const selects = form.querySelectorAll("select");
       const taskInput = {
         niche: (form.querySelector("#niche") || selects[0]).value,
@@ -621,8 +460,7 @@
         .sort((a, b) => b.score - a.score)
         .slice(0, 3);
 
-      const user = currentUser();
-      const businessUserId = user && user.role === "business" ? user.id : "user_business_demo";
+      const businessUserId = user.id;
       const assignedSpecialistId = responses[0] ? responses[0].specialistId : null;
       const budgetRub = budgetValue * 100;
 
@@ -713,7 +551,7 @@
               userId,
               name,
               city: "Онлайн",
-              rating: 5.0,
+              rating: 0,
               reviewsCount: 0,
               specialization: "SMM-специалист",
               experience: "junior",
@@ -798,6 +636,18 @@
 
   function renderProfilePage() {
     if (!isPath("/u/username/")) return;
+    if (!state.specialists.length) {
+      const root = document.querySelector("main.container");
+      if (root) {
+        root.innerHTML = `
+          <article class="card">
+            <h1>Профиль пока не заполнен</h1>
+            <p class="meta">Фейковые данные удалены. Зарегистрируйтесь как специалист и заполните профиль в кабинете.</p>
+          </article>
+        `;
+      }
+      return;
+    }
     const specialistId =
       state.ui.selectedSpecialistId ||
       (currentUser() && currentUser().specialistId ? currentUser().specialistId : state.specialists[0].id);
@@ -812,9 +662,11 @@
       const chips = header.querySelector(".chips");
       if (h1) h1.textContent = specialist.name;
       if (metas[0]) {
-        metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${specialist.rating.toFixed(
-          1
-        )} (${specialist.reviewsCount})`;
+        const ratingText =
+          specialist.reviewsCount > 0
+            ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})`
+            : "оценок пока нет";
+        metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText}`;
       }
       if (price) price.textContent = `от ${formatMoneyRub(specialist.priceRub)} / мес`;
       if (chips) {
@@ -851,7 +703,10 @@
     if (casesCard) {
       const casesGrid = casesCard.querySelector(".cases-grid");
       if (casesGrid) {
-        casesGrid.innerHTML = specialist.cases
+        if (!specialist.cases.length) {
+          casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+        } else {
+          casesGrid.innerHTML = specialist.cases
           .map(
             (item) => `
               <div class="card case-card">
@@ -865,6 +720,7 @@
             `
           )
           .join("");
+        }
       }
     }
 
@@ -890,6 +746,8 @@
               `
             )
             .join("");
+        } else {
+          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Оценок и отзывов пока нет.</p></div>';
         }
       }
     }
@@ -922,7 +780,15 @@
     const cards = document.querySelectorAll(".kpi-cards .card");
     const panel = document.querySelector(".panel-list");
     const latestTask = state.tasks.find((task) => task.id === state.ai.lastMatchTaskId) || state.tasks[0];
-    if (!latestTask || !cards.length || !panel) return;
+    if (!cards.length || !panel) return;
+    if (!latestTask || !(latestTask.responses || []).length) {
+      cards[0].querySelector("strong").textContent = "0%";
+      cards[1].querySelector("strong").textContent = "0 мин";
+      cards[2].querySelector("strong").textContent = "0";
+      panel.innerHTML =
+        '<article class="panel-item"><strong>Нет данных</strong><div class="meta">Добавьте задачу и профили специалистов для AI Match.</div></article>';
+      return;
+    }
 
     const responses = latestTask.responses || [];
     const avgScore = responses.length
@@ -1192,9 +1058,8 @@
       .map((id) => {
         const specialist = findSpecialistById(id);
         if (!specialist) return "";
-        return `<div class="panel-item"><strong>${specialist.name}</strong><div class="meta">${specialist.specialization} • ${specialist.city} • ${specialist.rating.toFixed(
-          1
-        )}</div></div>`;
+        const ratingText = specialist.reviewsCount > 0 ? specialist.rating.toFixed(1) : "без оценок";
+        return `<div class="panel-item"><strong>${specialist.name}</strong><div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div></div>`;
       })
       .join("");
   }
@@ -1231,7 +1096,8 @@
 
     if (reviewList) {
       const reviews = state.reviews.filter((item) => item.businessUserId === user.id);
-      reviewList.innerHTML = reviews
+      reviewList.innerHTML = reviews.length
+        ? reviews
         .slice()
         .reverse()
         .map(
@@ -1244,7 +1110,8 @@
             </div>
           `
         )
-        .join("");
+        .join("")
+        : '<div class="panel-item"><div class="meta">Пока нет оценок и отзывов.</div></div>';
     }
 
     if (!formCard) return;
@@ -1256,6 +1123,11 @@
     const specialistSelect = selects[0];
     const ratingSelect = selects[1];
 
+    if (!state.specialists.length) {
+      specialistSelect.innerHTML = "<option>Нет специалистов</option>";
+      button.disabled = true;
+      return;
+    }
     specialistSelect.innerHTML = state.specialists
       .map((specialist) => `<option value="${specialist.id}">${specialist.name}</option>`)
       .join("");
@@ -1387,6 +1259,7 @@
   }
 
   function currentSpecialistForSession() {
+    if (!state.specialists.length) return null;
     const user = currentUser();
     if (user && user.role === "specialist" && user.specialistId) {
       return findSpecialistById(user.specialistId) || state.specialists[0];
@@ -1412,7 +1285,7 @@
     const tasks = tasksForSpecialist(specialist.id);
     const statNodes = document.querySelectorAll(".stats-strip .stat-box strong");
     if (statNodes.length >= 4) {
-      statNodes[0].textContent = specialist.rating.toFixed(1);
+      statNodes[0].textContent = specialist.reviewsCount > 0 ? specialist.rating.toFixed(1) : "—";
       statNodes[1].textContent = String(conversationsForSpecialist(specialist.id).length);
       const conversion = tasks.length ? Math.min(98, 42 + tasks.length * 6) : 42;
       statNodes[2].textContent = `${conversion}%`;
@@ -1549,7 +1422,10 @@
     const casesGrid = document.querySelector(".cases-grid");
     const button = document.querySelector(".dash-panels .btn.btn-primary");
     if (casesGrid) {
-      casesGrid.innerHTML = specialist.cases
+      if (!specialist.cases.length) {
+        casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+      } else {
+        casesGrid.innerHTML = specialist.cases
         .map(
           (item) => `
             <div class="card case-card">
@@ -1561,15 +1437,16 @@
           `
         )
         .join("");
+      }
     }
     if (button) {
       button.addEventListener("click", () => {
         const next = specialist.cases.length + 1;
         specialist.cases.unshift({
           title: `Новый кейс #${next}`,
-          result1: "Охваты: +40%",
-          result2: "Лиды: +22%",
-          period: "4 недели"
+          result1: "Заполните результат",
+          result2: "Заполните результат",
+          period: "Укажите период"
         });
         saveState();
         renderSpecialistCases();
