@@ -374,8 +374,46 @@
     const menuBtn = document.querySelector("[data-menu-btn]");
     const mobileNav = document.querySelector("[data-mobile-nav]");
     if (!menuBtn || !mobileNav) return;
+
+    const buttonLabel = (menuBtn.textContent || "").trim() || "Меню";
+    menuBtn.innerHTML = `<span class="sr-only">${buttonLabel}</span><span class="menu-icon" aria-hidden="true"></span>`;
+    menuBtn.setAttribute("aria-label", buttonLabel);
+    menuBtn.setAttribute("aria-expanded", "false");
+
+    function openMenu() {
+      menuBtn.classList.add("is-open");
+      mobileNav.classList.add("show");
+      document.body.classList.add("menu-open");
+      menuBtn.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      menuBtn.classList.remove("is-open");
+      mobileNav.classList.remove("show");
+      document.body.classList.remove("menu-open");
+      menuBtn.setAttribute("aria-expanded", "false");
+    }
+
     menuBtn.addEventListener("click", () => {
-      mobileNav.classList.toggle("show");
+      if (mobileNav.classList.contains("show")) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    mobileNav.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.closest("a")) closeMenu();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMenu();
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 760) closeMenu();
     });
   }
 
