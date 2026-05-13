@@ -46,7 +46,7 @@ body {
   line-height: 1.5;
   min-height: 100dvh;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
   padding-top: var(--topbar-height);
 }
 
@@ -1136,7 +1136,7 @@ textarea {
   }
 
   .mobile-nav {
-    display: grid;
+    display: none;
     position: fixed;
     top: 0;
     right: 0;
@@ -1157,18 +1157,12 @@ textarea {
     backdrop-filter: blur(14px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateY(-10px) scale(0.985);
-    transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
+    animation: none;
   }
 
   .mobile-nav.show {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(0) scale(1);
+    display: grid;
+    animation: mobile-nav-in 0.24s ease;
   }
 
   body.menu-open {
@@ -1208,6 +1202,17 @@ textarea {
 
   .blog-item {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes mobile-nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
