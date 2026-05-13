@@ -25,10 +25,13 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
+  background-color: #050710;
 }
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -40,6 +43,9 @@ body {
     radial-gradient(circle at 92% 18%, rgba(38, 198, 255, 0.16), transparent 28%),
     linear-gradient(160deg, #050710 0%, #070a1a 45%, #090d22 100%);
   line-height: 1.5;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 a {
@@ -860,6 +866,22 @@ textarea {
   animation: reveal 0.7s ease forwards;
 }
 
+.auto-reveal {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  filter: blur(1px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s ease;
+}
+
+.auto-reveal.in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
@@ -1007,8 +1029,18 @@ textarea {
 
 @media (max-width: 760px) {
   .nav,
-  .actions .btn-ghost {
+  .actions .btn-ghost:not(.keep-mobile):not(.mobile-menu-btn) {
     display: none;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .actions .keep-mobile {
+    display: inline-flex;
+    padding: 9px 12px;
+    font-size: 0.82rem;
   }
 
   .mobile-menu-btn {

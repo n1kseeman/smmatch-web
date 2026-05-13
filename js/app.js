@@ -6,6 +6,33 @@
 
   const path = window.location.pathname;
   const isPath = (chunk) => path.includes(chunk);
+  const isAuthPage = isPath("/auth/login/") || isPath("/auth/register/") || isPath("/auth/forgot/");
+
+  const scriptEl = document.querySelector("script[src*='js/app.js']");
+  const scriptUrl = scriptEl ? new URL(scriptEl.getAttribute("src"), window.location.href) : null;
+  const appRootUrl = scriptUrl ? new URL("../", scriptUrl) : new URL("./", window.location.href);
+
+  function appUrl(relativePath) {
+    return new URL(relativePath, appRootUrl).toString();
+  }
+
+  function appPath(relativePath) {
+    return new URL(relativePath, appRootUrl).pathname;
+  }
+
+  function normalizePathname(pathname) {
+    const compact = String(pathname || "/").replace(/\/{2,}/g, "/");
+    if (compact.length > 1 && compact.endsWith("/")) {
+      return compact.slice(0, -1);
+    }
+    return compact;
+  }
+
+  const currentPathname = normalizePathname(window.location.pathname);
+  const isLandingPage =
+    currentPathname === normalizePathname(appPath("")) ||
+    currentPathname === normalizePathname(appPath("index.html")) ||
+    currentPathname === "/";
 
   function uid(prefix) {
     return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
@@ -155,6 +182,186 @@
       return null;
     }
     return user;
+  }
+
+  function getRedirectAfterLogin() {
+    const url = new URL(window.location.href);
+    const next = url.searchParams.get("next");
+    if (!next) return null;
+    try {
+      const nextUrl = new URL(next, window.location.origin);
+      if (nextUrl.origin !== window.location.origin) return null;
+      return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function isProtectedRoute() {
+    return !isAuthPage && !isLandingPage;
+  }
+
+  function redirectToLogin() {
+    const next = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `${appUrl("auth/login/index.html")}?next=${encodeURIComponent(next)}`;
+  }
+
+  function requiredRoleForPath(pathname) {
+    const normalizedPath = normalizePathname(pathname);
+    if (normalizedPath.includes("/dashboard/business/") || normalizedPath.includes("/task/new/")) {
+      return "business";
+    }
+    if (normalizedPath.includes("/dashboard/specialist/")) {
+      return "specialist";
+    }
+    return null;
+  }
+
+  function defaultDashboardByRole(role) {
+    return role === "specialist" ? appUrl("dashboard/specialist/index.html") : appUrl("dashboard/business/index.html");
+  }
+
+  function resolvePostAuthDestination(user) {
+    const next = getRedirectAfterLogin();
+    if (next) {
+      const requiredRole = requiredRoleForPath(next);
+      if (!requiredRole || requiredRole === user.role) {
+        return next;
+      }
+    }
+    return defaultDashboardByRole(user.role);
+  }
+
+  function enforceSessionAndRole() {
+    const user = currentUser();
+
+    if (!user && isProtectedRoute() && !isAuthPage) {
+      redirectToLogin();
+      return false;
+    }
+
+    if (!user) return true;
+
+    if (isAuthPage) {
+      window.location.href = resolvePostAuthDestination(user);
+      return false;
+    }
+
+    const onBusinessOnlyRoute = isPath("/dashboard/business/") || isPath("/task/new/");
+    const onSpecialistOnlyRoute = isPath("/dashboard/specialist/");
+
+    if (user.role === "business" && onSpecialistOnlyRoute) {
+      window.location.href = appUrl("dashboard/business/index.html");
+      return false;
+    }
+
+    if (user.role === "specialist" && onBusinessOnlyRoute) {
+      window.location.href = appUrl("dashboard/specialist/index.html");
+      return false;
+    }
+
+    return true;
+  }
+
+  function initTopbarActionsByRole() {
+    const actions = document.querySelector(".topbar .actions");
+    if (!actions) return;
+
+    actions.querySelectorAll("[data-dynamic-action]").forEach((item) => item.remove());
+    actions.querySelectorAll("a.btn, button.btn").forEach((item) => {
+      if (item.hasAttribute("data-menu-btn")) return;
+      item.style.display = "none";
+    });
+
+    function addAction(label, relativePath, className) {
+      const link = document.createElement("a");
+      link.className = className;
+      link.href = appUrl(relativePath);
+      link.textContent = label;
+      link.setAttribute("data-dynamic-action", "1");
+      actions.insertBefore(link, actions.querySelector("[data-menu-btn]") || null);
+    }
+
+    function addLogout() {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-ghost keep-mobile";
+      button.textContent = "Выйти";
+      button.setAttribute("data-dynamic-action", "1");
+      button.addEventListener("click", () => {
+        state.currentUserId = null;
+        saveState();
+        window.location.href = appUrl("index.html");
+      });
+      actions.insertBefore(button, actions.querySelector("[data-menu-btn]") || null);
+    }
+
+    const user = currentUser();
+    if (!user) {
+      addAction("Войти", "auth/login/index.html", "btn btn-ghost keep-mobile");
+      addAction("Регистрация", "auth/register/index.html", "btn btn-primary keep-mobile");
+      return;
+    }
+
+    if (user.role === "business") {
+      addAction("Кабинет", "dashboard/business/index.html", "btn btn-ghost keep-mobile");
+      addAction("Разместить задачу", "task/new/index.html", "btn btn-primary keep-mobile");
+      addLogout();
+      return;
+    }
+
+    addAction("Кабинет", "dashboard/specialist/index.html", "btn btn-ghost keep-mobile");
+    addAction("Мой профиль", "u/username/index.html", "btn btn-primary keep-mobile");
+    addLogout();
+  }
+
+  function initActionGuardsForLinks() {
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const link = target.closest("a");
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      if (!href || href.startsWith("http") || href.startsWith("#")) return;
+      const needsAuth =
+        href.includes("task/new/index.html") ||
+        href.includes("dashboard/") ||
+        href.includes("specialists/index.html") ||
+        href.includes("cases/index.html") ||
+        href.includes("business/index.html") ||
+        href.includes("ai/") ||
+        href.includes("u/username/index.html");
+      if (!needsAuth) return;
+      if (currentUser()) return;
+      event.preventDefault();
+      redirectToLogin();
+    });
+  }
+
+  function initGlobalAnimations() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const items = document.querySelectorAll(
+      "main .page-hero, main .section-head, main .card, main .panel-item, main .blog-item, main .catalog-card, main .case-card, main .stat-box"
+    );
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("in-view");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.14 }
+    );
+
+    items.forEach((item, index) => {
+      if (item.classList.contains("reveal")) return;
+      item.classList.add("auto-reveal");
+      item.style.transitionDelay = `${Math.min(index % 6, 5) * 0.05}s`;
+      observer.observe(item);
+    });
   }
 
   function initMobileMenu() {
@@ -592,11 +799,7 @@
           saveState();
           showToast("Аккаунт создан");
           window.setTimeout(() => {
-            const redirect =
-              user.role === "specialist"
-                ? "../../dashboard/specialist/index.html"
-                : "../../dashboard/business/index.html";
-            window.location.href = redirect;
+            window.location.href = resolvePostAuthDestination(user);
           }, 300);
         });
       }
@@ -621,11 +824,7 @@
           saveState();
           showToast("Вы вошли в систему");
           window.setTimeout(() => {
-            const redirect =
-              user.role === "specialist"
-                ? "../../dashboard/specialist/index.html"
-                : "../../dashboard/business/index.html";
-            window.location.href = redirect;
+            window.location.href = resolvePostAuthDestination(user);
           }, 300);
         });
       }
@@ -1567,11 +1766,14 @@
         event.preventDefault();
         state.currentUserId = null;
         saveState();
-        window.location.href = "/index.html";
+        window.location.href = appUrl("index.html");
       });
     });
   }
 
+  if (!enforceSessionAndRole()) return;
+  initTopbarActionsByRole();
+  initActionGuardsForLinks();
   initMobileMenu();
   initFilterOptionToggle();
   initRoiCalculator();
@@ -1596,4 +1798,5 @@
   renderSpecialistFinance();
   renderSpecialistSettings();
   initQuickActions();
+  initGlobalAnimations();
 })();
