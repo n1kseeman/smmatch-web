@@ -872,6 +872,22 @@ textarea {
   width: min(460px, 100%);
 }
 
+.role-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.role-btn {
+  width: 100%;
+}
+
+.role-btn.active-role {
+  background: rgba(123, 108, 255, 0.2);
+  border-color: rgba(177, 164, 255, 0.45);
+  color: #fff;
+}
+
 .status {
   display: inline-flex;
   align-items: center;

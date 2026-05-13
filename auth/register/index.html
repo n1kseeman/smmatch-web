@@ -14,7 +14,14 @@
   <main class="container auth-wrap">
     <section class="card auth-card">
       <h1>Создать аккаунт</h1>
-      <div class="field"><label>Роль</label><select><option>Бизнес</option><option>Специалист</option></select></div>
+      <div class="field">
+        <label>Роль</label>
+        <input type="hidden" name="account_role" value="business">
+        <div class="role-switch">
+          <button type="button" class="btn btn-ghost role-btn active-role" data-role-btn="business" aria-pressed="true">Бизнес</button>
+          <button type="button" class="btn btn-ghost role-btn" data-role-btn="specialist" aria-pressed="false">Специалист</button>
+        </div>
+      </div>
       <div class="field"><label>Имя</label><input placeholder="Ваше имя"></div>
       <div class="field"><label>Email</label><input type="email" placeholder="you@company.com"></div>
       <div class="field"><label>Пароль</label><input type="password" placeholder="••••••••"></div>

@@ -512,13 +512,27 @@
       const card = document.querySelector(".auth-card");
       const button = card ? card.querySelector(".btn.btn-primary") : null;
       if (card && button) {
+        const roleInput = card.querySelector("input[name='account_role']");
+        const roleButtons = card.querySelectorAll("[data-role-btn]");
+
+        roleButtons.forEach((roleButton) => {
+          roleButton.addEventListener("click", () => {
+            const value = roleButton.getAttribute("data-role-btn") || "business";
+            if (roleInput) roleInput.value = value;
+            roleButtons.forEach((item) => {
+              const isActive = item === roleButton;
+              item.classList.toggle("active-role", isActive);
+              item.setAttribute("aria-pressed", isActive ? "true" : "false");
+            });
+          });
+        });
+
         button.addEventListener("click", () => {
-          const roleSelect = card.querySelector("select");
           const inputs = card.querySelectorAll("input");
-          const role = roleSelect ? normalize(roleSelect.value) : "бизнес";
-          const name = inputs[0] ? inputs[0].value.trim() : "";
-          const email = inputs[1] ? inputs[1].value.trim() : "";
-          const password = inputs[2] ? inputs[2].value.trim() : "";
+          const role = normalize(roleInput ? roleInput.value : "business");
+          const name = inputs[1] ? inputs[1].value.trim() : "";
+          const email = inputs[2] ? inputs[2].value.trim() : "";
+          const password = inputs[3] ? inputs[3].value.trim() : "";
 
           if (!name || !email || !password) {
             showToast("Заполните все поля", "error");
@@ -537,7 +551,7 @@
           const userId = uid("user");
           const user = {
             id: userId,
-            role: role.includes("специалист") ? "specialist" : "business",
+            role: role === "specialist" ? "specialist" : "business",
             name,
             email,
             password
