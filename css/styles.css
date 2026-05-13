@@ -1128,15 +1128,17 @@ textarea {
     display: grid;
     position: fixed;
     inset: 0;
-    z-index: 55;
-    align-content: center;
+    z-index: 120;
+    align-content: start;
     gap: 12px;
-    padding: 108px 20px 28px;
+    padding: calc(env(safe-area-inset-top) + 84px) 20px calc(env(safe-area-inset-bottom) + 24px);
     background:
       radial-gradient(circle at 14% 16%, rgba(123, 108, 255, 0.26), transparent 35%),
       radial-gradient(circle at 88% 9%, rgba(38, 198, 255, 0.16), transparent 30%),
       linear-gradient(165deg, rgba(7, 10, 24, 0.98), rgba(6, 9, 22, 0.98));
     backdrop-filter: blur(14px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
