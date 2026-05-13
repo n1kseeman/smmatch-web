@@ -394,8 +394,8 @@ button:focus-visible,
   background:
     linear-gradient(170deg, rgba(7, 10, 24, 0.15), rgba(8, 11, 24, 0.8)),
     var(--card-photo) center/cover no-repeat;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 128% 128%;
   background-repeat: no-repeat;
 }
 
@@ -478,8 +478,8 @@ button:focus-visible,
   background:
     linear-gradient(140deg, rgba(123, 108, 255, 0.65), rgba(38, 198, 255, 0.4)),
     var(--media-photo, url("../assets/visuals/meeting-room.svg")) center/cover;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 132% 132%;
   background-repeat: no-repeat;
 }
 
@@ -531,8 +531,8 @@ button:focus-visible,
   background:
     linear-gradient(140deg, rgba(10, 16, 42, 0.16), rgba(14, 18, 40, 0.7)),
     var(--media-photo, url("../assets/visuals/growth-chart.svg")) center/cover;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 126% 126%;
   background-repeat: no-repeat;
 }
 
@@ -698,8 +698,8 @@ button:focus-visible,
     linear-gradient(170deg, rgba(7, 10, 25, 0.12), rgba(8, 11, 24, 0.74)),
     var(--hero-photo) center/cover no-repeat;
   box-shadow: 0 14px 28px rgba(4, 9, 22, 0.28);
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 130% 130%;
   background-repeat: no-repeat;
 }
 
@@ -985,8 +985,8 @@ button:focus-visible,
   background:
     linear-gradient(120deg, rgba(123, 108, 255, 0.58), rgba(38, 198, 255, 0.34)),
     var(--media-photo, url("../assets/visuals/team-sync.svg")) center/cover;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 150% 150%;
   background-repeat: no-repeat;
 }
 
@@ -1035,8 +1035,8 @@ button:focus-visible,
   background:
     linear-gradient(120deg, rgba(123, 108, 255, 0.55), rgba(38, 198, 255, 0.36)),
     var(--media-photo, url("../assets/visuals/mobile-promo.svg")) center/cover;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 138% 138%;
   background-repeat: no-repeat;
 }
 
@@ -1134,8 +1134,8 @@ textarea {
   background:
     linear-gradient(130deg, rgba(123, 108, 255, 0.5), rgba(38, 198, 255, 0.24)),
     var(--media-photo, url("../assets/visuals/content-lab.svg")) center/cover;
-  background-position: center;
-  background-size: cover;
+  background-position: center center;
+  background-size: 130% 130%;
   background-repeat: no-repeat;
 }
 
