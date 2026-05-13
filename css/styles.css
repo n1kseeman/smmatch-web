@@ -384,12 +384,15 @@ button:focus-visible,
 
 .card-has-photo {
   overflow: hidden;
+  border-top-color: transparent;
 }
 
 .card-photo {
   height: 132px;
-  margin: -18px -18px 14px;
+  margin: -19px -19px 14px;
   border-bottom: 1px solid rgba(185, 173, 245, 0.2);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
   background-color: #101633;
   background:
     linear-gradient(170deg, rgba(7, 10, 24, 0.15), rgba(8, 11, 24, 0.8)),
@@ -474,7 +477,8 @@ button:focus-visible,
 
 .specialist-thumb {
   height: 168px;
-  border-radius: 12px;
+  margin: -19px -19px 12px;
+  border-radius: 18px 18px 0 0;
   background:
     linear-gradient(140deg, rgba(123, 108, 255, 0.65), rgba(38, 198, 255, 0.4)),
     var(--media-photo, url("../assets/visuals/meeting-room.svg")) center/cover;
@@ -527,7 +531,8 @@ button:focus-visible,
 
 .case-image {
   height: 170px;
-  border-radius: 14px;
+  margin: -19px -19px 12px;
+  border-radius: 18px 18px 0 0;
   background:
     linear-gradient(140deg, rgba(10, 16, 42, 0.16), rgba(14, 18, 40, 0.7)),
     var(--media-photo, url("../assets/visuals/growth-chart.svg")) center/cover;
@@ -1130,7 +1135,8 @@ textarea {
 
 .blog-thumb {
   height: 108px;
-  border-radius: 14px;
+  margin: -19px 0 0;
+  border-radius: 14px 14px 0 0;
   background:
     linear-gradient(130deg, rgba(123, 108, 255, 0.5), rgba(38, 198, 255, 0.24)),
     var(--media-photo, url("../assets/visuals/content-lab.svg")) center/cover;
