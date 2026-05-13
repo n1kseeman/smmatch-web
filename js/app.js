@@ -49,21 +49,18 @@
     return String(value || "").trim().toLowerCase();
   }
 
-  function hashSeed(value) {
-    let hash = 2166136261;
-    const text = String(value || "smmatch");
-    for (let i = 0; i < text.length; i += 1) {
-      hash ^= text.charCodeAt(i);
-      hash = Math.imul(hash, 16777619);
-    }
-    return Math.abs(hash >>> 0);
-  }
-
-  function seededNumber(seed, min, max) {
-    const h = hashSeed(seed);
-    const ratio = (h % 1000) / 1000;
-    return min + (max - min) * ratio;
-  }
+  const VISUAL_LIBRARY = {
+    social: [appUrl("assets/visuals/social-flow.svg"), appUrl("assets/visuals/workspace-focus.svg")],
+    analytics: [appUrl("assets/visuals/analytics-grid.svg"), appUrl("assets/visuals/growth-chart.svg")],
+    team: [appUrl("assets/visuals/team-sync.svg"), appUrl("assets/visuals/meeting-room.svg")],
+    mobile: [appUrl("assets/visuals/mobile-promo.svg"), appUrl("assets/visuals/content-lab.svg")],
+    content: [appUrl("assets/visuals/content-lab.svg"), appUrl("assets/visuals/workspace-focus.svg")],
+    reels: [appUrl("assets/visuals/reels-studio.svg"), appUrl("assets/visuals/camera-shot.svg")],
+    security: [appUrl("assets/visuals/brand-shield.svg"), appUrl("assets/visuals/strategy-map.svg")],
+    media: [appUrl("assets/visuals/camera-shot.svg"), appUrl("assets/visuals/reels-studio.svg")],
+    growth: [appUrl("assets/visuals/growth-chart.svg"), appUrl("assets/visuals/analytics-grid.svg")],
+    strategy: [appUrl("assets/visuals/strategy-map.svg"), appUrl("assets/visuals/workspace-focus.svg")]
+  };
 
   function pickVisualTheme(text) {
     const source = normalize(text);
@@ -111,50 +108,32 @@
     return "social";
   }
 
-  function buildVisualDataUri(seedLabel, theme) {
-    const h = hashSeed(`${theme}:${seedLabel}`);
-    const hueA = h % 360;
-    const hueB = (hueA + 52 + (h % 120)) % 360;
-    const hueC = (hueA + 180) % 360;
-
-    const bars = Array.from({ length: 4 })
-      .map((_, i) => {
-        const x = 180 + i * 180;
-        const height = Math.round(seededNumber(`${seedLabel}:${i}`, 120, 420));
-        const y = 820 - height;
-        return `<rect x="${x}" y="${y}" width="120" height="${height}" rx="18" fill="hsla(${hueB},85%,62%,0.42)"/>`;
-      })
-      .join("");
-
-    const dots = Array.from({ length: 3 })
-      .map((_, i) => {
-        const cx = Math.round(seededNumber(`${seedLabel}:dot:${i}`, 360, 1320));
-        const cy = Math.round(seededNumber(`${seedLabel}:doty:${i}`, 180, 760));
-        const r = Math.round(seededNumber(`${seedLabel}:dotr:${i}`, 44, 90));
-        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="hsla(${hueC},90%,65%,0.22)"/>`;
-      })
-      .join("");
-
-    const title = String(theme || "smm").slice(0, 12).toUpperCase();
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="hsl(${hueA},46%,17%)"/>
-      <stop offset="1" stop-color="hsl(${hueB},48%,10%)"/>
-    </linearGradient>
-    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="hsla(${hueB},90%,64%,0.9)"/>
-      <stop offset="1" stop-color="hsla(${hueC},90%,66%,0.9)"/>
-    </linearGradient>
-  </defs>
-  <rect width="1600" height="1000" fill="url(#bg)"/>
-  ${dots}
-  <rect x="120" y="150" width="1360" height="700" rx="28" fill="hsla(${hueA},55%,10%,0.64)" stroke="hsla(${hueC},80%,76%,0.26)" stroke-width="3"/>
-  <path d="M220 700 L480 620 L760 470 L1040 360 L1320 240" fill="none" stroke="url(#line)" stroke-width="8" stroke-linecap="round"/>
-  ${bars}
-  <text x="220" y="250" fill="hsla(${hueC},95%,92%,0.9)" font-family="Sora, Manrope, sans-serif" font-size="62" font-weight="700">${title}</text>
-</svg>`;
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  function pickVisualAsset(theme, seedIndex, usedSet) {
+    const order = [
+      theme,
+      "social",
+      "content",
+      "analytics",
+      "team",
+      "strategy",
+      "growth",
+      "mobile",
+      "security",
+      "media",
+      "reels"
+    ];
+    for (const key of order) {
+      const pool = VISUAL_LIBRARY[key] || [];
+      if (!pool.length) continue;
+      const available = pool.filter((item) => !usedSet.has(item));
+      if (available.length) {
+        const chosen = available[seedIndex % available.length];
+        usedSet.add(chosen);
+        return chosen;
+      }
+    }
+    const fallbackPool = VISUAL_LIBRARY.social;
+    return fallbackPool[seedIndex % fallbackPool.length];
   }
 
   function showToast(message, type = "ok") {
@@ -511,10 +490,10 @@
     const title = hero.querySelector("h1")?.textContent || "";
     const collage = document.createElement("div");
     collage.className = "hero-collage";
+    const used = new Set();
     const baseTheme = pickVisualTheme(title);
-    const visuals = Array.from({ length: 3 }).map((_, index) =>
-      buildVisualDataUri(`${window.location.pathname}:hero:${index}:${title}`, index === 0 ? baseTheme : "analytics")
-    );
+    const visualThemes = [baseTheme, "analytics", "content"];
+    const visuals = visualThemes.map((theme, index) => pickVisualAsset(theme, index, used));
 
     visuals.forEach((url) => {
       const item = document.createElement("div");
@@ -530,6 +509,7 @@
   function initCardVisualBoost() {
     const cards = document.querySelectorAll("main .card");
     if (!cards.length) return;
+    const used = new Set();
 
     cards.forEach((card, index) => {
       if (
@@ -543,12 +523,10 @@
 
       const title = card.querySelector("h1, h2, h3, h4, strong")?.textContent || card.textContent.slice(0, 120);
       const theme = pickVisualTheme(title);
+      const visual = pickVisualAsset(theme, index, used);
       const photo = document.createElement("div");
       photo.className = "card-photo";
-      photo.style.setProperty(
-        "--card-photo",
-        `url("${buildVisualDataUri(`${window.location.pathname}:card:${index}:${title}`, theme)}")`
-      );
+      photo.style.setProperty("--card-photo", `url("${visual}")`);
       card.insertBefore(photo, card.firstChild);
       card.classList.add("card-has-photo");
     });
@@ -563,16 +541,14 @@
       ".blog-thumb"
     ];
     const nodes = document.querySelectorAll(mediaSelectors.join(","));
+    const used = new Set();
     nodes.forEach((node, index) => {
       const title =
         node.closest(".card, article")?.querySelector("h1, h2, h3, h4, strong")?.textContent ||
         node.className ||
         "visual";
       const theme = pickVisualTheme(title);
-      node.style.setProperty(
-        "--media-photo",
-        `url("${buildVisualDataUri(`${window.location.pathname}:media:${index}:${title}`, theme)}")`
-      );
+      node.style.setProperty("--media-photo", `url("${pickVisualAsset(theme, index, used)}")`);
     });
   }
 
