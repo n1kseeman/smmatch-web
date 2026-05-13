@@ -28,12 +28,6 @@
     return compact;
   }
 
-  const currentPathname = normalizePathname(window.location.pathname);
-  const isLandingPage =
-    currentPathname === normalizePathname(appPath("")) ||
-    currentPathname === normalizePathname(appPath("index.html")) ||
-    currentPathname === "/";
-
   function uid(prefix) {
     return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
   }
@@ -184,6 +178,36 @@
     return user;
   }
 
+  function requestAuthForAction(message) {
+    const user = currentUser();
+    if (!user) {
+      showToast(message || "Сначала войдите или зарегистрируйтесь", "error");
+      window.setTimeout(redirectToLogin, 250);
+      return null;
+    }
+    return user;
+  }
+
+  function requireBusinessForAction() {
+    const user = requestAuthForAction("Сначала войдите или зарегистрируйтесь");
+    if (!user) return null;
+    if (user.role !== "business") {
+      showToast("Это действие доступно бизнес-аккаунту", "error");
+      return null;
+    }
+    return user;
+  }
+
+  function requireSpecialistForAction() {
+    const user = requestAuthForAction("Сначала войдите или зарегистрируйтесь");
+    if (!user) return null;
+    if (user.role !== "specialist") {
+      showToast("Это действие доступно аккаунту специалиста", "error");
+      return null;
+    }
+    return user;
+  }
+
   function getRedirectAfterLogin() {
     const url = new URL(window.location.href);
     const next = url.searchParams.get("next");
@@ -195,10 +219,6 @@
     } catch (error) {
       return null;
     }
-  }
-
-  function isProtectedRoute() {
-    return !isAuthPage && !isLandingPage;
   }
 
   function redirectToLogin() {
@@ -234,12 +254,6 @@
 
   function enforceSessionAndRole() {
     const user = currentUser();
-
-    if (!user && isProtectedRoute() && !isAuthPage) {
-      redirectToLogin();
-      return false;
-    }
-
     if (!user) return true;
 
     if (isAuthPage) {
@@ -323,18 +337,10 @@
       if (!link) return;
       const href = link.getAttribute("href") || "";
       if (!href || href.startsWith("http") || href.startsWith("#")) return;
-      const needsAuth =
-        href.includes("task/new/index.html") ||
-        href.includes("dashboard/") ||
-        href.includes("specialists/index.html") ||
-        href.includes("cases/index.html") ||
-        href.includes("business/index.html") ||
-        href.includes("ai/") ||
-        href.includes("u/username/index.html");
+      const needsAuth = link.hasAttribute("data-auth-action");
       if (!needsAuth) return;
-      if (currentUser()) return;
       event.preventDefault();
-      redirectToLogin();
+      requestAuthForAction();
     });
   }
 
@@ -571,7 +577,7 @@
       const favoriteId = target.getAttribute("data-add-favorite");
       if (favoriteId) {
         event.preventDefault();
-        const user = requireLoggedInBusiness();
+        const user = requireBusinessForAction();
         if (!user) return;
         if (!state.favoritesByUser[user.id]) state.favoritesByUser[user.id] = [];
         if (!state.favoritesByUser[user.id].includes(favoriteId)) {
@@ -643,7 +649,7 @@
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const user = requireLoggedInBusiness();
+      const user = requireBusinessForAction();
       if (!user) return;
       const selects = form.querySelectorAll("select");
       const taskInput = {
@@ -976,7 +982,7 @@
     document.querySelectorAll("a.btn.btn-primary").forEach((button) => {
       if (!normalize(button.textContent).includes("связ")) return;
       button.addEventListener("click", (event) => {
-        const user = requireLoggedInBusiness();
+        const user = requireBusinessForAction();
         if (!user) {
           event.preventDefault();
           return;
@@ -1056,6 +1062,7 @@
     }
 
     button.addEventListener("click", () => {
+      if (!requestAuthForAction()) return;
       const username = input ? input.value.trim() : "";
       const niche = select ? select.value : "Кафе";
       if (!username) {
@@ -1114,6 +1121,7 @@
     if (state.ai.lastContentIdeas) renderIdeas(state.ai.lastContentIdeas.ideas);
 
     button.addEventListener("click", () => {
+      if (!requestAuthForAction()) return;
       const niche = selects[0].value;
       const platform = selects[1].value;
       const goal = selects[2].value;
@@ -1445,6 +1453,7 @@
       if (form) {
         form.addEventListener("submit", (event) => {
           event.preventDefault();
+          if (!requireSpecialistForAction()) return;
           const textArea = form.querySelector("textarea");
           const text = textArea ? textArea.value.trim() : "";
           if (!text) return;
@@ -1654,6 +1663,7 @@
     }
     if (button) {
       button.addEventListener("click", () => {
+        if (!requireSpecialistForAction()) return;
         const next = specialist.cases.length + 1;
         specialist.cases.unshift({
           title: `Новый кейс #${next}`,
@@ -1714,6 +1724,7 @@
     const button = document.querySelector(".dash-panels .btn.btn-primary");
     if (button) {
       button.addEventListener("click", () => {
+        if (!requireSpecialistForAction()) return;
         if (available <= 0) {
           showToast("Нет доступных средств к выводу", "error");
           return;
@@ -1742,6 +1753,7 @@
 
     if (button) {
       button.addEventListener("click", () => {
+        if (!requireSpecialistForAction()) return;
         if (inputs.length >= 3) {
           specialist.name = inputs[0].value.trim() || specialist.name;
           specialist.city = inputs[1].value.trim() || specialist.city;
