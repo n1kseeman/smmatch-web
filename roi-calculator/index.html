@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROI-калькулятор SMM — SMMATCH</title>
+  <meta name="description" content="Интерактивный ROI-калькулятор SMM: расходы, CPL, стоимость клиента, прибыль и окупаемость продвижения.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav">
+        <a href="../index.html">Главная</a>
+        <a href="../specialists/index.html">Специалисты</a>
+        <a href="../cases/index.html">Кейсы</a>
+        <a href="../business/index.html">Для бизнеса</a>
+        <a href="../blog/index.html">Блог</a>
+      </nav>
+      <div class="actions">
+        <a class="btn btn-ghost" href="../specialists/index.html">Найти специалиста</a>
+        <a class="btn btn-primary" href="../task/new/index.html">Разместить задачу</a>
+        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      </div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav>
+      <a href="../index.html">Главная</a>
+      <a href="../specialists/index.html">Специалисты</a>
+      <a href="../cases/index.html">Кейсы</a>
+      <a href="../business/index.html">Для бизнеса</a>
+      <a href="../blog/index.html">Блог</a>
+    </div>
+  </div>
+
+  <main class="container" data-roi-tool>
+    <section class="roi-hero">
+      <div>
+        <span class="pill">SMM Analytics</span>
+        <h1>ROI-калькулятор SMM</h1>
+        <p>Узнайте, сколько реально приносит продвижение в соцсетях и окупаются ли вложения в маркетинг.</p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="#roi-calc">Начать расчет</a>
+          <a class="btn btn-ghost" href="../specialists/index.html">Найти специалиста</a>
+        </div>
+      </div>
+      <aside class="roi-hero-board" aria-hidden="true">
+        <div class="roi-orbit"></div>
+        <div class="roi-orbit roi-orbit-2"></div>
+        <div class="roi-float-card roi-fc-1"><small>ROI</small><strong>+230%</strong></div>
+        <div class="roi-float-card roi-fc-2"><small>CPL</small><strong>4.2 BYN</strong></div>
+        <div class="roi-float-card roi-fc-3"><small>Profit</small><strong>+4200 BYN</strong></div>
+        <div class="roi-float-card roi-fc-4"><small>Conversion</small><strong>18%</strong></div>
+      </aside>
+    </section>
+
+    <section class="section" id="roi-calc">
+      <div class="roi-layout">
+        <article class="card roi-input-card">
+          <h2>Введите данные</h2>
+          <div class="roi-field-grid">
+            <div class="field"><label for="smm_costs">Расходы на SMM</label><input id="smm_costs" name="smm_costs" type="number" placeholder="500" value="500"></div>
+            <div class="field"><label for="ads_budget">Рекламный бюджет</label><input id="ads_budget" name="ads_budget" type="number" placeholder="300" value="300"></div>
+            <div class="field"><label for="extra_costs">Дополнительные расходы</label><input id="extra_costs" name="extra_costs" type="number" placeholder="100" value="100"><div class="meta">Съемка, монтаж, дизайн и т.д.</div></div>
+            <div class="field"><label for="leads">Количество лидов</label><input id="leads" name="leads" type="number" placeholder="120" value="120"></div>
+            <div class="field"><label for="sales">Количество продаж</label><input id="sales" name="sales" type="number" placeholder="25" value="25"></div>
+            <div class="field"><label for="avg_check">Средний чек</label><input id="avg_check" name="avg_check" type="number" placeholder="80" value="80"></div>
+            <div class="field"><label for="margin">Маржинальность (%)</label><input id="margin" name="margin" type="number" placeholder="40" value="40"></div>
+            <div class="field"><label for="currency">Валюта</label>
+              <select id="currency" name="currency">
+                <option value="BYN" selected>BYN</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="RUB">RUB</option>
+              </select>
+            </div>
+          </div>
+        </article>
+
+        <aside class="roi-result-wrap">
+          <article class="card roi-result-card">
+            <div class="roi-result-head">
+              <h2>Результаты</h2>
+              <button class="btn btn-ghost" type="button" data-roi-copy>Скопировать отчет</button>
+            </div>
+
+            <div class="roi-metric-grid">
+              <article class="roi-metric roi-accent-main"><span>📈 ROI</span><strong data-roi-value="roi">—</strong></article>
+              <article class="roi-metric"><span>💳 Общие расходы</span><strong data-roi-value="total-costs">—</strong></article>
+              <article class="roi-metric"><span>💰 Выручка</span><strong data-roi-value="revenue">—</strong></article>
+              <article class="roi-metric"><span>✨ Чистая прибыль</span><strong data-roi-value="net-profit">—</strong></article>
+              <article class="roi-metric"><span>🎯 Стоимость лида</span><strong data-roi-value="cpl">—</strong></article>
+              <article class="roi-metric"><span>🛒 Стоимость продажи</span><strong data-roi-value="cps">—</strong></article>
+              <article class="roi-metric"><span>⚡ Конверсия</span><strong data-roi-value="conversion">—</strong></article>
+            </div>
+
+            <div class="roi-state neutral" data-roi-state>Введите данные для расчета ROI.</div>
+          </article>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="pill">Как читать метрики</span>
+        <h2 class="section-title">Что показывает калькулятор</h2>
+      </div>
+      <div class="grid-4 roi-help-grid">
+        <article class="card"><h3>ROI</h3><p class="meta">Показывает окупаемость вложений в маркетинг.</p></article>
+        <article class="card"><h3>Стоимость лида</h3><p class="meta">Сколько стоит одна заявка.</p></article>
+        <article class="card"><h3>Стоимость клиента</h3><p class="meta">Во сколько обходится один покупатель.</p></article>
+        <article class="card"><h3>Конверсия</h3><p class="meta">Какой процент заявок превращается в продажи.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="cta roi-cta">
+        <h2>Хотите улучшить показатели?</h2>
+        <p class="meta">Найдите SMM-специалиста, который работает не только с охватами, но и с реальными продажами.</p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="../specialists/index.html">Найти специалиста</a>
+          <a class="btn btn-ghost" href="../task/new/index.html">Разместить задачу</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

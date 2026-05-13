@@ -344,6 +344,31 @@
     });
   }
 
+  function initGlobalRoiNavLink() {
+    const roiHref = appUrl("roi-calculator/index.html");
+
+    document.querySelectorAll(".nav").forEach((nav) => {
+      if (nav.querySelector("[data-global-roi-link]")) return;
+      const link = document.createElement("a");
+      link.href = roiHref;
+      link.textContent = "ROI-калькулятор";
+      link.setAttribute("data-global-roi-link", "1");
+      if (isPath("/roi-calculator/")) link.classList.add("active");
+
+      const blogLink = Array.from(nav.querySelectorAll("a")).find((item) => normalize(item.textContent).includes("блог"));
+      nav.insertBefore(link, blogLink || null);
+    });
+
+    document.querySelectorAll("[data-mobile-nav]").forEach((mobileNav) => {
+      if (mobileNav.querySelector("[data-global-roi-link]")) return;
+      const link = document.createElement("a");
+      link.href = roiHref;
+      link.textContent = "ROI-калькулятор";
+      link.setAttribute("data-global-roi-link", "1");
+      mobileNav.appendChild(link);
+    });
+  }
+
   function initGlobalAnimations() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const items = document.querySelectorAll(
@@ -446,6 +471,186 @@
         <strong>${estimatedRevenue.toLocaleString("ru-RU")} ₽</strong> прогноз оборота
       `;
     });
+  }
+
+  function initRoiCalculatorPage() {
+    if (!isPath("/roi-calculator/")) return;
+    const root = document.querySelector("[data-roi-tool]");
+    if (!root) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const fields = {
+      smm: root.querySelector("[name='smm_costs']"),
+      ads: root.querySelector("[name='ads_budget']"),
+      extra: root.querySelector("[name='extra_costs']"),
+      leads: root.querySelector("[name='leads']"),
+      sales: root.querySelector("[name='sales']"),
+      avg: root.querySelector("[name='avg_check']"),
+      margin: root.querySelector("[name='margin']"),
+      currency: root.querySelector("[name='currency']")
+    };
+    const metricNodes = {
+      roi: root.querySelector("[data-roi-value='roi']"),
+      totalCosts: root.querySelector("[data-roi-value='total-costs']"),
+      revenue: root.querySelector("[data-roi-value='revenue']"),
+      netProfit: root.querySelector("[data-roi-value='net-profit']"),
+      cpl: root.querySelector("[data-roi-value='cpl']"),
+      cps: root.querySelector("[data-roi-value='cps']"),
+      conversion: root.querySelector("[data-roi-value='conversion']")
+    };
+    const stateCard = root.querySelector("[data-roi-state]");
+    const copyBtn = root.querySelector("[data-roi-copy]");
+    const currencyBadges = root.querySelectorAll("[data-roi-currency]");
+
+    if (!fields.smm || !fields.currency || !metricNodes.roi) return;
+
+    let previous = {
+      roi: 0,
+      totalCosts: 0,
+      revenue: 0,
+      netProfit: 0,
+      cpl: null,
+      cps: null,
+      conversion: null
+    };
+
+    function parseNumber(node) {
+      if (!node) return 0;
+      const parsed = Number(node.value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function formatMoney(value, currency) {
+      return `${value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+    }
+
+    function formatPercent(value) {
+      const sign = value > 0 ? "+" : "";
+      return `${sign}${value.toFixed(1)}%`;
+    }
+
+    function animateValue(node, from, to, formatter) {
+      if (!node) return;
+      if (to === null || !Number.isFinite(to)) {
+        node.textContent = "—";
+        return;
+      }
+      if (reduceMotion) {
+        node.textContent = formatter(to);
+        return;
+      }
+      const start = performance.now();
+      const duration = 420;
+      const fromNum = Number.isFinite(from) ? from : 0;
+      const delta = to - fromNum;
+
+      function frame(now) {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const value = fromNum + delta * eased;
+        node.textContent = formatter(value);
+        if (p < 1) requestAnimationFrame(frame);
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function recalc() {
+      const smm = Math.max(0, parseNumber(fields.smm));
+      const ads = Math.max(0, parseNumber(fields.ads));
+      const extra = Math.max(0, parseNumber(fields.extra));
+      const leads = Math.max(0, parseNumber(fields.leads));
+      const sales = Math.max(0, parseNumber(fields.sales));
+      const avgCheck = Math.max(0, parseNumber(fields.avg));
+      const margin = Math.max(0, parseNumber(fields.margin));
+      const currency = (fields.currency.value || "BYN").toUpperCase();
+
+      const totalCosts = smm + ads + extra;
+      const revenue = sales * avgCheck;
+      const netProfit = revenue * (margin / 100);
+      const roi = totalCosts > 0 ? ((netProfit - totalCosts) / totalCosts) * 100 : null;
+      const cpl = leads > 0 ? totalCosts / leads : null;
+      const cps = sales > 0 ? totalCosts / sales : null;
+      const conversion = leads > 0 ? (sales / leads) * 100 : null;
+
+      const next = { roi, totalCosts, revenue, netProfit, cpl, cps, conversion };
+      animateValue(metricNodes.roi, previous.roi, next.roi, (v) => formatPercent(v));
+      animateValue(metricNodes.totalCosts, previous.totalCosts, next.totalCosts, (v) => formatMoney(v, currency));
+      animateValue(metricNodes.revenue, previous.revenue, next.revenue, (v) => formatMoney(v, currency));
+      animateValue(metricNodes.netProfit, previous.netProfit, next.netProfit, (v) => formatMoney(v, currency));
+      animateValue(metricNodes.cpl, previous.cpl, next.cpl, (v) => formatMoney(v, currency));
+      animateValue(metricNodes.cps, previous.cps, next.cps, (v) => formatMoney(v, currency));
+      animateValue(metricNodes.conversion, previous.conversion, next.conversion, (v) => `${v.toFixed(1)}%`);
+
+      currencyBadges.forEach((item) => {
+        item.textContent = currency;
+      });
+
+      if (stateCard) {
+        stateCard.classList.remove("positive", "neutral", "negative");
+        if (roi === null) {
+          stateCard.classList.add("neutral");
+          stateCard.textContent = "Введите данные для расчета ROI.";
+        } else if (roi > 0) {
+          stateCard.classList.add("positive");
+          stateCard.textContent = "SMM окупается и приносит прибыль.";
+        } else if (roi < 0) {
+          stateCard.classList.add("negative");
+          stateCard.textContent = "SMM пока не окупается. Стоит пересмотреть стратегию.";
+        } else {
+          stateCard.classList.add("neutral");
+          stateCard.textContent = "Продвижение работает в ноль.";
+        }
+      }
+
+      previous = next;
+      root.setAttribute("data-roi-report", JSON.stringify({ ...next, currency }));
+    }
+
+    function buildReport() {
+      const raw = root.getAttribute("data-roi-report");
+      if (!raw) return "";
+      try {
+        const report = JSON.parse(raw);
+        return [
+          `ROI: ${report.roi === null ? "—" : formatPercent(report.roi)}`,
+          `Расходы: ${formatMoney(report.totalCosts || 0, report.currency || "BYN")}`,
+          `Прибыль: ${formatMoney(report.netProfit || 0, report.currency || "BYN")}`,
+          `Стоимость лида: ${report.cpl === null ? "—" : formatMoney(report.cpl, report.currency || "BYN")}`,
+          `Конверсия: ${report.conversion === null ? "—" : `${report.conversion.toFixed(1)}%`}`
+        ].join("\n");
+      } catch (error) {
+        return "";
+      }
+    }
+
+    async function copyReport() {
+      const text = buildReport();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Отчет скопирован");
+      } catch (error) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "readonly");
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        showToast("Отчет скопирован");
+      }
+    }
+
+    Object.values(fields).forEach((field) => {
+      if (!field) return;
+      field.addEventListener("input", recalc);
+      field.addEventListener("change", recalc);
+    });
+    if (copyBtn) copyBtn.addEventListener("click", copyReport);
+    recalc();
   }
 
   function specialistMatchesCategory(specialist, category) {
@@ -1851,12 +2056,14 @@
   }
 
   if (!enforceSessionAndRole()) return;
+  initGlobalRoiNavLink();
   initTopbarActionsByRole();
   initActionGuardsForLinks();
   initMobileMenu();
   initLandingRoleFlow();
   initFilterOptionToggle();
   initRoiCalculator();
+  initRoiCalculatorPage();
   initAuthPages();
   initSpecialistsPage();
   initTaskCreatePage();
