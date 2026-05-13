@@ -49,21 +49,113 @@
     return String(value || "").trim().toLowerCase();
   }
 
-  const VISUAL_LIBRARY = {
-    social: appUrl("assets/visuals/social-flow.svg"),
-    analytics: appUrl("assets/visuals/analytics-grid.svg"),
-    team: appUrl("assets/visuals/team-sync.svg"),
-    phone: appUrl("assets/visuals/mobile-promo.svg"),
-    strategy: appUrl("assets/visuals/strategy-map.svg"),
-    workspace: appUrl("assets/visuals/workspace-focus.svg"),
-    content: appUrl("assets/visuals/content-lab.svg"),
-    reels: appUrl("assets/visuals/reels-studio.svg"),
-    icons: appUrl("assets/visuals/social-flow.svg"),
-    brand: appUrl("assets/visuals/brand-shield.svg"),
-    meeting: appUrl("assets/visuals/meeting-room.svg"),
-    camera: appUrl("assets/visuals/camera-shot.svg"),
-    growth: appUrl("assets/visuals/growth-chart.svg")
-  };
+  function hashSeed(value) {
+    let hash = 2166136261;
+    const text = String(value || "smmatch");
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return Math.abs(hash >>> 0);
+  }
+
+  function seededNumber(seed, min, max) {
+    const h = hashSeed(seed);
+    const ratio = (h % 1000) / 1000;
+    return min + (max - min) * ratio;
+  }
+
+  function pickVisualTheme(text) {
+    const source = normalize(text);
+    if (
+      source.includes("reels") ||
+      source.includes("tiktok") ||
+      source.includes("short") ||
+      source.includes("ugc") ||
+      source.includes("монтаж")
+    ) {
+      return "reels";
+    }
+    if (
+      source.includes("таргет") ||
+      source.includes("аналит") ||
+      source.includes("roi") ||
+      source.includes("метрик") ||
+      source.includes("конверс")
+    ) {
+      return "analytics";
+    }
+    if (source.includes("кейс") || source.includes("результат") || source.includes("продаж") || source.includes("рост")) {
+      return "growth";
+    }
+    if (
+      source.includes("блог") ||
+      source.includes("контент") ||
+      source.includes("стратег") ||
+      source.includes("сторител")
+    ) {
+      return "content";
+    }
+    if (source.includes("специалист") || source.includes("бизнес") || source.includes("команд")) {
+      return "team";
+    }
+    if (source.includes("вериф") || source.includes("безопас") || source.includes("сделк")) {
+      return "security";
+    }
+    if (source.includes("съемк") || source.includes("камера") || source.includes("креатив")) {
+      return "media";
+    }
+    if (source.includes("платформ") || source.includes("instagram") || source.includes("vk") || source.includes("telegram")) {
+      return "mobile";
+    }
+    return "social";
+  }
+
+  function buildVisualDataUri(seedLabel, theme) {
+    const h = hashSeed(`${theme}:${seedLabel}`);
+    const hueA = h % 360;
+    const hueB = (hueA + 52 + (h % 120)) % 360;
+    const hueC = (hueA + 180) % 360;
+
+    const bars = Array.from({ length: 4 })
+      .map((_, i) => {
+        const x = 180 + i * 180;
+        const height = Math.round(seededNumber(`${seedLabel}:${i}`, 120, 420));
+        const y = 820 - height;
+        return `<rect x="${x}" y="${y}" width="120" height="${height}" rx="18" fill="hsla(${hueB},85%,62%,0.42)"/>`;
+      })
+      .join("");
+
+    const dots = Array.from({ length: 3 })
+      .map((_, i) => {
+        const cx = Math.round(seededNumber(`${seedLabel}:dot:${i}`, 360, 1320));
+        const cy = Math.round(seededNumber(`${seedLabel}:doty:${i}`, 180, 760));
+        const r = Math.round(seededNumber(`${seedLabel}:dotr:${i}`, 44, 90));
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="hsla(${hueC},90%,65%,0.22)"/>`;
+      })
+      .join("");
+
+    const title = String(theme || "smm").slice(0, 12).toUpperCase();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="hsl(${hueA},46%,17%)"/>
+      <stop offset="1" stop-color="hsl(${hueB},48%,10%)"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="hsla(${hueB},90%,64%,0.9)"/>
+      <stop offset="1" stop-color="hsla(${hueC},90%,66%,0.9)"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  ${dots}
+  <rect x="120" y="150" width="1360" height="700" rx="28" fill="hsla(${hueA},55%,10%,0.64)" stroke="hsla(${hueC},80%,76%,0.26)" stroke-width="3"/>
+  <path d="M220 700 L480 620 L760 470 L1040 360 L1320 240" fill="none" stroke="url(#line)" stroke-width="8" stroke-linecap="round"/>
+  ${bars}
+  <text x="220" y="250" fill="hsla(${hueC},95%,92%,0.9)" font-family="Sora, Manrope, sans-serif" font-size="62" font-weight="700">${title}</text>
+</svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
 
   function showToast(message, type = "ok") {
     const existing = document.querySelector(".app-toast");
@@ -411,53 +503,6 @@
     });
   }
 
-  function pickVisualByText(text) {
-    const source = normalize(text);
-    if (!source) return VISUAL_LIBRARY.social;
-    if (
-      source.includes("reels") ||
-      source.includes("tiktok") ||
-      source.includes("short") ||
-      source.includes("ugc") ||
-      source.includes("монтаж")
-    ) {
-      return VISUAL_LIBRARY.reels;
-    }
-    if (
-      source.includes("таргет") ||
-      source.includes("аналит") ||
-      source.includes("roi") ||
-      source.includes("метрик") ||
-      source.includes("конверс")
-    ) {
-      return VISUAL_LIBRARY.analytics;
-    }
-    if (source.includes("кейс") || source.includes("результат") || source.includes("продаж") || source.includes("рост")) {
-      return VISUAL_LIBRARY.growth;
-    }
-    if (
-      source.includes("блог") ||
-      source.includes("контент") ||
-      source.includes("стратег") ||
-      source.includes("сторител")
-    ) {
-      return VISUAL_LIBRARY.content;
-    }
-    if (source.includes("специалист") || source.includes("бизнес") || source.includes("команд")) {
-      return VISUAL_LIBRARY.meeting;
-    }
-    if (source.includes("вериф") || source.includes("безопас") || source.includes("сделк")) {
-      return VISUAL_LIBRARY.brand;
-    }
-    if (source.includes("съемк") || source.includes("камера") || source.includes("креатив")) {
-      return VISUAL_LIBRARY.camera;
-    }
-    if (source.includes("платформ") || source.includes("instagram") || source.includes("vk") || source.includes("telegram")) {
-      return VISUAL_LIBRARY.phone;
-    }
-    return VISUAL_LIBRARY.social;
-  }
-
   function initPageHeroVisuals() {
     const hero = document.querySelector(".page-hero");
     if (!hero || hero.querySelector(".hero-collage") || isPath("/roi-calculator/")) return;
@@ -466,11 +511,10 @@
     const title = hero.querySelector("h1")?.textContent || "";
     const collage = document.createElement("div");
     collage.className = "hero-collage";
-    const visuals = [
-      pickVisualByText(title),
-      VISUAL_LIBRARY.analytics,
-      VISUAL_LIBRARY.reels
-    ];
+    const baseTheme = pickVisualTheme(title);
+    const visuals = Array.from({ length: 3 }).map((_, index) =>
+      buildVisualDataUri(`${window.location.pathname}:hero:${index}:${title}`, index === 0 ? baseTheme : "analytics")
+    );
 
     visuals.forEach((url) => {
       const item = document.createElement("div");
@@ -487,7 +531,7 @@
     const cards = document.querySelectorAll("main .card");
     if (!cards.length) return;
 
-    cards.forEach((card) => {
+    cards.forEach((card, index) => {
       if (
         card.querySelector(".card-photo, .case-image, .specialist-thumb, .blog-thumb, .avatar, .profile-avatar, .roi-hero-board")
       ) {
@@ -498,11 +542,37 @@
       if (card.classList.contains("stat-box")) return;
 
       const title = card.querySelector("h1, h2, h3, h4, strong")?.textContent || card.textContent.slice(0, 120);
+      const theme = pickVisualTheme(title);
       const photo = document.createElement("div");
       photo.className = "card-photo";
-      photo.style.setProperty("--card-photo", `url("${pickVisualByText(title)}")`);
+      photo.style.setProperty(
+        "--card-photo",
+        `url("${buildVisualDataUri(`${window.location.pathname}:card:${index}:${title}`, theme)}")`
+      );
       card.insertBefore(photo, card.firstChild);
       card.classList.add("card-has-photo");
+    });
+  }
+
+  function initMediaBlockVariations() {
+    const mediaSelectors = [
+      ".specialist-thumb",
+      ".case-image",
+      ".avatar",
+      ".profile-avatar",
+      ".blog-thumb"
+    ];
+    const nodes = document.querySelectorAll(mediaSelectors.join(","));
+    nodes.forEach((node, index) => {
+      const title =
+        node.closest(".card, article")?.querySelector("h1, h2, h3, h4, strong")?.textContent ||
+        node.className ||
+        "visual";
+      const theme = pickVisualTheme(title);
+      node.style.setProperty(
+        "--media-photo",
+        `url("${buildVisualDataUri(`${window.location.pathname}:media:${index}:${title}`, theme)}")`
+      );
     });
   }
 
@@ -2198,5 +2268,6 @@
   initQuickActions();
   initPageHeroVisuals();
   initCardVisualBoost();
+  initMediaBlockVariations();
   initGlobalAnimations();
 })();

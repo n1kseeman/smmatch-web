@@ -387,12 +387,16 @@ button:focus-visible,
 }
 
 .card-photo {
-  height: 130px;
+  height: 132px;
   margin: -18px -18px 14px;
   border-bottom: 1px solid rgba(185, 173, 245, 0.2);
+  background-color: #101633;
   background:
     linear-gradient(170deg, rgba(7, 10, 24, 0.15), rgba(8, 11, 24, 0.8)),
     var(--card-photo) center/cover no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .card > :first-child {
@@ -473,7 +477,10 @@ button:focus-visible,
   border-radius: 12px;
   background:
     linear-gradient(140deg, rgba(123, 108, 255, 0.65), rgba(38, 198, 255, 0.4)),
-    url("../assets/visuals/meeting-room.svg") center/cover;
+    var(--media-photo, url("../assets/visuals/meeting-room.svg")) center/cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .specialist-card h3 {
@@ -523,7 +530,10 @@ button:focus-visible,
   border-radius: 14px;
   background:
     linear-gradient(140deg, rgba(10, 16, 42, 0.16), rgba(14, 18, 40, 0.7)),
-    url("../assets/visuals/growth-chart.svg") center/cover;
+    var(--media-photo, url("../assets/visuals/growth-chart.svg")) center/cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .kpi-line {
@@ -688,6 +698,9 @@ button:focus-visible,
     linear-gradient(170deg, rgba(7, 10, 25, 0.12), rgba(8, 11, 24, 0.74)),
     var(--hero-photo) center/cover no-repeat;
   box-shadow: 0 14px 28px rgba(4, 9, 22, 0.28);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .hero-collage-item:first-child {
@@ -971,7 +984,10 @@ button:focus-visible,
   border-radius: 14px;
   background:
     linear-gradient(120deg, rgba(123, 108, 255, 0.58), rgba(38, 198, 255, 0.34)),
-    url("../assets/visuals/team-sync.svg") center/cover;
+    var(--media-photo, url("../assets/visuals/team-sync.svg")) center/cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .verified {
@@ -1018,7 +1034,10 @@ button:focus-visible,
   border-radius: 22px;
   background:
     linear-gradient(120deg, rgba(123, 108, 255, 0.55), rgba(38, 198, 255, 0.36)),
-    url("../assets/visuals/mobile-promo.svg") center/cover;
+    var(--media-photo, url("../assets/visuals/mobile-promo.svg")) center/cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .metric-grid {
@@ -1114,7 +1133,10 @@ textarea {
   border-radius: 14px;
   background:
     linear-gradient(130deg, rgba(123, 108, 255, 0.5), rgba(38, 198, 255, 0.24)),
-    url("../assets/visuals/content-lab.svg") center/cover;
+    var(--media-photo, url("../assets/visuals/content-lab.svg")) center/cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .dash {
