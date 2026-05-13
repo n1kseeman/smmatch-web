@@ -132,8 +132,8 @@ img {
   height: auto;
   object-fit: contain;
   object-position: left center;
-  mix-blend-mode: multiply;
-  filter: brightness(1.06) contrast(1.06) saturate(1.08);
+  mix-blend-mode: normal;
+  filter: saturate(1.08) drop-shadow(0 0 10px rgba(162, 130, 255, 0.22));
 }
 
 .brand span {
