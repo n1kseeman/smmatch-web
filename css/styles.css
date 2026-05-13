@@ -116,10 +116,24 @@ img {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
   font-family: "Sora", sans-serif;
   font-weight: 700;
   letter-spacing: 0.03em;
   font-size: 1.08rem;
+  line-height: 1;
+}
+
+.brand-logo {
+  display: block;
+  width: clamp(126px, 10.5vw, 172px);
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+  mix-blend-mode: multiply;
+  filter: brightness(1.06) contrast(1.06) saturate(1.08);
 }
 
 .brand span {
@@ -1477,6 +1491,10 @@ textarea {
 
   .actions {
     gap: 8px;
+  }
+
+  .brand-logo {
+    width: clamp(108px, 35vw, 148px);
   }
 
   .actions .keep-mobile {

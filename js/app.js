@@ -20,6 +20,19 @@
     return new URL(relativePath, appRootUrl).pathname;
   }
 
+  const BRAND_LOGO_URL = appUrl("assets/brand/logo-nav-clean.png");
+
+  function initBrandLogos() {
+    const brands = document.querySelectorAll(".brand");
+    brands.forEach((brand) => {
+      if (brand.dataset.logoApplied === "1") return;
+      const label = (brand.textContent || "SMMATCH").trim();
+      brand.dataset.logoApplied = "1";
+      brand.setAttribute("aria-label", label);
+      brand.innerHTML = `<img class="brand-logo" src="${BRAND_LOGO_URL}" alt="${label}" loading="eager" decoding="async">`;
+    });
+  }
+
   function normalizePathname(pathname) {
     const compact = String(pathname || "/").replace(/\/{2,}/g, "/");
     if (compact.length > 1 && compact.endsWith("/")) {
@@ -2214,6 +2227,7 @@
 
   if (!enforceSessionAndRole()) return;
   initGlobalRoiNavLink();
+  initBrandLogos();
   initTopbarActionsByRole();
   initActionGuardsForLinks();
   initMobileMenu();
