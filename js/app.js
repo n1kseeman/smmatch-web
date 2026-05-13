@@ -50,19 +50,19 @@
   }
 
   const VISUAL_LIBRARY = {
-    social: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?auto=format&fit=crop&w=1400&q=80",
-    analytics: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80",
-    team: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
-    phone: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=1400&q=80",
-    strategy: "https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&w=1400&q=80",
-    workspace: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80",
-    content: "https://images.unsplash.com/photo-1611262588024-d12430b98920?auto=format&fit=crop&w=1400&q=80",
-    reels: "https://images.pexels.com/photos/5744245/pexels-photo-5744245.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    icons: "https://images.pexels.com/photos/6458062/pexels-photo-6458062.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    brand: "https://images.pexels.com/photos/11681097/pexels-photo-11681097.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    meeting: "https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    camera: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    growth: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    social: appUrl("assets/visuals/social-flow.svg"),
+    analytics: appUrl("assets/visuals/analytics-grid.svg"),
+    team: appUrl("assets/visuals/team-sync.svg"),
+    phone: appUrl("assets/visuals/mobile-promo.svg"),
+    strategy: appUrl("assets/visuals/strategy-map.svg"),
+    workspace: appUrl("assets/visuals/workspace-focus.svg"),
+    content: appUrl("assets/visuals/content-lab.svg"),
+    reels: appUrl("assets/visuals/reels-studio.svg"),
+    icons: appUrl("assets/visuals/social-flow.svg"),
+    brand: appUrl("assets/visuals/brand-shield.svg"),
+    meeting: appUrl("assets/visuals/meeting-room.svg"),
+    camera: appUrl("assets/visuals/camera-shot.svg"),
+    growth: appUrl("assets/visuals/growth-chart.svg")
   };
 
   function showToast(message, type = "ok") {

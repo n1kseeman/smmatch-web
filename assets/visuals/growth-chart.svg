@@ -1,0 +1,28 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12183b"/>
+      <stop offset="1" stop-color="#090f24"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#26c6ff"/>
+      <stop offset="1" stop-color="#8f6bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <g stroke="#8a95d7" stroke-opacity="0.2" stroke-width="2">
+    <path d="M170 760H1430"/>
+    <path d="M170 630H1430"/>
+    <path d="M170 500H1430"/>
+    <path d="M170 370H1430"/>
+    <path d="M170 240H1430"/>
+  </g>
+  <path d="M230 700C340 620 450 640 560 560C690 470 760 500 860 420C980 320 1090 350 1240 220" stroke="url(#line)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <g fill="#ffd56a">
+    <circle cx="230" cy="700" r="10"/>
+    <circle cx="560" cy="560" r="10"/>
+    <circle cx="860" cy="420" r="10"/>
+    <circle cx="1240" cy="220" r="12"/>
+  </g>
+  <text x="1120" y="180" fill="#eef2ff" font-family="Sora, sans-serif" font-size="52" font-weight="700">+230%</text>
+</svg>

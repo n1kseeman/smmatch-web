@@ -1,0 +1,28 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#171d46"/>
+      <stop offset="1" stop-color="#0a0f29"/>
+    </linearGradient>
+    <radialGradient id="g1" cx="0.2" cy="0.2" r="0.7">
+      <stop offset="0" stop-color="#8f6bff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8f6bff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#g1)"/>
+  <g fill="none" stroke="#9f8dff" stroke-opacity="0.5" stroke-width="3">
+    <path d="M210 650C410 370 670 700 900 430C1030 280 1170 300 1370 220"/>
+    <path d="M180 760C380 500 640 820 860 560C1010 380 1160 420 1360 360" stroke-opacity="0.3"/>
+  </g>
+  <g>
+    <circle cx="360" cy="640" r="58" fill="#ff6ea8" fill-opacity="0.25"/>
+    <circle cx="870" cy="430" r="64" fill="#26c6ff" fill-opacity="0.28"/>
+    <circle cx="1320" cy="260" r="70" fill="#8f6bff" fill-opacity="0.28"/>
+  </g>
+  <g fill="#eef2ff" fill-opacity="0.85" font-family="Sora, sans-serif" font-size="42" font-weight="600">
+    <text x="280" y="640">Reach</text>
+    <text x="780" y="425">Content</text>
+    <text x="1210" y="255">Leads</text>
+  </g>
+</svg>
