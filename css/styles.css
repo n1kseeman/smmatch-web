@@ -310,19 +310,32 @@ button:focus-visible,
   color: #dce2ff;
 }
 
+.platform-dot img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+  display: block;
+}
+
 .pd-1 {
   top: 11%;
   right: 16%;
+  background: linear-gradient(145deg, #fd1d1d, #fcb045 52%, #833ab4);
+  border-color: rgba(255, 222, 246, 0.55);
 }
 
 .pd-2 {
   right: 10%;
   bottom: 22%;
+  background: linear-gradient(145deg, #3f8ae0, #2f5db0);
+  border-color: rgba(188, 216, 255, 0.55);
 }
 
 .pd-3 {
   left: 18%;
   bottom: 23%;
+  background: linear-gradient(145deg, #111318, #1f2f35);
+  border-color: rgba(195, 255, 253, 0.5);
 }
 
 .section {

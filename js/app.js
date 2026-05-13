@@ -758,6 +758,24 @@
     });
   }
 
+  function initLandingRoleFlow() {
+    const roleLinks = document.querySelectorAll("[data-landing-intent]");
+    if (!roleLinks.length) return;
+
+    roleLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLElement)) return;
+        const roleIntent = target.getAttribute("data-landing-intent");
+        if (!roleIntent) return;
+        if (currentUser()) return;
+
+        event.preventDefault();
+        window.location.href = `${appUrl("auth/register/index.html")}?role=${encodeURIComponent(roleIntent)}`;
+      });
+    });
+  }
+
   function initAuthPages() {
     if (isPath("/auth/register/")) {
       const card = document.querySelector(".auth-card");
@@ -765,18 +783,29 @@
       if (card && button) {
         const roleInput = card.querySelector("input[name='account_role']");
         const roleButtons = card.querySelectorAll("[data-role-btn]");
+        const search = new URL(window.location.href).searchParams;
+
+        function applyRoleSelection(rawRole) {
+          const role = rawRole === "specialist" ? "specialist" : "business";
+          if (roleInput) roleInput.value = role;
+          roleButtons.forEach((item) => {
+            const isActive = item.getAttribute("data-role-btn") === role;
+            item.classList.toggle("active-role", isActive);
+            item.setAttribute("aria-pressed", isActive ? "true" : "false");
+          });
+        }
 
         roleButtons.forEach((roleButton) => {
           roleButton.addEventListener("click", () => {
             const value = roleButton.getAttribute("data-role-btn") || "business";
-            if (roleInput) roleInput.value = value;
-            roleButtons.forEach((item) => {
-              const isActive = item === roleButton;
-              item.classList.toggle("active-role", isActive);
-              item.setAttribute("aria-pressed", isActive ? "true" : "false");
-            });
+            applyRoleSelection(value);
           });
         });
+
+        const roleFromQuery = normalize(search.get("role"));
+        if (roleFromQuery === "specialist" || roleFromQuery === "business") {
+          applyRoleSelection(roleFromQuery);
+        }
 
         button.addEventListener("click", () => {
           const inputs = card.querySelectorAll("input");
@@ -1825,6 +1854,7 @@
   initTopbarActionsByRole();
   initActionGuardsForLinks();
   initMobileMenu();
+  initLandingRoleFlow();
   initFilterOptionToggle();
   initRoiCalculator();
   initAuthPages();
