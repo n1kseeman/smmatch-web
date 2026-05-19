@@ -192,6 +192,13 @@ img {
   transform: translateY(-1px);
 }
 
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 a:focus-visible,
 button:focus-visible,
 .btn:focus-visible {
@@ -1085,6 +1092,12 @@ button:focus-visible,
   padding: 7px 12px;
   font-size: 0.85rem;
   color: #d4dbfb;
+}
+
+.tab.is-disabled,
+.tab[aria-disabled="true"] {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .roi-grid {

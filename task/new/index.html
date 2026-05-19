@@ -41,6 +41,20 @@
       <p class="meta">Заполните mini-бриф, и AI Match предложит релевантных специалистов.</p>
       <form>
         <div class="field">
+          <label for="task_title">Название задачи</label>
+          <input id="task_title" type="text" placeholder="Например: SMM + Reels для кофейни" required>
+        </div>
+        <div class="field">
+          <label for="task_category">Категория</label>
+          <select id="task_category" required>
+            <option value="SMM">SMM</option>
+            <option value="Reels maker">Reels maker</option>
+            <option value="Таргетолог">Таргетолог</option>
+            <option value="Контент-менеджер">Контент-менеджер</option>
+            <option value="UGC creator">UGC creator</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="niche">Ниша бизнеса</label>
           <select id="niche">
             <option>Кафе</option>
@@ -55,10 +69,15 @@
         <div class="field">
           <label for="budget">Бюджет</label>
           <select id="budget">
-            <option>до 300$</option>
-            <option>300-700$</option>
-            <option>700-1500$</option>
+            <option>до 800 BYN</option>
+            <option>800-1500 BYN</option>
+            <option>1500-3000 BYN</option>
+            <option>3000+ BYN</option>
           </select>
+        </div>
+        <div class="field">
+          <label for="task_budget">Бюджет (BYN)</label>
+          <input id="task_budget" type="number" min="1" placeholder="1200" required>
         </div>
         <div class="field">
           <label for="platforms">Соцсети</label>
@@ -70,20 +89,24 @@
           </select>
         </div>
         <div class="field">
-          <label for="goals">Цели проекта</label>
-          <textarea id="goals" placeholder="Например: увеличить заявки в директ, поднять охваты reels и снизить CPL."></textarea>
+          <label for="task_description">Описание задачи</label>
+          <textarea id="task_description" placeholder="Что нужно сделать, какие KPI и ожидания по результату." required></textarea>
+        </div>
+        <div class="field">
+          <label for="task_deadline">Дедлайн</label>
+          <input id="task_deadline" type="date" required>
         </div>
         <div class="field">
           <label>Нужен ли таргет?</label>
-          <select><option>Да</option><option>Нет</option><option>Не уверен</option></select>
+          <select id="task_need_target"><option>Да</option><option>Нет</option><option>Не уверен</option></select>
         </div>
         <div class="field">
           <label>Нужен ли контент?</label>
-          <select><option>Да</option><option>Нет</option><option>Частично</option></select>
+          <select id="task_need_content"><option>Да</option><option>Нет</option><option>Частично</option></select>
         </div>
         <div class="field">
           <label>Нужны ли reels?</label>
-          <select><option>Да</option><option>Нет</option><option>1-2 в неделю</option></select>
+          <select id="task_need_reels"><option>Да</option><option>Нет</option><option>1-2 в неделю</option></select>
         </div>
         <button type="submit" class="btn btn-primary">Опубликовать задачу</button>
       </form>
@@ -105,7 +128,7 @@
 
         <h3>Предложенные кандидаты</h3>
       <div class="card">
-        <div class="meta">Кандидаты появятся после публикации задачи и появления реальных профилей.</div>
+        <div class="meta">После публикации вы увидите топ кандидатов с процентом совпадения и причинами подбора.</div>
       </div>
     </article>
   </main>

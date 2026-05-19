@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "smmatch_state_v1";
-  const STATE_VERSION = 2;
+  const STATE_VERSION = 3;
 
   const path = window.location.pathname;
   const isPath = (chunk) => path.includes(chunk);
@@ -54,8 +54,45 @@
     return date.toLocaleDateString("ru-RU");
   }
 
+  function formatMoneyByn(amount) {
+    const value = Number(amount) || 0;
+    return `${value.toLocaleString("ru-RU")} BYN`;
+  }
+
   function formatMoneyRub(amount) {
-    return `${Number(amount).toLocaleString("ru-RU")} ₽`;
+    return formatMoneyByn(amount);
+  }
+
+  function normalizeForSlug(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яё]+/gi, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function specialistProfileUrl(rootPrefix, specialist) {
+    const slug = specialist && specialist.slug ? specialist.slug : "specialist";
+    return `${rootPrefix}u/username/index.html?slug=${encodeURIComponent(slug)}`;
+  }
+
+  function hashPasswordPlaceholder(password) {
+    // This is intentionally simple and replaceable when backend auth is connected.
+    const input = String(password || "");
+    let hash = 2166136261;
+    for (let i = 0; i < input.length; i += 1) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `v1_${(hash >>> 0).toString(16)}`;
+  }
+
+  function verifyPassword(user, password) {
+    if (!user) return false;
+    const nextHash = hashPasswordPlaceholder(password);
+    if (user.passwordHash) return user.passwordHash === nextHash;
+    // Backward compatibility for existing local states before migration.
+    return String(user.password || "") === String(password || "");
   }
 
   function normalize(value) {
@@ -196,11 +233,236 @@
     };
   }
 
+  function buildMockSpecialists() {
+    return [
+      {
+        id: "spec_alina",
+        userId: null,
+        slug: "alina-smirnova",
+        name: "Алина Смирнова",
+        avatar: appUrl("assets/visuals/team-sync.svg"),
+        city: "Минск, Беларусь",
+        country: "Беларусь",
+        rating: 4.9,
+        reviewsCount: 36,
+        specialization: "SMM-стратег",
+        experience: "senior",
+        description: "Стратегия роста для Instagram и Telegram с упором на лидогенерацию.",
+        about: "8 лет в SMM. Запускаю контент-системы и продажи через short-video и воронки в директ.",
+        priceByn: 1800,
+        platforms: ["Instagram", "Telegram", "TikTok"],
+        niches: ["кафе", "beauty", "ecommerce"],
+        skills: ["reels", "контент-план", "storytelling", "таргет"],
+        stats: { er: "8.7%", ctr: "3.2%", cpm: "14 BYN", views: "124 000", followersGrowth: "+4 100", reachGrowth: "+230%" },
+        socials: {
+          instagram: "https://instagram.com/alina.smm.lab",
+          tiktok: "https://www.tiktok.com/@alina.smm.lab",
+          telegram: "https://t.me/alina_smm_lab",
+          behance: ""
+        },
+        cases: [
+          { title: "Кофейня в Минске", result1: "+230% охватов", result2: "+4 100 подписчиков", period: "2 месяца" },
+          { title: "Beauty-студия", result1: "CPL 6.4 BYN", result2: "+62 заявки/мес", period: "3 месяца" }
+        ]
+      },
+      {
+        id: "spec_maxim",
+        userId: null,
+        slug: "maxim-pavlov",
+        name: "Максим Павлов",
+        avatar: appUrl("assets/visuals/workspace-focus.svg"),
+        city: "Москва, Россия",
+        country: "Россия",
+        rating: 4.8,
+        reviewsCount: 24,
+        specialization: "Таргетолог / Performance",
+        experience: "senior",
+        description: "Meta и VK Ads, фокус на ROMI и стабильный поток лидов.",
+        about: "Строю рекламные связки под продажи: тесты креативов, аналитика, оптимизация воронки.",
+        priceByn: 2100,
+        platforms: ["Instagram", "VK", "Telegram"],
+        niches: ["рестораны", "ecommerce", "недвижимость"],
+        skills: ["таргет", "аналитика", "креативы", "лидогенерация"],
+        stats: { er: "6.1%", ctr: "2.9%", cpm: "19 BYN", views: "98 000", followersGrowth: "+2 700", reachGrowth: "+165%" },
+        socials: {
+          instagram: "https://instagram.com/max.performance.smm",
+          tiktok: "",
+          telegram: "https://t.me/max_performance_ads",
+          behance: ""
+        },
+        cases: [
+          { title: "Сеть ресторанов", result1: "-31% CPL", result2: "+118 лидов/мес", period: "10 недель" }
+        ]
+      },
+      {
+        id: "spec_daria",
+        userId: null,
+        slug: "daria-kim",
+        name: "Дарья Ким",
+        avatar: appUrl("assets/visuals/content-lab.svg"),
+        city: "Алматы, Казахстан",
+        country: "Казахстан",
+        rating: 4.8,
+        reviewsCount: 19,
+        specialization: "Контент-менеджер",
+        experience: "middle",
+        description: "Контент-матрицы и продакшн под Reels/TikTok для брендов и экспертов.",
+        about: "Собираю связку: рубрикатор, сценарии, съемка, монтаж, публикации и отчетность.",
+        priceByn: 1550,
+        platforms: ["Instagram", "TikTok", "YouTube"],
+        niches: ["beauty", "спорт", "цветы"],
+        skills: ["контент", "reels", "монтаж", "ugc"],
+        stats: { er: "9.2%", ctr: "2.4%", cpm: "12 BYN", views: "143 000", followersGrowth: "+5 200", reachGrowth: "+280%" },
+        socials: {
+          instagram: "https://instagram.com/daria.reels.lab",
+          tiktok: "https://www.tiktok.com/@daria.reels.lab",
+          telegram: "",
+          behance: "https://www.behance.net/dariakimstudio"
+        },
+        cases: [
+          { title: "Магазин цветов", result1: "+310% просмотров reels", result2: "+87 заявок", period: "6 недель" }
+        ]
+      },
+      {
+        id: "spec_ilya",
+        userId: null,
+        slug: "ilya-voronov",
+        name: "Илья Воронов",
+        avatar: appUrl("assets/visuals/reels-studio.svg"),
+        city: "Онлайн",
+        country: "СНГ",
+        rating: 4.7,
+        reviewsCount: 14,
+        specialization: "Reels maker / Монтажер",
+        experience: "middle",
+        description: "Сценарии и монтаж коротких видео, которые удерживают внимание.",
+        about: "Делаю короткие ролики под продажи, обучающие воронки и прогревы.",
+        priceByn: 1200,
+        platforms: ["Instagram", "TikTok", "YouTube"],
+        niches: ["кафе", "спорт", "beauty"],
+        skills: ["reels", "монтаж", "hooks", "сценарии"],
+        stats: { er: "7.4%", ctr: "2.1%", cpm: "11 BYN", views: "76 000", followersGrowth: "+1 900", reachGrowth: "+142%" },
+        socials: {
+          instagram: "https://instagram.com/ilya.shortvideo",
+          tiktok: "https://www.tiktok.com/@ilya.shortvideo",
+          telegram: "https://t.me/ilya_shortvideo",
+          behance: ""
+        },
+        cases: [
+          { title: "Фитнес-студия", result1: "+190% ER", result2: "+2 300 новых подписчиков", period: "2 месяца" }
+        ]
+      },
+      {
+        id: "spec_sabina",
+        userId: null,
+        slug: "sabina-askarova",
+        name: "Сабина Аскарова",
+        avatar: appUrl("assets/visuals/mobile-promo.svg"),
+        city: "Ташкент, Узбекистан",
+        country: "Узбекистан",
+        rating: 4.9,
+        reviewsCount: 28,
+        specialization: "SMM + UGC creator",
+        experience: "senior",
+        description: "Контент и UGC-креативы для ecom и beauty с фокусом на конверсию.",
+        about: "Веду контент и продюсирую UGC-креативы для ads, повышая CTR и продажи.",
+        priceByn: 1950,
+        platforms: ["Instagram", "TikTok", "Telegram"],
+        niches: ["beauty", "ecommerce", "цветы"],
+        skills: ["ugc", "контент", "таргет", "storytelling"],
+        stats: { er: "10.4%", ctr: "3.6%", cpm: "13 BYN", views: "168 000", followersGrowth: "+6 300", reachGrowth: "+340%" },
+        socials: {
+          instagram: "https://instagram.com/sabina.ugc.smm",
+          tiktok: "https://www.tiktok.com/@sabina.ugc.smm",
+          telegram: "https://t.me/sabina_ugc_smm",
+          behance: ""
+        },
+        cases: [
+          { title: "Beauty e-commerce", result1: "ROAS 4.1", result2: "CTR +46%", period: "9 недель" }
+        ]
+      }
+    ];
+  }
+
+  function normalizeSpecialistData(specialist) {
+    const next = { ...specialist };
+    next.slug = next.slug || normalizeForSlug(next.name || next.id || "specialist");
+    next.priceByn = Number(next.priceByn || next.priceRub || 0);
+    next.priceRub = undefined;
+    next.priceUsd = undefined;
+    if (!next.country) {
+      next.country = normalize(next.city).includes("минск") ? "Беларусь" : "СНГ";
+    }
+    if (!next.socials) next.socials = {};
+    next.socials = {
+      instagram: next.socials.instagram || "",
+      tiktok: next.socials.tiktok || "",
+      telegram: next.socials.telegram || "",
+      behance: next.socials.behance || ""
+    };
+    if (!Array.isArray(next.skills)) next.skills = [];
+    if (!Array.isArray(next.platforms)) next.platforms = [];
+    if (!Array.isArray(next.niches)) next.niches = [];
+    if (!Array.isArray(next.cases)) next.cases = [];
+    if (!next.stats) next.stats = {};
+    next.avatar = next.avatar || appUrl("assets/visuals/team-sync.svg");
+    next.stats = {
+      er: next.stats.er || "0%",
+      ctr: next.stats.ctr || "0%",
+      cpm: String(next.stats.cpm || "0 BYN").replace("₽", "BYN").replace("$", "BYN "),
+      views: next.stats.views || "0",
+      followersGrowth: next.stats.followersGrowth || "+0",
+      reachGrowth: next.stats.reachGrowth || "+0%"
+    };
+    return next;
+  }
+
+  function migrateState(data) {
+    const next = { ...data };
+    if (!Array.isArray(next.users)) next.users = [];
+    if (!Array.isArray(next.specialists)) next.specialists = [];
+    if (!Array.isArray(next.tasks)) next.tasks = [];
+    if (!Array.isArray(next.reviews)) next.reviews = [];
+    if (!Array.isArray(next.conversations)) next.conversations = [];
+    if (!next.favoritesByUser || typeof next.favoritesByUser !== "object") next.favoritesByUser = {};
+    if (!next.ai || typeof next.ai !== "object") next.ai = { lastMatchTaskId: null, lastAudit: null, lastContentIdeas: null };
+    if (!next.ui || typeof next.ui !== "object") {
+      next.ui = { selectedSpecialistId: null, selectedBusinessConversationId: null, selectedSpecialistConversationId: null };
+    }
+
+    next.users = next.users.map((user) => {
+      const migrated = { ...user };
+      if (!migrated.passwordHash && migrated.password) {
+        migrated.passwordHash = hashPasswordPlaceholder(migrated.password);
+        delete migrated.password;
+      }
+      return migrated;
+    });
+
+    next.specialists = next.specialists.map(normalizeSpecialistData);
+    if (!next.specialists.length) {
+      next.specialists = buildMockSpecialists().map(normalizeSpecialistData);
+    }
+
+    next.tasks = next.tasks.map((task) => {
+      const migrated = { ...task };
+      if (!migrated.title) migrated.title = `Задача ${migrated.id || ""}`.trim();
+      if (!migrated.description) migrated.description = migrated.goals || "";
+      if (!migrated.category) migrated.category = migrated.niche || "SMM";
+      if (!migrated.budgetByn) migrated.budgetByn = Number(migrated.budgetValue || 0) * 6 || 0;
+      if (!Array.isArray(migrated.responses)) migrated.responses = [];
+      return migrated;
+    });
+
+    next.version = STATE_VERSION;
+    return next;
+  }
+
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        const seeded = seedState();
+        const seeded = migrateState(seedState());
         localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
         return seeded;
       }
@@ -208,14 +470,11 @@
       if (!parsed || typeof parsed !== "object") {
         throw new Error("Invalid state");
       }
-      if (parsed.version !== STATE_VERSION) {
-        const seeded = seedState();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-        return seeded;
-      }
-      return parsed;
+      const migrated = parsed.version === STATE_VERSION ? migrateState(parsed) : migrateState(parsed);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
     } catch (error) {
-      const seeded = seedState();
+      const seeded = migrateState(seedState());
       localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
       return seeded;
     }
@@ -328,7 +587,7 @@
 
   function requiredRoleForPath(pathname) {
     const normalizedPath = normalizePathname(pathname);
-    if (normalizedPath.includes("/dashboard/business/") || normalizedPath.includes("/task/new/")) {
+    if (normalizedPath.includes("/dashboard/business/")) {
       return "business";
     }
     if (normalizedPath.includes("/dashboard/specialist/")) {
@@ -354,14 +613,21 @@
 
   function enforceSessionAndRole() {
     const user = currentUser();
-    if (!user) return true;
+    if (!user) {
+      const requiredRole = requiredRoleForPath(window.location.pathname);
+      if (requiredRole) {
+        redirectToLogin();
+        return false;
+      }
+      return true;
+    }
 
     if (isAuthPage) {
       window.location.href = resolvePostAuthDestination(user);
       return false;
     }
 
-    const onBusinessOnlyRoute = isPath("/dashboard/business/") || isPath("/task/new/");
+    const onBusinessOnlyRoute = isPath("/dashboard/business/");
     const onSpecialistOnlyRoute = isPath("/dashboard/specialist/");
 
     if (user.role === "business" && onSpecialistOnlyRoute) {
@@ -425,7 +691,9 @@
     }
 
     addAction("Кабинет", "dashboard/specialist/index.html", "btn btn-ghost keep-mobile");
-    addAction("Мой профиль", "u/username/index.html", "btn btn-primary keep-mobile");
+    const specialist = user.specialistId ? findSpecialistById(user.specialistId) : null;
+    const profilePath = specialist ? specialistProfileUrl("", specialist).replace(/^\//, "") : "u/username/index.html";
+    addAction("Мой профиль", profilePath, "btn btn-primary keep-mobile");
     addLogout();
   }
 
@@ -466,6 +734,29 @@
       link.textContent = "ROI-калькулятор";
       link.setAttribute("data-global-roi-link", "1");
       mobileNav.appendChild(link);
+    });
+  }
+
+  function syncProfileLinks() {
+    const user = currentUser();
+    const specialist =
+      user && user.role === "specialist" && user.specialistId
+        ? findSpecialistById(user.specialistId)
+        : findSpecialistById(state.ui.selectedSpecialistId) || state.specialists[0];
+    if (!specialist) return;
+
+    document.querySelectorAll("a[href*='u/username/index.html']").forEach((link) => {
+      if (!(link instanceof HTMLAnchorElement)) return;
+      const href = link.getAttribute("href") || "";
+      if (!href.includes("u/username/index.html")) return;
+      const isRelativeRoot = href.startsWith("../../");
+      const isThree = href.startsWith("../../../");
+      const isOne = href.startsWith("../");
+      let prefix = "";
+      if (isThree) prefix = "../../../";
+      else if (isRelativeRoot) prefix = "../../";
+      else if (isOne) prefix = "../";
+      link.href = specialistProfileUrl(prefix, specialist);
     });
   }
 
@@ -638,7 +929,7 @@
       roiResult.innerHTML = `
         <strong>${estimatedLeads}</strong> потенциальных лидов в месяц<br>
         <strong>${estimatedClients}</strong> клиентов при текущей конверсии<br>
-        <strong>${estimatedRevenue.toLocaleString("ru-RU")} ₽</strong> прогноз оборота
+        <strong>${estimatedRevenue.toLocaleString("ru-RU")} BYN</strong> прогноз оборота
       `;
     });
   }
@@ -650,38 +941,34 @@
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fields = {
-      smm: root.querySelector("[name='smm_costs']"),
-      ads: root.querySelector("[name='ads_budget']"),
-      extra: root.querySelector("[name='extra_costs']"),
-      leads: root.querySelector("[name='leads']"),
-      sales: root.querySelector("[name='sales']"),
-      avg: root.querySelector("[name='avg_check']"),
-      margin: root.querySelector("[name='margin']"),
-      currency: root.querySelector("[name='currency']")
+      smmBudget: root.querySelector("[name='smm_budget']"),
+      adsBudget: root.querySelector("[name='ads_budget']"),
+      avgCheck: root.querySelector("[name='avg_check']"),
+      currentLeads: root.querySelector("[name='current_leads']"),
+      growthPercent: root.querySelector("[name='growth_percent']"),
+      conversion: root.querySelector("[name='conversion']"),
+      margin: root.querySelector("[name='margin']")
     };
     const metricNodes = {
-      roi: root.querySelector("[data-roi-value='roi']"),
-      totalCosts: root.querySelector("[data-roi-value='total-costs']"),
+      newLeads: root.querySelector("[data-roi-value='new-leads']"),
+      sales: root.querySelector("[data-roi-value='sales']"),
       revenue: root.querySelector("[data-roi-value='revenue']"),
-      netProfit: root.querySelector("[data-roi-value='net-profit']"),
-      cpl: root.querySelector("[data-roi-value='cpl']"),
-      cps: root.querySelector("[data-roi-value='cps']"),
-      conversion: root.querySelector("[data-roi-value='conversion']")
+      profit: root.querySelector("[data-roi-value='profit']"),
+      roi: root.querySelector("[data-roi-value='roi']"),
+      payback: root.querySelector("[data-roi-value='payback']")
     };
     const stateCard = root.querySelector("[data-roi-state]");
     const copyBtn = root.querySelector("[data-roi-copy]");
-    const currencyBadges = root.querySelectorAll("[data-roi-currency]");
 
-    if (!fields.smm || !fields.currency || !metricNodes.roi) return;
+    if (!fields.smmBudget || !metricNodes.roi) return;
 
     let previous = {
-      roi: 0,
-      totalCosts: 0,
+      newLeads: 0,
+      sales: 0,
       revenue: 0,
-      netProfit: 0,
-      cpl: null,
-      cps: null,
-      conversion: null
+      profit: 0,
+      roi: 0,
+      payback: null
     };
 
     function parseNumber(node) {
@@ -690,11 +977,12 @@
       return Number.isFinite(parsed) ? parsed : 0;
     }
 
-    function formatMoney(value, currency) {
-      return `${value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+    function formatMoney(value) {
+      return `${value.toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} BYN`;
     }
 
     function formatPercent(value) {
+      if (value === null || !Number.isFinite(value)) return "—";
       const sign = value > 0 ? "+" : "";
       return `${sign}${value.toFixed(1)}%`;
     }
@@ -726,35 +1014,35 @@
     }
 
     function recalc() {
-      const smm = Math.max(0, parseNumber(fields.smm));
-      const ads = Math.max(0, parseNumber(fields.ads));
-      const extra = Math.max(0, parseNumber(fields.extra));
-      const leads = Math.max(0, parseNumber(fields.leads));
-      const sales = Math.max(0, parseNumber(fields.sales));
-      const avgCheck = Math.max(0, parseNumber(fields.avg));
+      const smmBudget = Math.max(0, parseNumber(fields.smmBudget));
+      const adsBudget = Math.max(0, parseNumber(fields.adsBudget));
+      const avgCheck = Math.max(0, parseNumber(fields.avgCheck));
+      const currentLeads = Math.max(0, parseNumber(fields.currentLeads));
+      const growthPercent = Math.max(0, parseNumber(fields.growthPercent));
+      const conversion = Math.max(0, parseNumber(fields.conversion));
       const margin = Math.max(0, parseNumber(fields.margin));
-      const currency = (fields.currency.value || "BYN").toUpperCase();
 
-      const totalCosts = smm + ads + extra;
+      const totalBudget = smmBudget + adsBudget;
+      const newLeads = currentLeads * (1 + growthPercent / 100);
+      const sales = newLeads * (conversion / 100);
       const revenue = sales * avgCheck;
-      const netProfit = revenue * (margin / 100);
-      const roi = totalCosts > 0 ? ((netProfit - totalCosts) / totalCosts) * 100 : null;
-      const cpl = leads > 0 ? totalCosts / leads : null;
-      const cps = sales > 0 ? totalCosts / sales : null;
-      const conversion = leads > 0 ? (sales / leads) * 100 : null;
+      const profit = revenue * (margin / 100);
+      const roi = totalBudget > 0 ? ((profit - totalBudget) / totalBudget) * 100 : null;
+      const payback = profit > 0 ? totalBudget / profit : null;
 
-      const next = { roi, totalCosts, revenue, netProfit, cpl, cps, conversion };
+      const next = { newLeads, sales, revenue, profit, roi, payback };
+      animateValue(metricNodes.newLeads, previous.newLeads, next.newLeads, (v) =>
+        `${Math.round(v).toLocaleString("ru-RU")}`
+      );
+      animateValue(metricNodes.sales, previous.sales, next.sales, (v) =>
+        `${Math.round(v).toLocaleString("ru-RU")}`
+      );
+      animateValue(metricNodes.revenue, previous.revenue, next.revenue, (v) => formatMoney(v));
+      animateValue(metricNodes.profit, previous.profit, next.profit, (v) => formatMoney(v));
       animateValue(metricNodes.roi, previous.roi, next.roi, (v) => formatPercent(v));
-      animateValue(metricNodes.totalCosts, previous.totalCosts, next.totalCosts, (v) => formatMoney(v, currency));
-      animateValue(metricNodes.revenue, previous.revenue, next.revenue, (v) => formatMoney(v, currency));
-      animateValue(metricNodes.netProfit, previous.netProfit, next.netProfit, (v) => formatMoney(v, currency));
-      animateValue(metricNodes.cpl, previous.cpl, next.cpl, (v) => formatMoney(v, currency));
-      animateValue(metricNodes.cps, previous.cps, next.cps, (v) => formatMoney(v, currency));
-      animateValue(metricNodes.conversion, previous.conversion, next.conversion, (v) => `${v.toFixed(1)}%`);
-
-      currencyBadges.forEach((item) => {
-        item.textContent = currency;
-      });
+      animateValue(metricNodes.payback, previous.payback, next.payback, (v) =>
+        v === null || !Number.isFinite(v) ? "—" : `${v.toFixed(1)} мес`
+      );
 
       if (stateCard) {
         stateCard.classList.remove("positive", "neutral", "negative");
@@ -774,7 +1062,7 @@
       }
 
       previous = next;
-      root.setAttribute("data-roi-report", JSON.stringify({ ...next, currency }));
+      root.setAttribute("data-roi-report", JSON.stringify(next));
     }
 
     function buildReport() {
@@ -784,10 +1072,11 @@
         const report = JSON.parse(raw);
         return [
           `ROI: ${report.roi === null ? "—" : formatPercent(report.roi)}`,
-          `Расходы: ${formatMoney(report.totalCosts || 0, report.currency || "BYN")}`,
-          `Прибыль: ${formatMoney(report.netProfit || 0, report.currency || "BYN")}`,
-          `Стоимость лида: ${report.cpl === null ? "—" : formatMoney(report.cpl, report.currency || "BYN")}`,
-          `Конверсия: ${report.conversion === null ? "—" : `${report.conversion.toFixed(1)}%`}`
+          `Новые заявки: ${Math.round(report.newLeads || 0).toLocaleString("ru-RU")}`,
+          `Продажи: ${Math.round(report.sales || 0).toLocaleString("ru-RU")}`,
+          `Выручка: ${formatMoney(report.revenue || 0)}`,
+          `Прибыль: ${formatMoney(report.profit || 0)}`,
+          `Окупаемость: ${report.payback === null || !Number.isFinite(report.payback) ? "—" : `${report.payback.toFixed(1)} мес`}`
         ].join("\n");
       } catch (error) {
         return "";
@@ -846,36 +1135,110 @@
 
   function getBudgetMaxByTier(tierText) {
     const tier = normalize(tierText);
-    if (tier.includes("до 300")) return 300;
-    if (tier.includes("300-700")) return 700;
-    if (tier.includes("700-1500")) return 1500;
-    return 700;
+    if (tier.includes("до 800")) return 800;
+    if (tier.includes("800-1500")) return 1500;
+    if (tier.includes("1500-3000")) return 3000;
+    if (tier.includes("3000+")) return 5000;
+    return 1500;
   }
 
-  function computeMatchScore(specialist, taskInput) {
-    let score = 60;
+  function collectSkillHints(taskInput) {
+    const hints = [];
+    const category = normalize(taskInput.category || "");
+    const description = normalize(taskInput.description || taskInput.goals || "");
+    if (category) hints.push(category);
+    if (normalize(taskInput.needReels) === "да" || description.includes("reels") || description.includes("tiktok")) {
+      hints.push("reels", "монтаж");
+    }
+    if (normalize(taskInput.needTarget) === "да" || description.includes("таргет") || description.includes("реклама")) {
+      hints.push("таргет");
+    }
+    if (normalize(taskInput.needContent) !== "нет" || description.includes("контент")) {
+      hints.push("контент");
+    }
+    return hints;
+  }
+
+  function computeMatchAnalysis(specialist, taskInput) {
+    const budgetByn = Number(taskInput.budgetByn || taskInput.budgetValue || 0) || 0;
     const niche = normalize(taskInput.niche);
-    const platforms = normalize(taskInput.platforms);
+    const platformsText = normalize(taskInput.platforms);
+    const skillHints = collectSkillHints(taskInput);
+    const specialistSkills = specialist.skills.map((item) => normalize(item));
 
-    if (specialist.niches.some((item) => normalize(item) === niche)) score += 15;
-    if (specialist.platforms.some((item) => platforms.includes(normalize(item)))) score += 12;
-    if (normalize(taskInput.needReels) === "да" && specialist.skills.some((skill) => normalize(skill).includes("reels")))
-      score += 7;
-    if (normalize(taskInput.needTarget) === "да" && specialist.skills.some((skill) => normalize(skill).includes("таргет")))
-      score += 6;
-    if (normalize(taskInput.needContent) !== "нет" && specialist.skills.some((skill) => normalize(skill).includes("контент")))
-      score += 5;
-    if (specialist.priceUsd <= Number(taskInput.budgetValue || 700)) score += 5;
+    let score = 20;
+    const reasons = [];
+    const strongestAreas = [];
 
-    return Math.min(99, Math.max(50, Math.round(score)));
+    const specializationText = normalize(specialist.specialization);
+    const categoryMatched = !taskInput.category || specializationText.includes(normalize(taskInput.category)) || skillHints.some((hint) => specialistSkills.some((skill) => skill.includes(hint)));
+    if (categoryMatched) {
+      score += 22;
+      reasons.push("Совпадает по специализации и типу задач.");
+      strongestAreas.push("Специализация по вашей задаче");
+    }
+
+    if (specialist.niches.some((item) => normalize(item) === niche)) {
+      score += 15;
+      reasons.push(`Есть кейсы в нише «${taskInput.niche}».`);
+      strongestAreas.push("Опыт в вашей нише");
+    }
+
+    const platformMatch = specialist.platforms.some((item) => platformsText.includes(normalize(item)));
+    if (platformMatch) {
+      score += 12;
+      reasons.push("Работает на нужных площадках.");
+      strongestAreas.push("Площадки совпадают");
+    }
+
+    const skillMatches = skillHints.filter((hint) => specialistSkills.some((skill) => skill.includes(hint)));
+    if (skillMatches.length) {
+      score += Math.min(16, 5 + skillMatches.length * 3);
+      reasons.push(`Подходит по навыкам: ${skillMatches.slice(0, 3).join(", ")}.`);
+      strongestAreas.push("Релевантные навыки");
+    }
+
+    if (budgetByn > 0) {
+      if (specialist.priceByn <= budgetByn) {
+        score += 17;
+        reasons.push("Вписывается в ваш бюджет.");
+      } else if (specialist.priceByn <= budgetByn * 1.2) {
+        score += 8;
+        reasons.push("Немного выше бюджета, но в рабочем диапазоне.");
+      } else {
+        reasons.push("Требует больший бюджет, чем указан в задаче.");
+      }
+    }
+
+    const ratingPart = (Number(specialist.rating || 0) / 5) * 10;
+    score += Math.round(ratingPart);
+    if (specialist.rating >= 4.8) strongestAreas.push("Высокий рейтинг");
+
+    if (specialist.experience === "senior") score += 8;
+    else if (specialist.experience === "middle") score += 5;
+    else score += 2;
+
+    const finalScore = Math.max(35, Math.min(99, Math.round(score)));
+    return {
+      score: finalScore,
+      reasons: reasons.slice(0, 3),
+      strongestAreas: Array.from(new Set(strongestAreas)).slice(0, 3),
+      estimatedCostByn: specialist.priceByn
+    };
   }
 
   function renderCatalogCard(specialist, rootPrefix) {
     const ratingText =
       specialist.reviewsCount > 0 ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})` : "без оценок";
+    const socialEntries = [
+      ["Instagram", specialist.socials.instagram],
+      ["TikTok", specialist.socials.tiktok],
+      ["Telegram", specialist.socials.telegram],
+      ["Portfolio", specialist.socials.behance]
+    ].filter((item) => item[1]);
     return `
       <article class="card catalog-card">
-        <div class="avatar"></div>
+        <div class="avatar" style="--media-photo: url('${specialist.avatar}')"></div>
         <div>
           <h3>${specialist.name}</h3>
           <div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div>
@@ -884,10 +1247,23 @@
           <div class="chips">
             ${specialist.platforms.slice(0, 3).map((item) => `<span class="chip">${item}</span>`).join("")}
           </div>
+          <div class="chips">
+            ${specialist.skills.slice(0, 3).map((item) => `<span class="chip">${item}</span>`).join("")}
+          </div>
+          <div class="chips">
+            ${
+              socialEntries.length
+                ? socialEntries
+                    .slice(0, 2)
+                    .map((item) => `<a class="chip" href="${item[1]}" target="_blank" rel="noopener noreferrer">${item[0]}</a>`)
+                    .join("")
+                : '<span class="chip">Нет публичных ссылок</span>'
+            }
+          </div>
         </div>
         <div class="catalog-side">
           <div>
-            <div class="price">от ${formatMoneyRub(specialist.priceRub)} / мес</div>
+            <div class="price">от ${formatMoneyByn(specialist.priceByn)} / мес</div>
             <div class="meta">${specialist.cases.length} кейсов</div>
           </div>
           <div class="catalog-metrics">
@@ -896,7 +1272,7 @@
             <span>Рост: ${specialist.stats.reachGrowth}</span>
           </div>
           <div class="chips">
-            <a class="btn btn-primary" href="${rootPrefix}u/username/index.html" data-open-profile="${specialist.id}">Написать</a>
+            <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Смотреть профиль</a>
             <button class="btn btn-ghost" data-add-favorite="${specialist.id}" type="button">В избранное</button>
           </div>
         </div>
@@ -912,24 +1288,32 @@
 
     const groups = Array.from(document.querySelectorAll(".filter-group"));
     const priceRange = document.querySelector(".range");
-    const priceTitle = groups[3] ? groups[3].querySelector("h4") : null;
+    const priceGroup = priceRange ? priceRange.closest(".filter-group") : null;
+    const priceTitle = priceGroup ? priceGroup.querySelector("h4") : null;
+    const searchInput = document.querySelector("[data-specialists-search]");
 
-    function selectedOptions(groupIndex) {
-      const group = groups[groupIndex];
+    function selectedOptions(groupIndex, groupName) {
+      const namedGroup = groupName
+        ? document.querySelector(`.filter-group[data-filter-group='${groupName}']`)
+        : null;
+      const group = namedGroup || groups[groupIndex];
       if (!group) return [];
       return Array.from(group.querySelectorAll(".option.active")).map((item) => normalize(item.textContent));
     }
 
     function render() {
-      const selectedCategories = selectedOptions(0);
-      const selectedPlatforms = selectedOptions(1);
-      const selectedCities = selectedOptions(2);
-      const selectedExperience = selectedOptions(4);
-      const selectedNiches = selectedOptions(5);
-      const maxPrice = Number(priceRange ? priceRange.value : 1500);
+      const selectedCategories = selectedOptions(0, "categories");
+      const selectedPlatforms = selectedOptions(1, "platforms");
+      const selectedCities = selectedOptions(2, "city");
+      const selectedExperience = selectedOptions(4, "experience");
+      const selectedNiches = selectedOptions(5, "niche");
+      const selectedRatings = selectedOptions(6, "rating");
+      const selectedSkills = selectedOptions(7, "skills");
+      const maxPrice = Number(priceRange ? priceRange.value : 3000);
+      const searchText = normalize(searchInput ? searchInput.value : "");
 
       if (priceTitle) {
-        priceTitle.textContent = `Цена: до ${maxPrice}$`;
+        priceTitle.textContent = `Цена: до ${formatMoneyByn(maxPrice)}`;
       }
 
       const filtered = state.specialists.filter((specialist) => {
@@ -950,9 +1334,25 @@
         const nicheOk =
           selectedNiches.length === 0 ||
           selectedNiches.some((niche) => specialist.niches.some((item) => normalize(item).includes(niche)));
-        const priceOk = specialist.priceUsd <= maxPrice;
+        const priceOk = specialist.priceByn <= maxPrice;
+        const ratingOk =
+          selectedRatings.length === 0 ||
+          selectedRatings.some((item) => {
+            if (item.includes("4.8")) return specialist.rating >= 4.8;
+            if (item.includes("4.5")) return specialist.rating >= 4.5;
+            if (item.includes("4+")) return specialist.rating >= 4;
+            return true;
+          });
+        const skillsOk =
+          selectedSkills.length === 0 ||
+          selectedSkills.some((skill) => specialist.skills.some((item) => normalize(item).includes(skill)));
+        const searchOk =
+          !searchText ||
+          normalize(specialist.name).includes(searchText) ||
+          normalize(specialist.description).includes(searchText) ||
+          specialist.skills.some((skill) => normalize(skill).includes(searchText));
 
-        return categoryOk && platformOk && cityOk && experienceOk && nicheOk && priceOk;
+        return categoryOk && platformOk && cityOk && experienceOk && nicheOk && priceOk && ratingOk && skillsOk && searchOk;
       });
 
       if (!filtered.length) {
@@ -975,7 +1375,8 @@
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
 
-      const openProfileId = target.getAttribute("data-open-profile");
+      const openProfileTrigger = target.closest("[data-open-profile]");
+      const openProfileId = openProfileTrigger ? openProfileTrigger.getAttribute("data-open-profile") : "";
       if (openProfileId) {
         state.ui.selectedSpecialistId = openProfileId;
         const user = currentUser();
@@ -987,7 +1388,8 @@
         return;
       }
 
-      const favoriteId = target.getAttribute("data-add-favorite");
+      const favoriteTrigger = target.closest("[data-add-favorite]");
+      const favoriteId = favoriteTrigger ? favoriteTrigger.getAttribute("data-add-favorite") : "";
       if (favoriteId) {
         event.preventDefault();
         const user = requireBusinessForAction();
@@ -1005,6 +1407,9 @@
 
     if (priceRange) {
       priceRange.addEventListener("input", render);
+    }
+    if (searchInput) {
+      searchInput.addEventListener("input", render);
     }
 
     document.querySelectorAll(".option").forEach((option) => {
@@ -1032,9 +1437,13 @@
       if (!specialist) return;
       const card = document.createElement("div");
       card.className = "card";
+      const reasonLine = Array.isArray(response.reasons) && response.reasons.length
+        ? response.reasons[0]
+        : "Подходит по параметрам задачи.";
       card.innerHTML = `
         <strong>${specialist.name}</strong>
         <div class="meta">Match score: ${response.score}% • ${specialist.specialization}</div>
+        <div class="meta">${reasonLine}</div>
       `;
       wrapper.appendChild(card);
     });
@@ -1064,40 +1473,84 @@
       event.preventDefault();
       const user = requireBusinessForAction();
       if (!user) return;
-      const selects = form.querySelectorAll("select");
+      const titleField = form.querySelector("#task_title");
+      const categoryField = form.querySelector("#task_category");
+      const budgetField = form.querySelector("#task_budget");
+      const descriptionField = form.querySelector("#task_description");
+      const deadlineField = form.querySelector("#task_deadline");
+      const needTargetField = form.querySelector("#task_need_target");
+      const needContentField = form.querySelector("#task_need_content");
+      const needReelsField = form.querySelector("#task_need_reels");
+
+      const title = titleField ? titleField.value.trim() : "";
+      const category = categoryField ? categoryField.value.trim() : "";
+      const budgetByn = Number(budgetField ? budgetField.value : 0);
+      const description = descriptionField ? descriptionField.value.trim() : "";
+      const deadline = deadlineField ? deadlineField.value : "";
+
+      if (!title) {
+        showToast("Укажите название задачи", "error");
+        return;
+      }
+      if (!category) {
+        showToast("Выберите категорию", "error");
+        return;
+      }
+      if (!budgetByn || budgetByn <= 0) {
+        showToast("Укажите бюджет в BYN", "error");
+        return;
+      }
+      if (!description) {
+        showToast("Добавьте описание задачи", "error");
+        return;
+      }
+      if (deadlineField && !deadline) {
+        showToast("Укажите дедлайн", "error");
+        return;
+      }
+
       const taskInput = {
-        niche: (form.querySelector("#niche") || selects[0]).value,
-        budgetTier: (form.querySelector("#budget") || selects[1]).value,
-        platforms: (form.querySelector("#platforms") || selects[2]).value,
-        goals: (form.querySelector("#goals") || { value: "" }).value.trim(),
-        needTarget: selects[3] ? selects[3].value : "Не уверен",
-        needContent: selects[4] ? selects[4].value : "Частично",
-        needReels: selects[5] ? selects[5].value : "Да"
+        title,
+        category,
+        niche: (form.querySelector("#niche") || { value: "Кафе" }).value,
+        budgetTier: (form.querySelector("#budget") || { value: "" }).value || "",
+        budgetByn,
+        platforms: (form.querySelector("#platforms") || { value: "Instagram" }).value,
+        description,
+        goals: description,
+        deadline,
+        needTarget: needTargetField ? needTargetField.value : "Не уверен",
+        needContent: needContentField ? needContentField.value : "Частично",
+        needReels: needReelsField ? needReelsField.value : "Да"
       };
 
-      const budgetValue = getBudgetMaxByTier(taskInput.budgetTier);
-      taskInput.budgetValue = budgetValue;
+      const budgetValue = getBudgetMaxByTier(taskInput.budgetTier || "");
+      taskInput.budgetValue = budgetValue || budgetByn;
 
       const responses = state.specialists
         .map((specialist) => ({
           specialistId: specialist.id,
-          score: computeMatchScore(specialist, taskInput)
+          ...computeMatchAnalysis(specialist, taskInput)
         }))
         .sort((a, b) => b.score - a.score)
-        .slice(0, 3);
+        .slice(0, 5);
 
       const businessUserId = user.id;
       const assignedSpecialistId = responses[0] ? responses[0].specialistId : null;
-      const budgetRub = budgetValue * 100;
+      const holdAmount = Math.round(budgetByn * 0.4);
 
       const task = {
         id: uid("task"),
-        title: `${taskInput.platforms} для ${taskInput.niche.toLowerCase()}`,
+        title: taskInput.title,
+        category: taskInput.category,
         niche: taskInput.niche,
-        budgetTier: taskInput.budgetTier,
+        budgetTier: taskInput.budgetTier || `до ${formatMoneyByn(budgetByn)}`,
         budgetValue,
+        budgetByn,
         platforms: taskInput.platforms,
         goals: taskInput.goals || "Рост заявок и охватов",
+        description: taskInput.description,
+        deadline: taskInput.deadline || "",
         needTarget: taskInput.needTarget,
         needContent: taskInput.needContent,
         needReels: taskInput.needReels,
@@ -1114,7 +1567,7 @@
       state.payments.unshift({
         id: uid("pay"),
         taskId: task.id,
-        amount: budgetRub,
+        amount: holdAmount,
         status: "Холд",
         date: nowIso()
       });
@@ -1130,6 +1583,10 @@
         renderTaskPreviewMatches(task, previewTitle.parentElement);
       }
       showToast("Задача опубликована. AI Match обновлен.");
+      form.reset();
+      window.setTimeout(() => {
+        window.location.href = appUrl("dashboard/business/index.html");
+      }, 420);
     });
   }
 
@@ -1209,37 +1666,38 @@
             role: role === "specialist" ? "specialist" : "business",
             name,
             email,
-            password
+            passwordHash: hashPasswordPlaceholder(password)
           };
 
           if (user.role === "specialist") {
             const specialistId = uid("spec");
             user.specialistId = specialistId;
-            state.specialists.push({
+            state.specialists.push(normalizeSpecialistData({
               id: specialistId,
               userId,
+              slug: normalizeForSlug(name),
               name,
               city: "Онлайн",
+              country: "СНГ",
               rating: 0,
               reviewsCount: 0,
               specialization: "SMM-специалист",
               experience: "junior",
               description: "Новый специалист на платформе.",
               about: "Добавьте подробное описание в настройках профиля.",
-              priceRub: 30000,
-              priceUsd: 400,
-              platforms: ["instagram"],
+              priceByn: 800,
+              platforms: ["Instagram"],
               niches: ["кафе"],
               skills: ["smm"],
-              stats: { er: "0%", ctr: "0%", cpm: "$0", views: "0", followersGrowth: "+0", reachGrowth: "+0%" },
+              stats: { er: "0%", ctr: "0%", cpm: "0 BYN", views: "0", followersGrowth: "+0", reachGrowth: "+0%" },
               socials: {
-                instagram: "https://instagram.com/",
-                tiktok: "https://www.tiktok.com/",
-                telegram: "https://telegram.org/",
-                behance: "https://www.behance.net/"
+                instagram: "",
+                tiktok: "",
+                telegram: "",
+                behance: ""
               },
               cases: []
-            });
+            }));
           }
 
           state.users.push(user);
@@ -1262,7 +1720,7 @@
           const email = inputs[0] ? inputs[0].value.trim() : "";
           const password = inputs[1] ? inputs[1].value.trim() : "";
           const user = state.users.find(
-            (item) => normalize(item.email) === normalize(email) && item.password === password
+            (item) => normalize(item.email) === normalize(email) && verifyPassword(item, password)
           );
           if (!user) {
             showToast("Неверный email или пароль", "error");
@@ -1296,32 +1754,52 @@
   }
 
   function renderProfilePage() {
-    if (!isPath("/u/username/")) return;
+    if (!isPath("/u/")) return;
+    const root = document.querySelector("main.container");
+    if (!root) return;
     if (!state.specialists.length) {
-      const root = document.querySelector("main.container");
-      if (root) {
-        root.innerHTML = `
-          <article class="card">
-            <h1>Профиль пока не заполнен</h1>
-            <p class="meta">Фейковые данные удалены. Зарегистрируйтесь как специалист и заполните профиль в кабинете.</p>
-          </article>
-        `;
-      }
+      root.innerHTML = `
+        <article class="card">
+          <h1>Профили пока не опубликованы</h1>
+          <p class="meta">Зарегистрируйтесь как специалист и заполните профиль в кабинете.</p>
+        </article>
+      `;
       return;
     }
-    const specialistId =
-      state.ui.selectedSpecialistId ||
-      (currentUser() && currentUser().specialistId ? currentUser().specialistId : state.specialists[0].id);
-    const specialist = findSpecialistById(specialistId) || state.specialists[0];
-    if (!specialist) return;
+
+    const url = new URL(window.location.href);
+    const slugFromQuery = normalize(url.searchParams.get("slug"));
+    const specialistBySlug = slugFromQuery
+      ? state.specialists.find((item) => normalize(item.slug) === slugFromQuery)
+      : null;
+    const specialistBySelected = state.ui.selectedSpecialistId ? findSpecialistById(state.ui.selectedSpecialistId) : null;
+    const sessionUser = currentUser();
+    const specialistBySession =
+      sessionUser && sessionUser.role === "specialist" && sessionUser.specialistId
+        ? findSpecialistById(sessionUser.specialistId)
+        : null;
+    const specialist = specialistBySlug || specialistBySelected || specialistBySession || state.specialists[0];
+
+    if (slugFromQuery && !specialistBySlug) {
+      root.innerHTML = `
+        <article class="card">
+          <h1>Профиль не найден</h1>
+          <p class="meta">Проверьте ссылку или вернитесь в каталог специалистов.</p>
+          <a class="btn btn-primary" href="${appUrl("specialists/index.html")}">Перейти в каталог</a>
+        </article>
+      `;
+      return;
+    }
 
     const header = document.querySelector(".profile-header");
     if (header) {
+      const avatar = header.querySelector(".profile-avatar");
       const h1 = header.querySelector("h1");
       const metas = header.querySelectorAll(".meta");
       const price = header.querySelector(".price");
       const chips = header.querySelector(".chips");
       if (h1) h1.textContent = specialist.name;
+      if (avatar) avatar.style.setProperty("--media-photo", `url("${specialist.avatar}")`);
       if (metas[0]) {
         const ratingText =
           specialist.reviewsCount > 0
@@ -1329,7 +1807,7 @@
             : "оценок пока нет";
         metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText}`;
       }
-      if (price) price.textContent = `от ${formatMoneyRub(specialist.priceRub)} / мес`;
+      if (price) price.textContent = `от ${formatMoneyByn(specialist.priceByn)} / мес`;
       if (chips) {
         chips.innerHTML = specialist.skills.map((skill) => `<span class="chip">${skill}</span>`).join("");
       }
@@ -1415,10 +1893,27 @@
 
     const tabs = document.querySelectorAll(".tabs .tab");
     if (tabs.length >= 4) {
-      tabs[0].href = specialist.socials.instagram;
-      tabs[1].href = specialist.socials.tiktok;
-      tabs[2].href = specialist.socials.telegram;
-      tabs[3].href = specialist.socials.behance;
+      const links = [
+        specialist.socials.instagram,
+        specialist.socials.tiktok,
+        specialist.socials.telegram,
+        specialist.socials.behance
+      ];
+      tabs.forEach((tab, index) => {
+        const href = links[index] || "";
+        const isUsable =
+          href &&
+          !/instagram\.com\/?$|tiktok\.com\/?$|telegram\.org\/?$|behance\.net\/?$/i.test(href);
+        if (isUsable) {
+          tab.href = href;
+          tab.removeAttribute("aria-disabled");
+          tab.classList.remove("is-disabled");
+        } else {
+          tab.removeAttribute("href");
+          tab.setAttribute("aria-disabled", "true");
+          tab.classList.add("is-disabled");
+        }
+      });
     }
 
     document.querySelectorAll("a.btn.btn-primary").forEach((button) => {
@@ -1459,16 +1954,27 @@
     const generatedMinutes = Math.max(1.2, (responses.length * 0.7).toFixed(1));
     cards[0].querySelector("strong").textContent = `${avgScore}%`;
     cards[1].querySelector("strong").textContent = `${generatedMinutes} мин`;
-    cards[2].querySelector("strong").textContent = String(responses.length);
+    cards[2].querySelector("strong").textContent = String(Math.min(5, responses.length));
 
     panel.innerHTML = responses
+      .slice(0, 5)
       .map((response, index) => {
         const specialist = findSpecialistById(response.specialistId);
         if (!specialist) return "";
+        const reasonText = Array.isArray(response.reasons) && response.reasons.length
+          ? response.reasons.join(" ")
+          : "Подходит по параметрам задачи.";
+        const strengths = Array.isArray(response.strongestAreas) && response.strongestAreas.length
+          ? response.strongestAreas.join(" • ")
+          : "Сильные стороны уточняются";
         return `
           <article class="panel-item">
             <strong>${index + 1}. ${specialist.name}</strong>
-            <div class="meta">Score ${response.score}% • ${specialist.specialization} • ${specialist.city}</div>
+            <div class="meta">${response.score}% совпадения • ${specialist.specialization} • ${specialist.city}</div>
+            <div class="meta">${reasonText}</div>
+            <div class="meta">Сильные стороны: ${strengths}</div>
+            <div class="meta">Ориентир стоимости: от ${formatMoneyByn(response.estimatedCostByn || specialist.priceByn)} / мес</div>
+            <div class="chips"><a class="chip" href="${specialistProfileUrl("../../", specialist)}">Перейти в профиль</a></div>
           </article>
         `;
       })
@@ -1497,6 +2003,8 @@
           `
         )
         .join("");
+      const title = cards[1].querySelector("h2");
+      if (title) title.textContent = "Результат демо-аудита";
     }
 
     if (state.ai.lastAudit) {
@@ -1504,36 +2012,41 @@
     }
 
     button.addEventListener("click", () => {
-      if (!requestAuthForAction()) return;
       const username = input ? input.value.trim() : "";
       const niche = select ? select.value : "Кафе";
-      if (!username) {
-        showToast("Укажите username", "error");
+      const normalizedValue = username.replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/\?.*$/, "").replace(/\/+$/, "");
+      const account = normalizedValue.replace(/^@/, "");
+      if (!account || !/^[a-z0-9._]{2,30}$/i.test(account)) {
+        showToast("Укажите корректный username или ссылку Instagram", "error");
         return;
       }
       const items = [
         {
-          title: "Bio и оффер",
-          text: `Для ниши «${niche}» добавьте более конкретный CTA и УТП в первые 80 символов.`
+          title: "Оценка профиля: 72/100",
+          text: `Демо-анализ для @${account} в нише «${niche}». Сильный визуал, но слабая упаковка оффера в био.`
         },
         {
-          title: "Контент-сетка",
-          text: "Доля экспертного контента ниже 20%. Рекомендуется 2 экспертных ролика в неделю."
+          title: "Сильные стороны",
+          text: "Регулярные публикации и качественная визуальная подача контента."
         },
         {
-          title: "Reels hooks",
-          text: "Добавьте сильный первый кадр и субтитры в первые 2 секунды."
+          title: "Слабые стороны",
+          text: "Мало продающих CTA и не хватает серийных рубрик под лиды."
         },
         {
-          title: "Воронка в директ",
-          text: "Подключите автоответы и квалификационный сценарий для лидов."
+          title: "Рекомендации",
+          text: "Добавьте 2 экспертных Reels в неделю, укрепите CTA в био и настройте автоответ в директ."
+        },
+        {
+          title: "Идеи контента",
+          text: "Серия «до/после», короткие разборы ошибок и кейс-ролики на 20–30 секунд."
         }
       ];
 
-      state.ai.lastAudit = { username, niche, items, createdAt: nowIso() };
+      state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
       saveState();
       renderAudit(state.ai.lastAudit);
-      showToast("Аудит готов");
+      showToast("Демо-аудит готов");
     });
   }
 
@@ -1545,7 +2058,8 @@
     const resultPanel = cards[1].querySelector(".panel-list");
     const button = controlsCard.querySelector(".btn.btn-primary");
     const selects = controlsCard.querySelectorAll("select");
-    if (!button || !resultPanel || selects.length < 3) return;
+    const qtyInput = controlsCard.querySelector("input[type='number']");
+    if (!button || !resultPanel || selects.length < 4) return;
 
     function renderIdeas(ideas) {
       resultPanel.innerHTML = ideas
@@ -1558,35 +2072,67 @@
           `
         )
         .join("");
+      let copyBtn = cards[1].querySelector("[data-copy-ideas]");
+      if (!copyBtn) {
+        copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "btn btn-ghost";
+        copyBtn.textContent = "Скопировать";
+        copyBtn.setAttribute("data-copy-ideas", "1");
+        cards[1].appendChild(copyBtn);
+      }
+      copyBtn.onclick = async () => {
+        const text = ideas.map((item, i) => `${i + 1}. ${item.title}\n${item.text}`).join("\n\n");
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Контент скопирован");
+        } catch (error) {
+          showToast("Не удалось скопировать", "error");
+        }
+      };
     }
 
     if (state.ai.lastContentIdeas) renderIdeas(state.ai.lastContentIdeas.ideas);
 
     button.addEventListener("click", () => {
-      if (!requestAuthForAction()) return;
       const niche = selects[0].value;
       const platform = selects[1].value;
       const goal = selects[2].value;
+      const tone = selects[3].value;
+      const count = Math.max(1, Math.min(10, Number(qtyInput ? qtyInput.value : 5) || 5));
 
-      const ideas = [
-        {
-          title: `${platform}: ролик «3 ошибки в нише ${niche.toLowerCase()}»`,
-          text: `Hook + быстрая демонстрация + CTA на ${goal.toLowerCase()}.`
-        },
-        {
-          title: `Серия stories «до/после»`,
-          text: `Покажите конкретные цифры и социальное доказательство для цели: ${goal.toLowerCase()}.`
-        },
-        {
-          title: "Контент-план на 7 дней",
-          text: "2 reels, 3 stories-серии, 1 экспертный пост, 1 отзыв клиента."
-        }
-      ];
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "Генерируем...";
 
-      state.ai.lastContentIdeas = { niche, platform, goal, ideas, createdAt: nowIso() };
-      saveState();
-      renderIdeas(ideas);
-      showToast("Контент-идеи сгенерированы");
+      window.setTimeout(() => {
+        const ideas = Array.from({ length: count }, (_, index) => {
+          const n = index + 1;
+          if (n % 3 === 1) {
+            return {
+              title: `Пост #${n}: «${niche} — ошибка, которая сливает ${goal.toLowerCase()}»`,
+              text: `${platform}, тон: ${tone.toLowerCase()}. Добавьте CTA в конце и 3 хэштега по нише.`
+            };
+          }
+          if (n % 3 === 2) {
+            return {
+              title: `Reels/TikTok #${n}: быстрый разбор кейса`,
+              text: `Hook 2 секунды, демонстрация результата и CTA на ${goal.toLowerCase()}.`
+            };
+          }
+          return {
+            title: `Stories-серия #${n}: прогрев перед оффером`,
+            text: "3 сторис: боль, решение, социальное доказательство + кнопка «Написать»."
+          };
+        });
+
+        state.ai.lastContentIdeas = { niche, platform, goal, tone, ideas, createdAt: nowIso() };
+        saveState();
+        renderIdeas(ideas);
+        button.disabled = false;
+        button.textContent = originalText;
+        showToast("Контент-идеи готовы");
+      }, 1300);
     });
   }
 
@@ -1596,6 +2142,13 @@
 
   function tasksForSpecialist(specialistId) {
     return state.tasks.filter((item) => item.assignedSpecialistId === specialistId);
+  }
+
+  function incomingTasksForSpecialist(specialistId) {
+    return state.tasks.filter((task) => {
+      if (task.assignedSpecialistId === specialistId) return false;
+      return (task.responses || []).some((response) => response.specialistId === specialistId);
+    });
   }
 
   function paymentsForBusinessUser(businessUserId) {
@@ -1630,21 +2183,31 @@
     const user = requireLoggedInBusiness(true);
     if (!user) return;
     const tasks = tasksForBusinessUser(user.id);
+    const panels = document.querySelectorAll(".dash-panels > article.card");
+    if (panels[0]) {
+      const title = panels[0].querySelector("h2");
+      if (title) title.textContent = `Активные проекты • ${user.name} (${user.email})`;
+    }
 
     const tableBody = document.querySelector(".table tbody");
     if (tableBody) {
-      tableBody.innerHTML = tasks
-        .slice(0, 5)
-        .map((task) => {
-          const specialist = findSpecialistById(task.assignedSpecialistId);
-          return `<tr>
-            <td>${task.title}</td>
-            <td>${specialist ? specialist.name : "Не назначен"}</td>
-            <td>${task.status}</td>
-            <td>${formatMoneyRub(task.budgetValue * 100)}</td>
-          </tr>`;
-        })
-        .join("");
+      if (!tasks.length) {
+        tableBody.innerHTML = "<tr><td colspan='4' class='meta'>Пока нет задач. Разместите первую задачу, чтобы получить отклики.</td></tr>";
+      } else {
+        tableBody.innerHTML = tasks
+          .slice(0, 5)
+          .map((task) => {
+            const specialist = findSpecialistById(task.assignedSpecialistId);
+            const status = task.status === "active" ? "В работе" : task.status;
+            return `<tr>
+              <td>${task.title}</td>
+              <td>${specialist ? specialist.name : "Не назначен"}</td>
+              <td>${status}</td>
+              <td>${formatMoneyByn(task.budgetByn || 0)}</td>
+            </tr>`;
+          })
+          .join("");
+      }
     }
 
     const stats = document.querySelectorAll(".stats-strip .stat-box strong");
@@ -1661,7 +2224,7 @@
       stats[0].textContent = String(tasks.length);
       stats[1].textContent = String(responsesCount);
       stats[2].textContent = String(favorites.length);
-      stats[3].textContent = avgRating;
+      stats[3].textContent = Number(avgRating).toFixed(1);
     }
 
     const latestMessagesCard = Array.from(document.querySelectorAll(".dash-panels > article.card")).find((card) =>
@@ -1695,13 +2258,17 @@
     const tasks = tasksForBusinessUser(user.id);
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
+    if (!tasks.length) {
+      tbody.innerHTML = "<tr><td colspan='5' class='meta'>У вас пока нет опубликованных задач.</td></tr>";
+      return;
+    }
     tbody.innerHTML = tasks
       .map(
         (task) => `
           <tr>
             <td>${task.title}</td>
             <td>${task.niche}</td>
-            <td>${task.budgetTier}</td>
+            <td>${formatMoneyByn(task.budgetByn || 0)}</td>
             <td>${task.responses.length}</td>
             <td><span class="status">${task.status === "active" ? "Активна" : task.status}</span></td>
           </tr>
@@ -1717,6 +2284,10 @@
     const favorites = state.favoritesByUser[user.id] || [];
     const list = document.querySelector(".panel-list");
     if (!list) return;
+    if (!favorites.length) {
+      list.innerHTML = '<div class="panel-item"><div class="meta">Пока нет избранных специалистов.</div></div>';
+      return;
+    }
     list.innerHTML = favorites
       .map((id) => {
         const specialist = findSpecialistById(id);
@@ -1734,13 +2305,17 @@
     const payments = paymentsForBusinessUser(user.id);
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
+    if (!payments.length) {
+      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Платежей пока нет.</td></tr>";
+      return;
+    }
     tbody.innerHTML = payments
       .map((payment) => {
         const task = state.tasks.find((item) => item.id === payment.taskId);
         return `
           <tr>
             <td>${task ? task.title : "Проект"}</td>
-            <td>${formatMoneyRub(payment.amount)}</td>
+            <td>${formatMoneyByn(payment.amount)}</td>
             <td><span class="status ${normalize(payment.status).includes("ожидает") ? "warn" : ""}">${payment.status}</span></td>
             <td>${formatDate(payment.date)}</td>
           </tr>
@@ -1895,7 +2470,7 @@
       if (form) {
         form.addEventListener("submit", (event) => {
           event.preventDefault();
-          if (!requireSpecialistForAction()) return;
+          if (!requireBusinessForAction()) return;
           const textArea = form.querySelector("textarea");
           const text = textArea ? textArea.value.trim() : "";
           if (!text) return;
@@ -1947,29 +2522,50 @@
     if (!specialist) return;
 
     const tasks = tasksForSpecialist(specialist.id);
+    const incoming = incomingTasksForSpecialist(specialist.id);
+    const user = currentUser();
+    const projectsCard = Array.from(document.querySelectorAll(".dash-panels > article.card")).find((card) =>
+      normalize(card.querySelector("h2")?.textContent).includes("проекты")
+    );
+    if (projectsCard && user) {
+      const h2 = projectsCard.querySelector("h2");
+      if (h2) h2.textContent = `Проекты • ${user.name} (${user.email})`;
+    }
     const statNodes = document.querySelectorAll(".stats-strip .stat-box strong");
     if (statNodes.length >= 4) {
       statNodes[0].textContent = specialist.reviewsCount > 0 ? specialist.rating.toFixed(1) : "—";
-      statNodes[1].textContent = String(conversationsForSpecialist(specialist.id).length);
-      const conversion = tasks.length ? Math.min(98, 42 + tasks.length * 6) : 42;
+      statNodes[1].textContent = String(incoming.length);
+      const conversion = tasks.length ? Math.min(98, 38 + tasks.length * 8) : 0;
       statNodes[2].textContent = `${conversion}%`;
       statNodes[3].textContent = specialist.stats.views;
     }
 
     const tbody = document.querySelector(".table tbody");
     if (tbody) {
-      tbody.innerHTML = tasks
-        .map(
-          (task) => `
-            <tr>
-              <td>${task.niche}</td>
-              <td>${task.platforms}</td>
-              <td>${formatDate(task.createdAt)}</td>
-              <td>${task.status}</td>
-            </tr>
-          `
-        )
-        .join("");
+      const rows = [];
+      tasks.forEach((task) => {
+        rows.push(`
+          <tr>
+            <td>${task.title}</td>
+            <td>${task.platforms}</td>
+            <td>${formatDate(task.createdAt)}</td>
+            <td>В работе</td>
+          </tr>
+        `);
+      });
+      incoming.forEach((task) => {
+        rows.push(`
+          <tr>
+            <td>${task.title}</td>
+            <td>${task.platforms}</td>
+            <td>${formatDate(task.createdAt)}</td>
+            <td>Доступна</td>
+          </tr>
+        `);
+      });
+      tbody.innerHTML = rows.length
+        ? rows.join("")
+        : "<tr><td colspan='4' class='meta'>Пока нет проектов и входящих задач.</td></tr>";
     }
   }
 
@@ -1980,18 +2576,35 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     const tasks = tasksForSpecialist(specialist.id);
-    tbody.innerHTML = tasks
+    const incoming = incomingTasksForSpecialist(specialist.id);
+    const rows = tasks
       .map(
         (task) => `
           <tr>
-            <td>${task.niche}</td>
+            <td>${task.title}</td>
             <td>${specialist.specialization}</td>
             <td>${formatDate(task.createdAt)}</td>
-            <td><span class="status">${task.status === "active" ? "В работе" : task.status}</span></td>
+            <td><span class="status">В работе</span></td>
           </tr>
         `
       )
-      .join("");
+      .concat(
+        incoming.map((task) => {
+          const response = (task.responses || []).find((item) => item.specialistId === specialist.id);
+          const score = response ? `${response.score}%` : "—";
+          return `
+            <tr>
+              <td>${task.title}</td>
+              <td>Отклик (${score})</td>
+              <td>${formatDate(task.createdAt)}</td>
+              <td><span class="status warn">Доступна</span></td>
+            </tr>
+          `;
+        })
+      );
+    tbody.innerHTML = rows.length
+      ? rows.join("")
+      : "<tr><td colspan='4' class='meta'>Проектов и откликов пока нет.</td></tr>";
   }
 
   function initSpecialistMessagesPage() {
@@ -2228,6 +2841,7 @@
   if (!enforceSessionAndRole()) return;
   initGlobalRoiNavLink();
   initBrandLogos();
+  syncProfileLinks();
   initTopbarActionsByRole();
   initActionGuardsForLinks();
   initMobileMenu();
