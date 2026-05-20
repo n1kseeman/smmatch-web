@@ -1210,8 +1210,7 @@ textarea {
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  overflow: hidden;
 }
 
 .dash {
