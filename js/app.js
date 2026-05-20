@@ -525,6 +525,7 @@
       ...next.settings.site,
       socials: { ...defaultSiteSettings().socials, ...(next.settings.site.socials || {}) }
     };
+    next.settings.site.primaryColor = "#7b6cff";
     next.settings.aiTools = {
       ...defaultAiToolsSettings(),
       ...next.settings.aiTools,
@@ -1050,7 +1051,7 @@
     const site = state.settings && state.settings.site ? state.settings.site : defaultSiteSettings();
     const content = state.settings && state.settings.content ? state.settings.content : defaultContentSettings();
 
-    document.documentElement.style.setProperty("--brand", site.primaryColor || "#7b6cff");
+    document.documentElement.style.setProperty("--brand", "#7b6cff");
     document.title = document.title.replace("SMMATCH", site.platformName || "SMMATCH");
 
     if (site.logoUrl) {
@@ -3711,7 +3712,6 @@
       if (siteForm) {
         siteForm.elements.platformName.value = site.platformName || "SMMATCH";
         siteForm.elements.logoUrl.value = site.logoUrl || "";
-        siteForm.elements.primaryColor.value = site.primaryColor || "#7b6cff";
         siteForm.elements.currency.value = site.currency || "BYN";
         siteForm.elements.contactEmail.value = site.contactEmail || "";
         siteForm.elements.footerText.value = site.footerText || "";
@@ -4045,23 +4045,20 @@
         if (!id) return;
         const specialist = byId(state.specialists, id);
         if (!specialist) return;
-        if (editBtn && specialistForm) {
-          specialistForm.elements.id.value = specialist.id;
-          specialistForm.elements.name.value = specialist.name || "";
-          specialistForm.elements.specialization.value = specialist.specialization || "";
-          specialistForm.elements.avatar.value = specialist.avatar || "";
-          specialistForm.elements.city.value = specialist.city || "";
-          specialistForm.elements.experience.value = specialist.experience || "middle";
-          specialistForm.elements.rating.value = String(specialist.rating || 0);
-          specialistForm.elements.skills.value = (specialist.skills || []).join(", ");
-          specialistForm.elements.priceByn.value = String(specialist.priceByn || 0);
-          specialistForm.elements.description.value = specialist.description || "";
-          specialistForm.elements.instagram.value = specialist.socials.instagram || "";
-          specialistForm.elements.tiktok.value = specialist.socials.tiktok || "";
-          specialistForm.elements.telegram.value = specialist.socials.telegram || "";
-          specialistForm.elements.behance.value = specialist.socials.behance || "";
-          specialistForm.elements.cases.value = (specialist.cases || []).map((item) => item.title).join("\n");
-          if (specialistFormTitle) specialistFormTitle.textContent = `Редактирование: ${specialist.name}`;
+        if (editBtn) {
+          const nextName = window.prompt("Имя специалиста", specialist.name) || specialist.name;
+          const nextSpecialization = window.prompt("Специализация", specialist.specialization) || specialist.specialization;
+          const nextCity = window.prompt("Город", specialist.city) || specialist.city;
+          const nextPrice = window.prompt("Стоимость (BYN)", String(specialist.priceByn || 0)) || String(specialist.priceByn || 0);
+          specialist.name = nextName.trim() || specialist.name;
+          specialist.specialization = nextSpecialization.trim() || specialist.specialization;
+          specialist.city = nextCity.trim() || specialist.city;
+          specialist.priceByn = Math.max(0, Number(nextPrice) || specialist.priceByn || 0);
+          specialist.slug = normalizeForSlug(specialist.name);
+          logEvent("specialist_updated", "specialist", specialist.id, specialist.name, adminUser.id);
+          saveState();
+          rerenderAll();
+          showToast("Специалист обновлен");
           return;
         }
         if (recBtn) {
@@ -4443,7 +4440,7 @@
           ...state.settings.site,
           platformName: String(siteForm.elements.platformName.value || "SMMATCH"),
           logoUrl: String(siteForm.elements.logoUrl.value || ""),
-          primaryColor: String(siteForm.elements.primaryColor.value || "#7b6cff"),
+          primaryColor: "#7b6cff",
           currency: String(siteForm.elements.currency.value || "BYN"),
           contactEmail: String(siteForm.elements.contactEmail.value || ""),
           footerText: String(siteForm.elements.footerText.value || ""),
