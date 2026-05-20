@@ -216,10 +216,57 @@
       currentUserId: null,
       specialists: [],
       tasks: [],
+      complaints: [],
+      moderationHistory: [],
+      notifications: [],
+      logs: [],
       favoritesByUser: {},
       conversations: [],
       reviews: [],
       payments: [],
+      settings: {
+        site: {
+          platformName: "SMMATCH",
+          logoUrl: "",
+          primaryColor: "#7b6cff",
+          currency: "BYN",
+          contactEmail: "hello@smmatch.local",
+          socials: {
+            instagram: "",
+            telegram: "",
+            vk: "",
+            tiktok: ""
+          },
+          footerText: "© SMMATCH. Все права защищены.",
+          registrationEnabled: true,
+          taskPublishingEnabled: true,
+          specialistsCatalogEnabled: true
+        },
+        aiTools: {
+          aiMatch: { enabled: true, mode: "demo", limitPerDay: 200, hint: "AI Match использует демо-алгоритм подбора." },
+          instagramAudit: {
+            enabled: true,
+            mode: "demo",
+            limitPerDay: 200,
+            hint: "Instagram Audit показывает пример демо-анализа."
+          },
+          contentGenerator: {
+            enabled: true,
+            mode: "demo",
+            limitPerDay: 200,
+            hint: "Content Generator создает демо-идеи на основе формы."
+          },
+          roiCalculator: { enabled: true, mode: "demo", limitPerDay: 500, hint: "ROI калькулятор показывает прогноз по введенным данным." }
+        },
+        content: {
+          homeHeroTitle: "Найдите SMM-специалиста, который реально даст результат",
+          benefitsTitle: "Преимущества платформы",
+          faqTitle: "Частые вопросы",
+          platformRules: "Правила платформы SMMATCH.",
+          privacyPolicy: "Политика конфиденциальности SMMATCH.",
+          termsOfUse: "Условия использования SMMATCH."
+        }
+      },
       ai: {
         lastMatchTaskId: null,
         lastAudit: null,
@@ -231,6 +278,40 @@
         selectedSpecialistConversationId: null
       }
     };
+  }
+
+  function defaultSiteSettings() {
+    return seedState().settings.site;
+  }
+
+  function defaultAiToolsSettings() {
+    return seedState().settings.aiTools;
+  }
+
+  function defaultContentSettings() {
+    return seedState().settings.content;
+  }
+
+  function ensureDemoAdmin(next) {
+    const adminEmail = "admin@smmatch.local";
+    let admin = next.users.find((item) => normalize(item.email) === adminEmail);
+    if (!admin) {
+      admin = {
+        id: uid("user"),
+        role: "admin",
+        name: "SMMatch Admin",
+        email: adminEmail,
+        passwordHash: hashPasswordPlaceholder("admin123"),
+        blocked: false,
+        createdAt: nowIso()
+      };
+      next.users.unshift(admin);
+    } else {
+      admin.role = "admin";
+      if (!admin.passwordHash) admin.passwordHash = hashPasswordPlaceholder("admin123");
+      admin.blocked = Boolean(admin.blocked);
+    }
+    return admin;
   }
 
   function buildMockSpecialists() {
@@ -422,13 +503,37 @@
     if (!Array.isArray(next.users)) next.users = [];
     if (!Array.isArray(next.specialists)) next.specialists = [];
     if (!Array.isArray(next.tasks)) next.tasks = [];
+    if (!Array.isArray(next.complaints)) next.complaints = [];
+    if (!Array.isArray(next.moderationHistory)) next.moderationHistory = [];
+    if (!Array.isArray(next.notifications)) next.notifications = [];
+    if (!Array.isArray(next.logs)) next.logs = [];
     if (!Array.isArray(next.reviews)) next.reviews = [];
     if (!Array.isArray(next.conversations)) next.conversations = [];
+    if (!Array.isArray(next.payments)) next.payments = [];
     if (!next.favoritesByUser || typeof next.favoritesByUser !== "object") next.favoritesByUser = {};
     if (!next.ai || typeof next.ai !== "object") next.ai = { lastMatchTaskId: null, lastAudit: null, lastContentIdeas: null };
+    if (!next.settings || typeof next.settings !== "object") next.settings = {};
+    if (!next.settings.site || typeof next.settings.site !== "object") next.settings.site = {};
+    if (!next.settings.aiTools || typeof next.settings.aiTools !== "object") next.settings.aiTools = {};
+    if (!next.settings.content || typeof next.settings.content !== "object") next.settings.content = {};
     if (!next.ui || typeof next.ui !== "object") {
       next.ui = { selectedSpecialistId: null, selectedBusinessConversationId: null, selectedSpecialistConversationId: null };
     }
+
+    next.settings.site = {
+      ...defaultSiteSettings(),
+      ...next.settings.site,
+      socials: { ...defaultSiteSettings().socials, ...(next.settings.site.socials || {}) }
+    };
+    next.settings.aiTools = {
+      ...defaultAiToolsSettings(),
+      ...next.settings.aiTools,
+      aiMatch: { ...defaultAiToolsSettings().aiMatch, ...(next.settings.aiTools.aiMatch || {}) },
+      instagramAudit: { ...defaultAiToolsSettings().instagramAudit, ...(next.settings.aiTools.instagramAudit || {}) },
+      contentGenerator: { ...defaultAiToolsSettings().contentGenerator, ...(next.settings.aiTools.contentGenerator || {}) },
+      roiCalculator: { ...defaultAiToolsSettings().roiCalculator, ...(next.settings.aiTools.roiCalculator || {}) }
+    };
+    next.settings.content = { ...defaultContentSettings(), ...next.settings.content };
 
     next.users = next.users.map((user) => {
       const migrated = { ...user };
@@ -436,12 +541,26 @@
         migrated.passwordHash = hashPasswordPlaceholder(migrated.password);
         delete migrated.password;
       }
+      migrated.role = migrated.role === "admin" ? "admin" : migrated.role === "specialist" ? "specialist" : "business";
+      migrated.blocked = Boolean(migrated.blocked);
+      migrated.createdAt = migrated.createdAt || nowIso();
       return migrated;
     });
+    ensureDemoAdmin(next);
 
-    next.specialists = next.specialists.map(normalizeSpecialistData);
+    next.specialists = next.specialists.map(normalizeSpecialistData).map((specialist) => ({
+      ...specialist,
+      status: specialist.status || "active",
+      recommended: Boolean(specialist.recommended),
+      createdAt: specialist.createdAt || nowIso()
+    }));
     if (!next.specialists.length) {
-      next.specialists = buildMockSpecialists().map(normalizeSpecialistData);
+      next.specialists = buildMockSpecialists().map(normalizeSpecialistData).map((specialist) => ({
+        ...specialist,
+        status: "active",
+        recommended: false,
+        createdAt: nowIso()
+      }));
     }
 
     next.tasks = next.tasks.map((task) => {
@@ -451,8 +570,60 @@
       if (!migrated.category) migrated.category = migrated.niche || "SMM";
       if (!migrated.budgetByn) migrated.budgetByn = Number(migrated.budgetValue || 0) * 6 || 0;
       if (!Array.isArray(migrated.responses)) migrated.responses = [];
+      const statusMap = {
+        active: "published",
+        paused: "archived",
+        done: "completed"
+      };
+      migrated.status = statusMap[migrated.status] || migrated.status || "published";
+      migrated.hidden = Boolean(migrated.hidden);
+      migrated.createdAt = migrated.createdAt || nowIso();
+      migrated.responses = migrated.responses.map((response) => ({
+        id: response.id || uid("resp"),
+        specialistId: response.specialistId,
+        score: Number(response.score || 0),
+        reasons: Array.isArray(response.reasons) ? response.reasons : [],
+        strongestAreas: Array.isArray(response.strongestAreas) ? response.strongestAreas : [],
+        estimatedCostByn: Number(response.estimatedCostByn || 0),
+        message: response.message || "Готов(а) подключиться к задаче и предложить план работ.",
+        priceByn: Number(response.priceByn || response.estimatedCostByn || 0),
+        deadlineDays: Number(response.deadlineDays || 14),
+        status: response.status || "new",
+        createdAt: response.createdAt || migrated.createdAt || nowIso()
+      }));
       return migrated;
     });
+
+    next.complaints = next.complaints.map((item) => ({
+      id: item.id || uid("complaint"),
+      reporterUserId: item.reporterUserId || null,
+      targetType: item.targetType || "specialist",
+      targetId: item.targetId || "",
+      reason: item.reason || "Без указания причины",
+      status: item.status || "new",
+      adminComment: item.adminComment || "",
+      createdAt: item.createdAt || nowIso()
+    }));
+
+    next.notifications = next.notifications.map((item) => ({
+      id: item.id || uid("notif"),
+      audience: item.audience || "all",
+      userId: item.userId || null,
+      title: item.title || "Уведомление",
+      text: item.text || "",
+      createdAt: item.createdAt || nowIso(),
+      createdBy: item.createdBy || null
+    }));
+
+    next.logs = next.logs.map((item) => ({
+      id: item.id || uid("log"),
+      ts: item.ts || nowIso(),
+      action: item.action || "unknown",
+      actorUserId: item.actorUserId || null,
+      targetType: item.targetType || "system",
+      targetId: item.targetId || "",
+      details: item.details || ""
+    }));
 
     next.version = STATE_VERSION;
     return next;
@@ -484,6 +655,61 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function logEvent(action, targetType, targetId, details, actorUserId) {
+    state.logs.unshift({
+      id: uid("log"),
+      ts: nowIso(),
+      action,
+      actorUserId: actorUserId || (currentUser() ? currentUser().id : null),
+      targetType: targetType || "system",
+      targetId: targetId || "",
+      details: details || ""
+    });
+    if (state.logs.length > 800) state.logs = state.logs.slice(0, 800);
+  }
+
+  function roleLabel(role) {
+    if (role === "admin") return "Админ";
+    if (role === "specialist") return "Специалист";
+    return "Бизнес";
+  }
+
+  function taskStatusLabel(status) {
+    const labels = {
+      draft: "Черновик",
+      pending_moderation: "На модерации",
+      published: "Опубликована",
+      in_progress: "В работе",
+      completed: "Завершена",
+      rejected: "Отклонена",
+      archived: "В архиве"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function responseStatusLabel(status) {
+    const labels = {
+      new: "Новый",
+      accepted: "Принят",
+      rejected: "Отклонен",
+      cancelled: "Отменен"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function aiToolConfig(key) {
+    const defaults = defaultAiToolsSettings();
+    const tools = state.settings && state.settings.aiTools ? state.settings.aiTools : defaults;
+    return { ...(defaults[key] || {}), ...(tools[key] || {}) };
+  }
+
+  function ensureAiToolEnabled(key, toolName) {
+    const config = aiToolConfig(key);
+    if (config.enabled) return true;
+    showToast(`${toolName || "Инструмент"} временно отключен`, "error");
+    return false;
   }
 
   function findSpecialistById(id) {
@@ -544,6 +770,13 @@
       window.setTimeout(redirectToLogin, 250);
       return null;
     }
+    if (user.blocked) {
+      showToast("Ваш аккаунт заблокирован", "error");
+      state.currentUserId = null;
+      saveState();
+      window.setTimeout(redirectToLogin, 250);
+      return null;
+    }
     return user;
   }
 
@@ -565,6 +798,35 @@
       return null;
     }
     return user;
+  }
+
+  function initGlobalComplaintActions() {
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const trigger = target.closest("[data-report-type]");
+      if (!trigger) return;
+      event.preventDefault();
+      const reporter = requestAuthForAction("Сначала войдите, чтобы отправить жалобу");
+      if (!reporter) return;
+      const targetType = trigger.getAttribute("data-report-type") || "specialist";
+      const targetId = trigger.getAttribute("data-report-id") || "";
+      const reason = window.prompt("Опишите причину жалобы");
+      if (!reason || !reason.trim()) return;
+      state.complaints.unshift({
+        id: uid("complaint"),
+        reporterUserId: reporter.id,
+        targetType,
+        targetId,
+        reason: reason.trim(),
+        status: "new",
+        adminComment: "",
+        createdAt: nowIso()
+      });
+      logEvent("complaint_created", "complaint", targetId, `${targetType}: ${reason.trim()}`, reporter.id);
+      saveState();
+      showToast("Жалоба отправлена");
+    });
   }
 
   function getRedirectAfterLogin() {
@@ -593,10 +855,14 @@
     if (normalizedPath.includes("/dashboard/specialist/")) {
       return "specialist";
     }
+    if (normalizedPath.includes("/admin/")) {
+      return "admin";
+    }
     return null;
   }
 
   function defaultDashboardByRole(role) {
+    if (role === "admin") return appUrl("admin/index.html");
     return role === "specialist" ? appUrl("dashboard/specialist/index.html") : appUrl("dashboard/business/index.html");
   }
 
@@ -622,6 +888,14 @@
       return true;
     }
 
+    if (user.blocked) {
+      state.currentUserId = null;
+      saveState();
+      showToast("Ваш аккаунт заблокирован", "error");
+      redirectToLogin();
+      return false;
+    }
+
     if (isAuthPage) {
       window.location.href = resolvePostAuthDestination(user);
       return false;
@@ -629,6 +903,7 @@
 
     const onBusinessOnlyRoute = isPath("/dashboard/business/");
     const onSpecialistOnlyRoute = isPath("/dashboard/specialist/");
+    const onAdminOnlyRoute = isPath("/admin/");
 
     if (user.role === "business" && onSpecialistOnlyRoute) {
       window.location.href = appUrl("dashboard/business/index.html");
@@ -637,6 +912,11 @@
 
     if (user.role === "specialist" && onBusinessOnlyRoute) {
       window.location.href = appUrl("dashboard/specialist/index.html");
+      return false;
+    }
+
+    if (user.role !== "admin" && onAdminOnlyRoute) {
+      redirectToLogin();
       return false;
     }
 
@@ -686,6 +966,12 @@
     if (user.role === "business") {
       addAction("Кабинет", "dashboard/business/index.html", "btn btn-ghost keep-mobile");
       addAction("Разместить задачу", "task/new/index.html", "btn btn-primary keep-mobile");
+      addLogout();
+      return;
+    }
+
+    if (user.role === "admin") {
+      addAction("Админка", "admin/index.html", "btn btn-primary keep-mobile");
       addLogout();
       return;
     }
@@ -760,6 +1046,75 @@
     });
   }
 
+  function initGlobalSiteSettings() {
+    const site = state.settings && state.settings.site ? state.settings.site : defaultSiteSettings();
+    const content = state.settings && state.settings.content ? state.settings.content : defaultContentSettings();
+
+    document.documentElement.style.setProperty("--brand", site.primaryColor || "#7b6cff");
+    document.title = document.title.replace("SMMATCH", site.platformName || "SMMATCH");
+
+    if (site.logoUrl) {
+      document.querySelectorAll(".brand-logo").forEach((img) => {
+        img.src = site.logoUrl;
+      });
+    }
+
+    const footerMeta = document.querySelector("footer .meta");
+    if (footerMeta && site.footerText) footerMeta.textContent = site.footerText;
+
+    if (isPath("/index.html") || window.location.pathname === "/") {
+      const heroTitle = document.querySelector(".hero h1");
+      if (heroTitle && content.homeHeroTitle) heroTitle.textContent = content.homeHeroTitle;
+      document.querySelectorAll(".section-title").forEach((node) => {
+        const txt = normalize(node.textContent);
+        if (txt.includes("faq") || txt.includes("вопрос")) node.textContent = content.faqTitle || node.textContent;
+        if (txt.includes("преим")) node.textContent = content.benefitsTitle || node.textContent;
+      });
+    }
+
+    if (!site.registrationEnabled) {
+      document.querySelectorAll("a[href*='auth/register']").forEach((link) => {
+        link.setAttribute("aria-disabled", "true");
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showToast("Регистрация временно отключена", "error");
+        });
+      });
+    }
+
+    if (!site.taskPublishingEnabled) {
+      document.querySelectorAll("a[href*='task/new']").forEach((link) => {
+        link.setAttribute("aria-disabled", "true");
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showToast("Публикация задач временно отключена", "error");
+        });
+      });
+      if (isPath("/task/new/")) {
+        showToast("Публикация задач временно отключена", "error");
+        window.setTimeout(() => {
+          window.location.href = appUrl("index.html");
+        }, 250);
+      }
+    }
+
+    if (!site.specialistsCatalogEnabled) {
+      document.querySelectorAll("a[href*='specialists/index.html']").forEach((link) => {
+        link.setAttribute("aria-disabled", "true");
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showToast("Каталог специалистов временно скрыт", "error");
+        });
+      });
+      if (isPath("/specialists/")) {
+        const root = document.querySelector("main.container");
+        if (root) {
+          root.innerHTML = `<section class="section"><article class="card"><h1>Каталог временно скрыт</h1><p class="meta">Администратор отключил каталог специалистов. Попробуйте позже.</p></article></section>`;
+        }
+      }
+    }
+  }
+
   function initGlobalAnimations() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const items = document.querySelectorAll(
@@ -789,7 +1144,7 @@
   function initPageHeroVisuals() {
     const hero = document.querySelector(".page-hero");
     if (!hero || hero.querySelector(".hero-collage") || isPath("/roi-calculator/")) return;
-    if (isPath("/dashboard/") || isPath("/auth/")) return;
+    if (isPath("/dashboard/") || isPath("/auth/") || isPath("/admin/")) return;
 
     const title = hero.querySelector("h1")?.textContent || "";
     const collage = document.createElement("div");
@@ -811,6 +1166,7 @@
   }
 
   function initCardVisualBoost() {
+    if (isPath("/admin/")) return;
     const cards = document.querySelectorAll("main .card");
     if (!cards.length) return;
     const used = new Set();
@@ -938,6 +1294,10 @@
     if (!isPath("/roi-calculator/")) return;
     const root = document.querySelector("[data-roi-tool]");
     if (!root) return;
+    if (!ensureAiToolEnabled("roiCalculator", "ROI-калькулятор")) {
+      root.innerHTML = `<section class="section"><article class="card"><h2>ROI-калькулятор временно отключен</h2><p class="meta">${aiToolConfig("roiCalculator").hint || "Инструмент отключен администратором."}</p></article></section>`;
+      return;
+    }
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fields = {
@@ -1274,6 +1634,7 @@
           <div class="chips">
             <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Смотреть профиль</a>
             <button class="btn btn-ghost" data-add-favorite="${specialist.id}" type="button">В избранное</button>
+            <button class="btn btn-ghost" data-report-type="specialist" data-report-id="${specialist.id}" type="button">Пожаловаться</button>
           </div>
         </div>
       </article>
@@ -1529,8 +1890,14 @@
 
       const responses = state.specialists
         .map((specialist) => ({
+          id: uid("resp"),
           specialistId: specialist.id,
-          ...computeMatchAnalysis(specialist, taskInput)
+          ...computeMatchAnalysis(specialist, taskInput),
+          message: "Готов(а) подключиться и предложить план запуска на 2 недели.",
+          priceByn: specialist.priceByn,
+          deadlineDays: 14,
+          status: "new",
+          createdAt: nowIso()
         }))
         .sort((a, b) => b.score - a.score)
         .slice(0, 5);
@@ -1554,7 +1921,7 @@
         needTarget: taskInput.needTarget,
         needContent: taskInput.needContent,
         needReels: taskInput.needReels,
-        status: "active",
+        status: "pending_moderation",
         businessUserId,
         assignedSpecialistId,
         responses,
@@ -1579,6 +1946,7 @@
       }
 
       saveState();
+      logEvent("task_created", "task", task.id, `Создана задача ${task.title}`, user.id);
       if (secondPanel && previewTitle) {
         renderTaskPreviewMatches(task, previewTitle.parentElement);
       }
@@ -1666,7 +2034,9 @@
             role: role === "specialist" ? "specialist" : "business",
             name,
             email,
-            passwordHash: hashPasswordPlaceholder(password)
+            passwordHash: hashPasswordPlaceholder(password),
+            blocked: false,
+            createdAt: nowIso()
           };
 
           if (user.role === "specialist") {
@@ -1701,6 +2071,7 @@
           }
 
           state.users.push(user);
+          logEvent("user_created", "user", user.id, `Создан пользователь (${user.role})`, user.id);
           state.currentUserId = userId;
           saveState();
           showToast("Аккаунт создан");
@@ -1726,7 +2097,14 @@
             showToast("Неверный email или пароль", "error");
             return;
           }
+          if (user.blocked) {
+            showToast("Аккаунт заблокирован", "error");
+            return;
+          }
           state.currentUserId = user.id;
+          if (user.role === "admin") {
+            logEvent("admin_login", "user", user.id, "Вход администратора", user.id);
+          }
           saveState();
           showToast("Вы вошли в систему");
           window.setTimeout(() => {
@@ -1929,10 +2307,23 @@
         saveState();
       });
     });
+
+    document.querySelectorAll("[data-report-specialist]").forEach((button) => {
+      button.setAttribute("data-report-type", "specialist");
+      button.setAttribute("data-report-id", specialist.id);
+    });
+
   }
 
   function initAiMatchPage() {
     if (!isPath("/ai/match/")) return;
+    if (!ensureAiToolEnabled("aiMatch", "AI Match")) {
+      const root = document.querySelector("main.container");
+      if (root) {
+        root.innerHTML = `<section class="section"><article class="card"><h2>AI Match временно отключен</h2><p class="meta">${aiToolConfig("aiMatch").hint || "Инструмент отключен администратором."}</p></article></section>`;
+      }
+      return;
+    }
     const cards = document.querySelectorAll(".kpi-cards .card");
     const panel = document.querySelector(".panel-list");
     const latestTask = state.tasks.find((task) => task.id === state.ai.lastMatchTaskId) || state.tasks[0];
@@ -1983,6 +2374,13 @@
 
   function initAiAuditPage() {
     if (!isPath("/ai/instagram-audit/")) return;
+    if (!ensureAiToolEnabled("instagramAudit", "Instagram Audit")) {
+      const root = document.querySelector("main.container");
+      if (root) {
+        root.innerHTML = `<section class="section"><article class="card"><h2>Instagram Audit временно отключен</h2><p class="meta">${aiToolConfig("instagramAudit").hint || "Инструмент отключен администратором."}</p></article></section>`;
+      }
+      return;
+    }
     const cards = document.querySelectorAll("main .card");
     if (cards.length < 2) return;
     const controlsCard = cards[0];
@@ -2052,6 +2450,13 @@
 
   function initAiContentPage() {
     if (!isPath("/ai/content-generator/")) return;
+    if (!ensureAiToolEnabled("contentGenerator", "Content Generator")) {
+      const root = document.querySelector("main.container");
+      if (root) {
+        root.innerHTML = `<section class="section"><article class="card"><h2>Content Generator временно отключен</h2><p class="meta">${aiToolConfig("contentGenerator").hint || "Инструмент отключен администратором."}</p></article></section>`;
+      }
+      return;
+    }
     const cards = document.querySelectorAll("main .card");
     if (cards.length < 2) return;
     const controlsCard = cards[0];
@@ -2198,7 +2603,7 @@
           .slice(0, 5)
           .map((task) => {
             const specialist = findSpecialistById(task.assignedSpecialistId);
-            const status = task.status === "active" ? "В работе" : task.status;
+            const status = taskStatusLabel(task.status);
             return `<tr>
               <td>${task.title}</td>
               <td>${specialist ? specialist.name : "Не назначен"}</td>
@@ -2270,7 +2675,7 @@
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
             <td>${task.responses.length}</td>
-            <td><span class="status">${task.status === "active" ? "Активна" : task.status}</span></td>
+            <td><span class="status">${taskStatusLabel(task.status)}</span></td>
           </tr>
         `
       )
@@ -2826,6 +3231,1291 @@
     }
   }
 
+  function openConfirmModal(options) {
+    const title = options && options.title ? options.title : "Подтвердите действие";
+    const text = options && options.text ? options.text : "Это действие нельзя отменить.";
+    const confirmText = options && options.confirmText ? options.confirmText : "Подтвердить";
+    const cancelText = options && options.cancelText ? options.cancelText : "Отмена";
+    const onConfirm = options && typeof options.onConfirm === "function" ? options.onConfirm : () => {};
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "app-modal-backdrop";
+    backdrop.innerHTML = `
+      <div class="app-modal">
+        <h3>${title}</h3>
+        <p>${text}</p>
+        <div class="hero-buttons">
+          <button class="btn btn-danger" type="button" data-confirm-modal-ok>${confirmText}</button>
+          <button class="btn btn-ghost" type="button" data-confirm-modal-cancel>${cancelText}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    function close() {
+      backdrop.remove();
+    }
+
+    backdrop.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target === backdrop || target.closest("[data-confirm-modal-cancel]")) {
+        close();
+        return;
+      }
+      if (target.closest("[data-confirm-modal-ok]")) {
+        close();
+        onConfirm();
+      }
+    });
+  }
+
+  function initAdminPanel() {
+    if (!isPath("/admin/")) return;
+    const root = document.querySelector("[data-admin-root]");
+    if (!root) return;
+    const adminUser = currentUser();
+    if (!adminUser || adminUser.role !== "admin") {
+      redirectToLogin();
+      return;
+    }
+
+    const tabsWrap = root.querySelector("[data-admin-tabs]");
+    const tabButtons = Array.from(root.querySelectorAll("[data-admin-tab-btn]"));
+    const sections = Array.from(root.querySelectorAll("[data-admin-tab]"));
+    const local = {
+      userFilter: "all",
+      userSearch: "",
+      specialistSearch: "",
+      taskFilter: "all",
+      taskSearch: "",
+      financeFilter: "all"
+    };
+
+    function byId(list, id) {
+      return list.find((item) => item.id === id) || null;
+    }
+
+    function userName(userId) {
+      const user = byId(state.users, userId);
+      return user ? `${user.name} (${user.email})` : "Неизвестный пользователь";
+    }
+
+    function taskOwner(task) {
+      const user = task ? byId(state.users, task.businessUserId) : null;
+      return user ? user.name : "—";
+    }
+
+    function specialistNameById(specialistId) {
+      const specialist = byId(state.specialists, specialistId);
+      return specialist ? specialist.name : "—";
+    }
+
+    function allResponses() {
+      return state.tasks.flatMap((task) =>
+        (task.responses || []).map((response) => ({ ...response, taskId: task.id, taskTitle: task.title }))
+      );
+    }
+
+    function setTab(tabName) {
+      tabButtons.forEach((btn) => {
+        const active = btn.getAttribute("data-admin-tab-btn") === tabName;
+        btn.classList.toggle("active", active);
+      });
+      sections.forEach((section) => {
+        const active = section.getAttribute("data-admin-tab") === tabName;
+        section.classList.toggle("active", active);
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tabName);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function renderDashboard() {
+      const kpis = root.querySelector("[data-admin-kpis]");
+      const users = state.users.length;
+      const business = state.users.filter((item) => item.role === "business").length;
+      const specialists = state.specialists.length;
+      const tasksTotal = state.tasks.length;
+      const tasksActive = state.tasks.filter((item) => ["published", "in_progress", "pending_moderation"].includes(item.status)).length;
+      const tasksCompleted = state.tasks.filter((item) => item.status === "completed").length;
+      const responses = allResponses().length;
+      const complaints = state.complaints.length;
+      if (kpis) {
+        kpis.innerHTML = `
+          <div class="stat-box"><strong>${users}</strong><span class="meta">пользователей</span></div>
+          <div class="stat-box"><strong>${business}</strong><span class="meta">бизнес-аккаунтов</span></div>
+          <div class="stat-box"><strong>${specialists}</strong><span class="meta">специалистов</span></div>
+          <div class="stat-box"><strong>${tasksTotal}</strong><span class="meta">задач всего</span></div>
+          <div class="stat-box"><strong>${tasksActive}</strong><span class="meta">активных задач</span></div>
+          <div class="stat-box"><strong>${tasksCompleted}</strong><span class="meta">завершенных задач</span></div>
+          <div class="stat-box"><strong>${responses}</strong><span class="meta">откликов</span></div>
+          <div class="stat-box"><strong>${complaints}</strong><span class="meta">жалоб и модераций</span></div>
+        `;
+      }
+
+      const latestUsers = root.querySelector("[data-admin-latest-users]");
+      if (latestUsers) {
+        const items = state.users
+          .slice()
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+          .slice(0, 6);
+        latestUsers.innerHTML = items.length
+          ? items
+              .map((user) => `<div class="panel-item"><strong>${user.name}</strong><div class="meta">${user.email} • ${roleLabel(user.role)}</div></div>`)
+              .join("")
+          : `<div class="empty-state">Пользователи пока отсутствуют.</div>`;
+      }
+
+      const latestTasks = root.querySelector("[data-admin-latest-tasks]");
+      if (latestTasks) {
+        const items = state.tasks
+          .slice()
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+          .slice(0, 6);
+        latestTasks.innerHTML = items.length
+          ? items
+              .map(
+                (task) =>
+                  `<div class="panel-item"><strong>${task.title}</strong><div class="meta">${task.category} • ${taskStatusLabel(task.status)} • ${taskOwner(task)}</div></div>`
+              )
+              .join("")
+          : `<div class="empty-state">Задач пока нет.</div>`;
+      }
+    }
+
+    function renderUsers() {
+      const tbody = root.querySelector("[data-users-table]");
+      if (!tbody) return;
+      const query = normalize(local.userSearch);
+      let list = state.users.slice();
+      if (local.userFilter !== "all") {
+        if (local.userFilter === "blocked") list = list.filter((item) => item.blocked);
+        else list = list.filter((item) => item.role === local.userFilter);
+      }
+      if (query) {
+        list = list.filter((item) => normalize(item.name).includes(query) || normalize(item.email).includes(query));
+      }
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Пользователи не найдены.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list
+        .map(
+          (user) => `
+            <tr>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+              <td>${roleLabel(user.role)}</td>
+              <td>${user.blocked ? "Заблокирован" : "Активен"}</td>
+              <td>
+                <div class="chips">
+                  <button class="chip" type="button" data-user-view="${user.id}">Профиль</button>
+                  <button class="chip" type="button" data-user-role="${user.id}">Роль</button>
+                  <button class="chip" type="button" data-user-block="${user.id}">${user.blocked ? "Разблокировать" : "Блок"}</button>
+                  <button class="chip" type="button" data-user-edit="${user.id}">Редактировать</button>
+                  <button class="chip" type="button" data-user-delete="${user.id}">Удалить</button>
+                </div>
+              </td>
+            </tr>
+          `
+        )
+        .join("");
+    }
+
+    function renderSpecialists() {
+      const tbody = root.querySelector("[data-specialists-table]");
+      if (!tbody) return;
+      const q = normalize(local.specialistSearch);
+      const list = state.specialists.filter((item) => {
+        if (!q) return true;
+        return (
+          normalize(item.name).includes(q) ||
+          normalize(item.specialization).includes(q) ||
+          normalize(item.description).includes(q)
+        );
+      });
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Специалисты не найдены.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list
+        .map(
+          (item) => `
+            <tr>
+              <td>${item.name}${item.recommended ? " ⭐" : ""}</td>
+              <td>
+                <select data-spec-status=\"${item.id}\">
+                  <option value=\"active\" ${item.status === "active" ? "selected" : ""}>active</option>
+                  <option value=\"pending_moderation\" ${item.status === "pending_moderation" ? "selected" : ""}>pending</option>
+                  <option value=\"hidden\" ${item.status === "hidden" ? "selected" : ""}>hidden</option>
+                  <option value=\"blocked\" ${item.status === "blocked" ? "selected" : ""}>blocked</option>
+                </select>
+              </td>
+              <td>${Number(item.rating || 0).toFixed(1)}</td>
+              <td>${formatMoneyByn(item.priceByn || 0)}</td>
+              <td>
+                <div class="chips">
+                  <button class="chip" type="button" data-spec-edit="${item.id}">Редактировать</button>
+                  <button class="chip" type="button" data-spec-rec="${item.id}">${item.recommended ? "Убрать ⭐" : "Рекомендовать"}</button>
+                  <button class="chip" type="button" data-spec-delete="${item.id}">Удалить</button>
+                </div>
+              </td>
+            </tr>
+          `
+        )
+        .join("");
+    }
+
+    function renderTasks() {
+      const tbody = root.querySelector("[data-tasks-table]");
+      if (!tbody) return;
+      const q = normalize(local.taskSearch);
+      let list = state.tasks.slice();
+      if (local.taskFilter !== "all") {
+        list = list.filter((item) => item.status === local.taskFilter);
+      }
+      if (q) {
+        list = list.filter((item) => {
+          const owner = byId(state.users, item.businessUserId);
+          return (
+            normalize(item.title).includes(q) ||
+            normalize(item.category).includes(q) ||
+            normalize(owner ? owner.name : "").includes(q)
+          );
+        });
+      }
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Задачи не найдены.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list
+        .map((task) => {
+          const specialistOptions = [
+            `<option value=\"\">Не назначен</option>`,
+            ...state.specialists.map(
+              (item) => `<option value=\"${item.id}\" ${task.assignedSpecialistId === item.id ? "selected" : ""}>${item.name}</option>`
+            )
+          ].join("");
+          return `
+            <tr>
+              <td>${task.title}<div class="meta">${taskOwner(task)}</div></td>
+              <td>${task.category}</td>
+              <td>
+                <select data-task-status="${task.id}">
+                  ${["draft", "pending_moderation", "published", "in_progress", "completed", "rejected", "archived"]
+                    .map((status) => `<option value="${status}" ${task.status === status ? "selected" : ""}>${status}</option>`)
+                    .join("")}
+                </select>
+              </td>
+              <td><select data-task-specialist="${task.id}">${specialistOptions}</select></td>
+              <td>
+                <div class="chips">
+                  <a class="chip" href="${appUrl(`task/new/index.html`)}">Открыть</a>
+                  <button class="chip" type="button" data-task-edit="${task.id}">Редактировать</button>
+                  <button class="chip" type="button" data-task-hide="${task.id}">${task.hidden ? "Показать" : "Скрыть"}</button>
+                  <button class="chip" type="button" data-task-delete="${task.id}">Удалить</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function renderResponses() {
+      const tbody = root.querySelector("[data-responses-table]");
+      if (!tbody) return;
+      const list = allResponses();
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Откликов пока нет.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list
+        .map((item) => {
+          const specialist = byId(state.specialists, item.specialistId);
+          return `
+            <tr>
+              <td>${item.taskTitle}</td>
+              <td>${specialist ? specialist.name : "—"}</td>
+              <td>${item.message || "—"}</td>
+              <td>${formatMoneyByn(item.priceByn || item.estimatedCostByn || 0)}</td>
+              <td>${item.deadlineDays || 0} дн.</td>
+              <td>${responseStatusLabel(item.status)}</td>
+              <td>
+                <div class="chips">
+                  <button class="chip" type="button" data-resp-accept="${item.id}" data-task-id="${item.taskId}">Принять</button>
+                  <button class="chip" type="button" data-resp-reject="${item.id}" data-task-id="${item.taskId}">Отклонить</button>
+                  <button class="chip" type="button" data-resp-delete="${item.id}" data-task-id="${item.taskId}">Удалить</button>
+                  <a class="chip" href="${specialist ? specialistProfileUrl("../", specialist) : "#"}">Профиль</a>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function renderModeration() {
+      const panel = root.querySelector("[data-moderation-list]");
+      if (!panel) return;
+      const specialistQueue = state.specialists.filter((item) => item.status === "pending_moderation");
+      const taskQueue = state.tasks.filter((item) => item.status === "pending_moderation");
+      const complaintQueue = state.complaints.filter((item) => item.status === "new");
+      const rows = [];
+
+      specialistQueue.forEach((item) => {
+        rows.push(`
+          <article class="panel-item">
+            <strong>Специалист: ${item.name}</strong>
+            <div class="meta">${item.specialization} • ${item.city}</div>
+            <div class="chips">
+              <button class="chip" type="button" data-mod-approve-spec="${item.id}">Одобрить</button>
+              <button class="chip" type="button" data-mod-rework-spec="${item.id}">На доработку</button>
+              <button class="chip" type="button" data-mod-reject-spec="${item.id}">Отклонить</button>
+              <button class="chip" type="button" data-mod-block-user="${item.userId || ""}">Блокировка</button>
+            </div>
+          </article>
+        `);
+      });
+
+      taskQueue.forEach((item) => {
+        rows.push(`
+          <article class="panel-item">
+            <strong>Задача: ${item.title}</strong>
+            <div class="meta">${item.category} • ${formatMoneyByn(item.budgetByn || 0)}</div>
+            <div class="chips">
+              <button class="chip" type="button" data-mod-approve-task="${item.id}">Одобрить</button>
+              <button class="chip" type="button" data-mod-rework-task="${item.id}">На доработку</button>
+              <button class="chip" type="button" data-mod-reject-task="${item.id}">Отклонить</button>
+            </div>
+          </article>
+        `);
+      });
+
+      complaintQueue.forEach((item) => {
+        rows.push(`
+          <article class="panel-item">
+            <strong>Жалоба #${item.id.slice(-5)}</strong>
+            <div class="meta">${item.targetType} • ${item.reason}</div>
+            <div class="chips">
+              <button class="chip" type="button" data-mod-open-complaint="${item.id}">Открыть жалобу</button>
+            </div>
+          </article>
+        `);
+      });
+
+      panel.innerHTML = rows.length ? rows.join("") : `<div class="empty-state">Новых объектов для модерации нет.</div>`;
+    }
+
+    function renderComplaints() {
+      const tbody = root.querySelector("[data-complaints-table]");
+      if (!tbody) return;
+      if (!state.complaints.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Жалоб пока нет.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = state.complaints
+        .map((item) => `
+          <tr>
+            <td>${userName(item.reporterUserId)}</td>
+            <td>${item.targetType}: ${item.targetId || "—"}</td>
+            <td>${item.reason}</td>
+            <td>${formatDate(item.createdAt)}</td>
+            <td>
+              <select data-complaint-status="${item.id}">
+                <option value="new" ${item.status === "new" ? "selected" : ""}>new</option>
+                <option value="reviewing" ${item.status === "reviewing" ? "selected" : ""}>reviewing</option>
+                <option value="resolved" ${item.status === "resolved" ? "selected" : ""}>resolved</option>
+                <option value="rejected" ${item.status === "rejected" ? "selected" : ""}>rejected</option>
+              </select>
+            </td>
+            <td>${item.adminComment || "—"}</td>
+            <td>
+              <div class="chips">
+                <button class="chip" type="button" data-complaint-comment="${item.id}">Комментарий</button>
+              </div>
+            </td>
+          </tr>
+        `)
+        .join("");
+    }
+
+    function renderFinance() {
+      const financeKpis = root.querySelector("[data-finance-kpis]");
+      const tbody = root.querySelector("[data-finance-table]");
+      if (!financeKpis || !tbody) return;
+      const list = state.payments.map((item) => {
+        const statusRaw = normalize(item.status);
+        const status =
+          statusRaw.includes("холд") || statusRaw.includes("ожидает")
+            ? "pending"
+            : statusRaw.includes("отмен") ? "cancelled" : statusRaw.includes("refund") ? "refunded" : "paid";
+        return { ...item, status };
+      });
+
+      const turnover = list.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const platformIncome = Math.round(turnover * 0.1);
+      const avgCheck = list.length ? Math.round(turnover / list.length) : 0;
+      financeKpis.innerHTML = `
+        <div class="stat-box"><strong>${formatMoneyByn(turnover)}</strong><span class="meta">оборот</span></div>
+        <div class="stat-box"><strong>${formatMoneyByn(platformIncome)}</strong><span class="meta">доход платформы</span></div>
+        <div class="stat-box"><strong>${formatMoneyByn(avgCheck)}</strong><span class="meta">средний чек</span></div>
+        <div class="stat-box"><strong>${list.length}</strong><span class="meta">сделок</span></div>
+      `;
+
+      const filtered = local.financeFilter === "all" ? list : list.filter((item) => item.status === local.financeFilter);
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Платежи не найдены.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = filtered
+        .map((item) => {
+          const fee = Math.round(Number(item.amount || 0) * 0.1);
+          const task = byId(state.tasks, item.taskId);
+          return `<tr><td>${task ? task.title : "Сделка"}</td><td>${formatMoneyByn(item.amount)}</td><td>${formatMoneyByn(fee)}</td><td>${item.status}</td><td>${formatDate(item.date || nowIso())}</td></tr>`;
+        })
+        .join("");
+    }
+
+    function renderAiTools() {
+      const wrap = root.querySelector("[data-ai-tools-grid]");
+      if (!wrap) return;
+      const tools = [
+        ["aiMatch", "AI Match"],
+        ["instagramAudit", "Instagram Audit"],
+        ["contentGenerator", "Content Generator"],
+        ["roiCalculator", "ROI Calculator"]
+      ];
+      wrap.innerHTML = tools
+        .map(([key, label]) => {
+          const cfg = aiToolConfig(key);
+          return `
+            <form class="card" data-ai-tool-form="${key}">
+              <h3>${label}</h3>
+              <div class="field"><label>Описание</label><input name="hint" value="${cfg.hint || ""}"></div>
+              <div class="field"><label>Лимит использований</label><input name="limitPerDay" type="number" min="0" value="${Number(cfg.limitPerDay || 0)}"></div>
+              <div class="field"><label>Режим</label><select name="mode"><option value="demo" ${cfg.mode === "demo" ? "selected" : ""}>demo</option><option value="live" ${cfg.mode === "live" ? "selected" : ""}>live</option></select></div>
+              <label class="chip"><input type="checkbox" name="enabled" ${cfg.enabled ? "checked" : ""}> Включен</label>
+              <button class="btn btn-primary" type="submit">Сохранить</button>
+            </form>
+          `;
+        })
+        .join("");
+    }
+
+    function hydrateSettingsForms() {
+      const site = state.settings.site;
+      const content = state.settings.content;
+      const siteForm = root.querySelector("[data-site-settings-form]");
+      if (siteForm) {
+        siteForm.elements.platformName.value = site.platformName || "SMMATCH";
+        siteForm.elements.logoUrl.value = site.logoUrl || "";
+        siteForm.elements.primaryColor.value = site.primaryColor || "#7b6cff";
+        siteForm.elements.currency.value = site.currency || "BYN";
+        siteForm.elements.contactEmail.value = site.contactEmail || "";
+        siteForm.elements.footerText.value = site.footerText || "";
+        siteForm.elements.instagram.value = site.socials.instagram || "";
+        siteForm.elements.telegram.value = site.socials.telegram || "";
+        siteForm.elements.vk.value = site.socials.vk || "";
+        siteForm.elements.tiktok.value = site.socials.tiktok || "";
+        siteForm.elements.registrationEnabled.checked = Boolean(site.registrationEnabled);
+        siteForm.elements.taskPublishingEnabled.checked = Boolean(site.taskPublishingEnabled);
+        siteForm.elements.specialistsCatalogEnabled.checked = Boolean(site.specialistsCatalogEnabled);
+      }
+      const contentForm = root.querySelector("[data-content-settings-form]");
+      if (contentForm) {
+        Object.keys(defaultContentSettings()).forEach((key) => {
+          if (contentForm.elements[key]) contentForm.elements[key].value = content[key] || "";
+        });
+      }
+    }
+
+    function renderNotifications() {
+      const list = root.querySelector("[data-notifications-list]");
+      if (!list) return;
+      if (!state.notifications.length) {
+        list.innerHTML = `<div class="empty-state">Уведомления пока не отправлялись.</div>`;
+        return;
+      }
+      list.innerHTML = state.notifications
+        .slice(0, 30)
+        .map(
+          (item) =>
+            `<div class="panel-item"><strong>${item.title}</strong><div class="meta">${item.audience}${item.userId ? ` (${item.userId})` : ""} • ${formatDate(item.createdAt)}</div><div class="meta">${item.text}</div></div>`
+        )
+        .join("");
+    }
+
+    function renderLogs() {
+      const tbody = root.querySelector("[data-logs-table]");
+      if (!tbody) return;
+      const rows = state.logs.slice(0, 300);
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Логи пока пустые.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows
+        .map((item) => {
+          const actor = item.actorUserId ? byId(state.users, item.actorUserId) : null;
+          return `<tr><td>${new Date(item.ts).toLocaleString("ru-RU")}</td><td>${item.action}</td><td>${actor ? actor.email : "system"}</td><td>${item.targetType}:${item.targetId || "—"}</td><td>${item.details || "—"}</td></tr>`;
+        })
+        .join("");
+    }
+
+    function findTaskAndResponse(taskId, responseId) {
+      const task = byId(state.tasks, taskId);
+      if (!task) return { task: null, response: null };
+      const response = (task.responses || []).find((item) => item.id === responseId) || null;
+      return { task, response };
+    }
+
+    function rerenderAll() {
+      renderDashboard();
+      renderUsers();
+      renderSpecialists();
+      renderTasks();
+      renderResponses();
+      renderModeration();
+      renderComplaints();
+      renderFinance();
+      renderAiTools();
+      hydrateSettingsForms();
+      renderNotifications();
+      renderLogs();
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-admin-tab-btn") || "dashboard";
+        setTab(tab);
+      });
+    });
+
+    root.querySelectorAll("[data-admin-quick]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.getAttribute("data-admin-quick");
+        if (mode === "add-specialist") {
+          setTab("specialists");
+          const form = root.querySelector("[data-specialist-form]");
+          if (form && form.elements.name) form.elements.name.focus();
+        }
+        if (mode === "add-task") {
+          const title = window.prompt("Название новой задачи");
+          if (!title || !title.trim()) return;
+          state.tasks.unshift({
+            id: uid("task"),
+            title: title.trim(),
+            category: "SMM",
+            niche: "Кафе",
+            budgetTier: "до 1500 BYN",
+            budgetValue: 1500,
+            budgetByn: 1500,
+            platforms: "Instagram",
+            goals: "Рост заявок",
+            description: "Задача создана администратором.",
+            deadline: "",
+            needTarget: "Да",
+            needContent: "Да",
+            needReels: "Да",
+            status: "draft",
+            businessUserId: null,
+            assignedSpecialistId: null,
+            responses: [],
+            hidden: false,
+            createdAt: nowIso()
+          });
+          logEvent("task_created", "task", state.tasks[0].id, "Создана администратором", adminUser.id);
+          saveState();
+          rerenderAll();
+          setTab("tasks");
+          showToast("Черновик задачи создан");
+          return;
+        }
+        if (mode === "open-moderation") setTab("moderation");
+        if (mode === "open-settings") setTab("settings");
+      });
+    });
+
+    const userFilterWrap = root.querySelector("[data-user-filter]");
+    if (userFilterWrap) {
+      userFilterWrap.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const chip = target.closest("[data-value]");
+        if (!chip) return;
+        local.userFilter = chip.getAttribute("data-value") || "all";
+        userFilterWrap.querySelectorAll("[data-value]").forEach((node) => node.classList.remove("active"));
+        chip.classList.add("active");
+        renderUsers();
+      });
+    }
+    const userSearch = root.querySelector("[data-user-search]");
+    if (userSearch) {
+      userSearch.addEventListener("input", () => {
+        local.userSearch = userSearch.value || "";
+        renderUsers();
+      });
+    }
+
+    const usersTable = root.querySelector("[data-users-table]");
+    if (usersTable) {
+      usersTable.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const viewBtn = target.closest("[data-user-view]");
+        const roleBtn = target.closest("[data-user-role]");
+        const blockBtn = target.closest("[data-user-block]");
+        const editBtn = target.closest("[data-user-edit]");
+        const delBtn = target.closest("[data-user-delete]");
+        const id =
+          (viewBtn && viewBtn.getAttribute("data-user-view")) ||
+          (roleBtn && roleBtn.getAttribute("data-user-role")) ||
+          (blockBtn && blockBtn.getAttribute("data-user-block")) ||
+          (editBtn && editBtn.getAttribute("data-user-edit")) ||
+          (delBtn && delBtn.getAttribute("data-user-delete")) ||
+          "";
+        if (!id) return;
+        const user = byId(state.users, id);
+        if (!user) return;
+
+        if (viewBtn) {
+          showToast(`${user.name} • ${user.email} • ${roleLabel(user.role)}`);
+          return;
+        }
+        if (roleBtn) {
+          const nextRoleRaw = window.prompt("Новая роль: business / specialist / admin", user.role);
+          const nextRole = normalize(nextRoleRaw);
+          if (!["business", "specialist", "admin"].includes(nextRole)) return;
+          user.role = nextRole;
+          logEvent("user_role_changed", "user", user.id, `Роль изменена на ${nextRole}`, adminUser.id);
+          saveState();
+          rerenderAll();
+          showToast("Роль обновлена");
+          return;
+        }
+        if (blockBtn) {
+          user.blocked = !user.blocked;
+          logEvent(user.blocked ? "user_blocked" : "user_unblocked", "user", user.id, user.email, adminUser.id);
+          saveState();
+          renderUsers();
+          showToast(user.blocked ? "Пользователь заблокирован" : "Пользователь разблокирован");
+          return;
+        }
+        if (editBtn) {
+          const nextName = window.prompt("Имя", user.name) || user.name;
+          const nextEmail = window.prompt("Email", user.email) || user.email;
+          user.name = nextName.trim() || user.name;
+          user.email = nextEmail.trim() || user.email;
+          logEvent("user_edited", "user", user.id, "Имя/email обновлены", adminUser.id);
+          saveState();
+          renderUsers();
+          showToast("Пользователь обновлен");
+          return;
+        }
+        if (delBtn) {
+          openConfirmModal({
+            title: "Удалить пользователя?",
+            text: `${user.name} (${user.email}) будет удален.`,
+            confirmText: "Удалить",
+            onConfirm: () => {
+              state.users = state.users.filter((item) => item.id !== user.id);
+              if (state.currentUserId === user.id) state.currentUserId = null;
+              logEvent("user_deleted", "user", user.id, user.email, adminUser.id);
+              saveState();
+              rerenderAll();
+              showToast("Пользователь удален");
+            }
+          });
+        }
+      });
+    }
+
+    const specialistSearch = root.querySelector("[data-specialist-search]");
+    if (specialistSearch) {
+      specialistSearch.addEventListener("input", () => {
+        local.specialistSearch = specialistSearch.value || "";
+        renderSpecialists();
+      });
+    }
+
+    const specialistForm = root.querySelector("[data-specialist-form]");
+    const specialistFormTitle = root.querySelector("[data-specialist-form-title]");
+    function resetSpecialistForm() {
+      if (!specialistForm) return;
+      specialistForm.reset();
+      specialistForm.elements.id.value = "";
+      if (specialistFormTitle) specialistFormTitle.textContent = "Добавить специалиста";
+    }
+    if (specialistForm) {
+      specialistForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(specialistForm);
+        const id = String(formData.get("id") || "");
+        const payload = {
+          name: String(formData.get("name") || "").trim(),
+          specialization: String(formData.get("specialization") || "").trim(),
+          avatar: String(formData.get("avatar") || "").trim(),
+          city: String(formData.get("city") || "").trim() || "Онлайн",
+          experience: String(formData.get("experience") || "middle"),
+          rating: Number(formData.get("rating") || 0),
+          skills: String(formData.get("skills") || "")
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          priceByn: Number(formData.get("priceByn") || 0),
+          description: String(formData.get("description") || "").trim(),
+          socials: {
+            instagram: String(formData.get("instagram") || "").trim(),
+            tiktok: String(formData.get("tiktok") || "").trim(),
+            telegram: String(formData.get("telegram") || "").trim(),
+            behance: String(formData.get("behance") || "").trim()
+          },
+          cases: String(formData.get("cases") || "")
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((title) => ({ title, result1: "Добавьте метрику", result2: "Добавьте метрику", period: "Укажите период" }))
+        };
+        if (!payload.name || !payload.specialization) {
+          showToast("Имя и специализация обязательны", "error");
+          return;
+        }
+
+        if (id) {
+          const specialist = byId(state.specialists, id);
+          if (!specialist) return;
+          Object.assign(specialist, normalizeSpecialistData({ ...specialist, ...payload }));
+          logEvent("specialist_updated", "specialist", specialist.id, specialist.name, adminUser.id);
+          showToast("Специалист обновлен");
+        } else {
+          const specialist = normalizeSpecialistData({
+            id: uid("spec"),
+            slug: normalizeForSlug(payload.name),
+            userId: null,
+            country: "СНГ",
+            reviewsCount: 0,
+            about: payload.description || "Профиль создан администратором.",
+            niches: ["кафе"],
+            platforms: ["Instagram"],
+            stats: { er: "0%", ctr: "0%", cpm: "0 BYN", views: "0", followersGrowth: "+0", reachGrowth: "+0%" },
+            ...payload
+          });
+          specialist.status = "pending_moderation";
+          specialist.recommended = false;
+          specialist.createdAt = nowIso();
+          state.specialists.unshift(specialist);
+          logEvent("specialist_created", "specialist", specialist.id, specialist.name, adminUser.id);
+          showToast("Специалист добавлен");
+        }
+        saveState();
+        resetSpecialistForm();
+        rerenderAll();
+      });
+    }
+    const specialistResetBtn = root.querySelector("[data-specialist-form-reset]");
+    if (specialistResetBtn) specialistResetBtn.addEventListener("click", resetSpecialistForm);
+
+    const specialistsTable = root.querySelector("[data-specialists-table]");
+    if (specialistsTable) {
+      specialistsTable.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        const id = target.getAttribute("data-spec-status");
+        if (!id) return;
+        const specialist = byId(state.specialists, id);
+        if (!specialist) return;
+        specialist.status = target.value;
+        logEvent("specialist_status_changed", "specialist", specialist.id, specialist.status, adminUser.id);
+        saveState();
+        renderModeration();
+        showToast("Статус обновлен");
+      });
+      specialistsTable.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const editBtn = target.closest("[data-spec-edit]");
+        const recBtn = target.closest("[data-spec-rec]");
+        const delBtn = target.closest("[data-spec-delete]");
+        const id =
+          (editBtn && editBtn.getAttribute("data-spec-edit")) ||
+          (recBtn && recBtn.getAttribute("data-spec-rec")) ||
+          (delBtn && delBtn.getAttribute("data-spec-delete")) ||
+          "";
+        if (!id) return;
+        const specialist = byId(state.specialists, id);
+        if (!specialist) return;
+        if (editBtn && specialistForm) {
+          specialistForm.elements.id.value = specialist.id;
+          specialistForm.elements.name.value = specialist.name || "";
+          specialistForm.elements.specialization.value = specialist.specialization || "";
+          specialistForm.elements.avatar.value = specialist.avatar || "";
+          specialistForm.elements.city.value = specialist.city || "";
+          specialistForm.elements.experience.value = specialist.experience || "middle";
+          specialistForm.elements.rating.value = String(specialist.rating || 0);
+          specialistForm.elements.skills.value = (specialist.skills || []).join(", ");
+          specialistForm.elements.priceByn.value = String(specialist.priceByn || 0);
+          specialistForm.elements.description.value = specialist.description || "";
+          specialistForm.elements.instagram.value = specialist.socials.instagram || "";
+          specialistForm.elements.tiktok.value = specialist.socials.tiktok || "";
+          specialistForm.elements.telegram.value = specialist.socials.telegram || "";
+          specialistForm.elements.behance.value = specialist.socials.behance || "";
+          specialistForm.elements.cases.value = (specialist.cases || []).map((item) => item.title).join("\n");
+          if (specialistFormTitle) specialistFormTitle.textContent = `Редактирование: ${specialist.name}`;
+          return;
+        }
+        if (recBtn) {
+          specialist.recommended = !specialist.recommended;
+          logEvent(
+            specialist.recommended ? "specialist_recommended" : "specialist_unrecommended",
+            "specialist",
+            specialist.id,
+            specialist.name,
+            adminUser.id
+          );
+          saveState();
+          renderSpecialists();
+          return;
+        }
+        if (delBtn) {
+          openConfirmModal({
+            title: "Удалить специалиста?",
+            text: specialist.name,
+            confirmText: "Удалить",
+            onConfirm: () => {
+              state.specialists = state.specialists.filter((item) => item.id !== specialist.id);
+              state.tasks.forEach((task) => {
+                if (task.assignedSpecialistId === specialist.id) task.assignedSpecialistId = null;
+                task.responses = (task.responses || []).filter((resp) => resp.specialistId !== specialist.id);
+              });
+              logEvent("specialist_deleted", "specialist", specialist.id, specialist.name, adminUser.id);
+              saveState();
+              rerenderAll();
+              showToast("Специалист удален");
+            }
+          });
+        }
+      });
+    }
+
+    const taskFilter = root.querySelector("[data-task-filter]");
+    if (taskFilter) {
+      taskFilter.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const chip = target.closest("[data-value]");
+        if (!chip) return;
+        local.taskFilter = chip.getAttribute("data-value") || "all";
+        taskFilter.querySelectorAll("[data-value]").forEach((node) => node.classList.remove("active"));
+        chip.classList.add("active");
+        renderTasks();
+      });
+    }
+    const taskSearch = root.querySelector("[data-task-search]");
+    if (taskSearch) {
+      taskSearch.addEventListener("input", () => {
+        local.taskSearch = taskSearch.value || "";
+        renderTasks();
+      });
+    }
+
+    const tasksTable = root.querySelector("[data-tasks-table]");
+    if (tasksTable) {
+      tasksTable.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        const statusId = target.getAttribute("data-task-status");
+        const specialistId = target.getAttribute("data-task-specialist");
+        if (statusId) {
+          const task = byId(state.tasks, statusId);
+          if (!task) return;
+          task.status = target.value;
+          logEvent("task_status_changed", "task", task.id, task.status, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+        if (specialistId) {
+          const task = byId(state.tasks, specialistId);
+          if (!task) return;
+          task.assignedSpecialistId = target.value || null;
+          if (task.assignedSpecialistId) task.status = "in_progress";
+          logEvent("task_specialist_assigned", "task", task.id, task.assignedSpecialistId || "none", adminUser.id);
+          saveState();
+          rerenderAll();
+        }
+      });
+      tasksTable.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const editBtn = target.closest("[data-task-edit]");
+        const hideBtn = target.closest("[data-task-hide]");
+        const delBtn = target.closest("[data-task-delete]");
+        const id =
+          (editBtn && editBtn.getAttribute("data-task-edit")) ||
+          (hideBtn && hideBtn.getAttribute("data-task-hide")) ||
+          (delBtn && delBtn.getAttribute("data-task-delete")) ||
+          "";
+        if (!id) return;
+        const task = byId(state.tasks, id);
+        if (!task) return;
+        if (editBtn) {
+          const nextTitle = window.prompt("Название задачи", task.title) || task.title;
+          const nextCategory = window.prompt("Категория", task.category) || task.category;
+          task.title = nextTitle.trim() || task.title;
+          task.category = nextCategory.trim() || task.category;
+          logEvent("task_updated", "task", task.id, task.title, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+        if (hideBtn) {
+          task.hidden = !task.hidden;
+          logEvent(task.hidden ? "task_hidden" : "task_unhidden", "task", task.id, task.title, adminUser.id);
+          saveState();
+          renderTasks();
+          showToast(task.hidden ? "Задача скрыта" : "Задача опубликована");
+          return;
+        }
+        if (delBtn) {
+          openConfirmModal({
+            title: "Удалить задачу?",
+            text: task.title,
+            confirmText: "Удалить",
+            onConfirm: () => {
+              state.tasks = state.tasks.filter((item) => item.id !== task.id);
+              state.payments = state.payments.filter((item) => item.taskId !== task.id);
+              logEvent("task_deleted", "task", task.id, task.title, adminUser.id);
+              saveState();
+              rerenderAll();
+              showToast("Задача удалена");
+            }
+          });
+        }
+      });
+    }
+
+    const responsesTable = root.querySelector("[data-responses-table]");
+    if (responsesTable) {
+      responsesTable.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const acceptBtn = target.closest("[data-resp-accept]");
+        const rejectBtn = target.closest("[data-resp-reject]");
+        const deleteBtn = target.closest("[data-resp-delete]");
+        const responseId =
+          (acceptBtn && acceptBtn.getAttribute("data-resp-accept")) ||
+          (rejectBtn && rejectBtn.getAttribute("data-resp-reject")) ||
+          (deleteBtn && deleteBtn.getAttribute("data-resp-delete")) ||
+          "";
+        const taskId =
+          (acceptBtn && acceptBtn.getAttribute("data-task-id")) ||
+          (rejectBtn && rejectBtn.getAttribute("data-task-id")) ||
+          (deleteBtn && deleteBtn.getAttribute("data-task-id")) ||
+          "";
+        if (!responseId || !taskId) return;
+        const pair = findTaskAndResponse(taskId, responseId);
+        if (!pair.task || !pair.response) return;
+
+        if (acceptBtn) {
+          pair.response.status = "accepted";
+          pair.task.assignedSpecialistId = pair.response.specialistId;
+          pair.task.status = "in_progress";
+          logEvent("response_accepted", "response", pair.response.id, pair.task.title, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+        if (rejectBtn) {
+          pair.response.status = "rejected";
+          logEvent("response_rejected", "response", pair.response.id, pair.task.title, adminUser.id);
+          saveState();
+          renderResponses();
+          return;
+        }
+        if (deleteBtn) {
+          pair.task.responses = (pair.task.responses || []).filter((item) => item.id !== pair.response.id);
+          logEvent("response_deleted", "response", pair.response.id, pair.task.title, adminUser.id);
+          saveState();
+          rerenderAll();
+        }
+      });
+    }
+
+    const moderationList = root.querySelector("[data-moderation-list]");
+    if (moderationList) {
+      moderationList.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        function addModerationRecord(entityType, entityId, action, reason) {
+          state.moderationHistory.unshift({
+            id: uid("mod"),
+            entityType,
+            entityId,
+            action,
+            reason: reason || "",
+            byUserId: adminUser.id,
+            createdAt: nowIso()
+          });
+        }
+
+        const approveSpec = target.closest("[data-mod-approve-spec]");
+        if (approveSpec) {
+          const id = approveSpec.getAttribute("data-mod-approve-spec");
+          const specialist = byId(state.specialists, id);
+          if (!specialist) return;
+          specialist.status = "active";
+          addModerationRecord("specialist", specialist.id, "approved");
+          logEvent("moderation_approved", "specialist", specialist.id, specialist.name, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const reworkSpec = target.closest("[data-mod-rework-spec]");
+        if (reworkSpec) {
+          const id = reworkSpec.getAttribute("data-mod-rework-spec");
+          const specialist = byId(state.specialists, id);
+          if (!specialist) return;
+          specialist.status = "hidden";
+          addModerationRecord("specialist", specialist.id, "rework", "Отправлен на доработку");
+          logEvent("moderation_rework", "specialist", specialist.id, specialist.name, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const rejectSpec = target.closest("[data-mod-reject-spec]");
+        if (rejectSpec) {
+          const id = rejectSpec.getAttribute("data-mod-reject-spec");
+          const specialist = byId(state.specialists, id);
+          if (!specialist) return;
+          const reason = window.prompt("Причина отклонения", "Недостаточно данных профиля");
+          specialist.status = "blocked";
+          addModerationRecord("specialist", specialist.id, "rejected", reason || "");
+          logEvent("moderation_rejected", "specialist", specialist.id, reason || "", adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const blockUserBtn = target.closest("[data-mod-block-user]");
+        if (blockUserBtn) {
+          const id = blockUserBtn.getAttribute("data-mod-block-user");
+          if (!id) return;
+          const user = byId(state.users, id);
+          if (!user) return;
+          user.blocked = true;
+          addModerationRecord("user", user.id, "blocked", "Блокировка через модерацию");
+          logEvent("user_blocked", "user", user.id, user.email, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const approveTask = target.closest("[data-mod-approve-task]");
+        if (approveTask) {
+          const id = approveTask.getAttribute("data-mod-approve-task");
+          const task = byId(state.tasks, id);
+          if (!task) return;
+          task.status = "published";
+          addModerationRecord("task", task.id, "approved");
+          logEvent("moderation_approved", "task", task.id, task.title, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const reworkTask = target.closest("[data-mod-rework-task]");
+        if (reworkTask) {
+          const id = reworkTask.getAttribute("data-mod-rework-task");
+          const task = byId(state.tasks, id);
+          if (!task) return;
+          task.status = "draft";
+          addModerationRecord("task", task.id, "rework", "Нужно уточнить описание");
+          logEvent("moderation_rework", "task", task.id, task.title, adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const rejectTask = target.closest("[data-mod-reject-task]");
+        if (rejectTask) {
+          const id = rejectTask.getAttribute("data-mod-reject-task");
+          const task = byId(state.tasks, id);
+          if (!task) return;
+          const reason = window.prompt("Причина отклонения", "Нарушение правил публикации");
+          task.status = "rejected";
+          addModerationRecord("task", task.id, "rejected", reason || "");
+          logEvent("moderation_rejected", "task", task.id, reason || "", adminUser.id);
+          saveState();
+          rerenderAll();
+          return;
+        }
+
+        const openComplaint = target.closest("[data-mod-open-complaint]");
+        if (openComplaint) {
+          const id = openComplaint.getAttribute("data-mod-open-complaint");
+          const item = byId(state.complaints, id);
+          if (!item) return;
+          item.status = "reviewing";
+          saveState();
+          setTab("complaints");
+          renderComplaints();
+        }
+      });
+    }
+
+    const complaintsTable = root.querySelector("[data-complaints-table]");
+    if (complaintsTable) {
+      complaintsTable.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        const id = target.getAttribute("data-complaint-status");
+        if (!id) return;
+        const item = byId(state.complaints, id);
+        if (!item) return;
+        item.status = target.value;
+        logEvent("complaint_status_changed", "complaint", item.id, item.status, adminUser.id);
+        saveState();
+        renderComplaints();
+      });
+      complaintsTable.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const commentBtn = target.closest("[data-complaint-comment]");
+        if (!commentBtn) return;
+        const id = commentBtn.getAttribute("data-complaint-comment");
+        const item = byId(state.complaints, id);
+        if (!item) return;
+        const comment = window.prompt("Комментарий администратора", item.adminComment || "");
+        if (comment === null) return;
+        item.adminComment = comment.trim();
+        logEvent("complaint_comment_added", "complaint", item.id, item.adminComment, adminUser.id);
+        saveState();
+        renderComplaints();
+      });
+    }
+
+    const financeFilter = root.querySelector("[data-finance-filter]");
+    if (financeFilter) {
+      financeFilter.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const chip = target.closest("[data-value]");
+        if (!chip) return;
+        local.financeFilter = chip.getAttribute("data-value") || "all";
+        financeFilter.querySelectorAll("[data-value]").forEach((node) => node.classList.remove("active"));
+        chip.classList.add("active");
+        renderFinance();
+      });
+    }
+
+    const aiWrap = root.querySelector("[data-ai-tools-grid]");
+    if (aiWrap) {
+      aiWrap.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        event.preventDefault();
+        const key = form.getAttribute("data-ai-tool-form");
+        if (!key) return;
+        const current = aiToolConfig(key);
+        state.settings.aiTools[key] = {
+          ...current,
+          hint: String(form.elements.hint.value || ""),
+          limitPerDay: Number(form.elements.limitPerDay.value || 0),
+          mode: String(form.elements.mode.value || "demo"),
+          enabled: Boolean(form.elements.enabled.checked)
+        };
+        logEvent("ai_tool_updated", "ai", key, JSON.stringify(state.settings.aiTools[key]), adminUser.id);
+        saveState();
+        renderAiTools();
+        showToast("AI-настройки сохранены");
+      });
+    }
+
+    const siteForm = root.querySelector("[data-site-settings-form]");
+    if (siteForm) {
+      siteForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        state.settings.site = {
+          ...state.settings.site,
+          platformName: String(siteForm.elements.platformName.value || "SMMATCH"),
+          logoUrl: String(siteForm.elements.logoUrl.value || ""),
+          primaryColor: String(siteForm.elements.primaryColor.value || "#7b6cff"),
+          currency: String(siteForm.elements.currency.value || "BYN"),
+          contactEmail: String(siteForm.elements.contactEmail.value || ""),
+          footerText: String(siteForm.elements.footerText.value || ""),
+          socials: {
+            instagram: String(siteForm.elements.instagram.value || ""),
+            telegram: String(siteForm.elements.telegram.value || ""),
+            vk: String(siteForm.elements.vk.value || ""),
+            tiktok: String(siteForm.elements.tiktok.value || "")
+          },
+          registrationEnabled: Boolean(siteForm.elements.registrationEnabled.checked),
+          taskPublishingEnabled: Boolean(siteForm.elements.taskPublishingEnabled.checked),
+          specialistsCatalogEnabled: Boolean(siteForm.elements.specialistsCatalogEnabled.checked)
+        };
+        logEvent("site_settings_updated", "settings", "site", "Обновлены настройки сайта", adminUser.id);
+        saveState();
+        showToast("Настройки сайта сохранены");
+      });
+    }
+
+    const contentForm = root.querySelector("[data-content-settings-form]");
+    if (contentForm) {
+      contentForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        Object.keys(defaultContentSettings()).forEach((key) => {
+          if (contentForm.elements[key]) {
+            state.settings.content[key] = String(contentForm.elements[key].value || "");
+          }
+        });
+        logEvent("content_updated", "settings", "content", "Обновлены контентные тексты", adminUser.id);
+        saveState();
+        showToast("Тексты сохранены");
+      });
+    }
+
+    const notificationForm = root.querySelector("[data-notification-form]");
+    if (notificationForm) {
+      notificationForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const audience = String(notificationForm.elements.audience.value || "all");
+        const userId = String(notificationForm.elements.userId.value || "").trim();
+        const title = String(notificationForm.elements.title.value || "").trim();
+        const text = String(notificationForm.elements.text.value || "").trim();
+        if (!title || !text) {
+          showToast("Заполните заголовок и текст", "error");
+          return;
+        }
+        if (audience === "user" && !userId) {
+          showToast("Укажите ID пользователя", "error");
+          return;
+        }
+        state.notifications.unshift({
+          id: uid("notif"),
+          audience,
+          userId: audience === "user" ? userId : null,
+          title,
+          text,
+          createdAt: nowIso(),
+          createdBy: adminUser.id
+        });
+        logEvent("notification_created", "notification", audience, title, adminUser.id);
+        saveState();
+        notificationForm.reset();
+        renderNotifications();
+        showToast("Уведомление отправлено");
+      });
+    }
+
+    const initialTab = new URL(window.location.href).searchParams.get("tab") || "dashboard";
+    setTab(initialTab);
+    rerenderAll();
+  }
+
   function initQuickActions() {
     const logoutTargets = document.querySelectorAll("[data-logout]");
     logoutTargets.forEach((item) => {
@@ -2843,7 +4533,9 @@
   initBrandLogos();
   syncProfileLinks();
   initTopbarActionsByRole();
+  initGlobalSiteSettings();
   initActionGuardsForLinks();
+  initGlobalComplaintActions();
   initMobileMenu();
   initLandingRoleFlow();
   initFilterOptionToggle();
@@ -2869,6 +4561,7 @@
   renderSpecialistAnalytics();
   renderSpecialistFinance();
   renderSpecialistSettings();
+  initAdminPanel();
   initQuickActions();
   initPageHeroVisuals();
   initCardVisualBoost();

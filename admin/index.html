@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — SMMATCH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav">
+        <a href="../index.html">Главная</a>
+        <a href="../dashboard/business/index.html">Кабинет</a>
+        <a class="active" href="../admin/index.html">Админка</a>
+      </nav>
+      <div class="actions">
+        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      </div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav>
+      <a href="../index.html">Главная</a>
+      <a href="../dashboard/business/index.html">Кабинет</a>
+      <a href="../admin/index.html">Админка</a>
+    </div>
+  </div>
+
+  <main class="container section admin-layout" data-admin-root>
+    <aside class="card admin-sidebar">
+      <h3>Admin</h3>
+      <div class="admin-nav">
+        <button class="admin-nav-item active" type="button" data-admin-tab-btn="dashboard">Дашборд</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="users">Пользователи</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="specialists">Специалисты</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="tasks">Задачи</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="responses">Отклики</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="moderation">Модерация</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="complaints">Жалобы</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="finance">Финансы</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="ai">AI-инструменты</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="settings">Настройки сайта</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="content">Контент</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="notifications">Уведомления</button>
+        <button class="admin-nav-item" type="button" data-admin-tab-btn="logs">Логи</button>
+      </div>
+    </aside>
+
+    <section class="admin-content" data-admin-tabs>
+      <article class="card admin-tab active" data-admin-tab="dashboard">
+        <div class="admin-head">
+          <h1>Главный дашборд</h1>
+          <div class="chips">
+            <button class="btn btn-ghost" type="button" data-admin-quick="add-specialist">Добавить специалиста</button>
+            <button class="btn btn-ghost" type="button" data-admin-quick="add-task">Добавить задачу</button>
+            <button class="btn btn-ghost" type="button" data-admin-quick="open-moderation">Модерация</button>
+            <button class="btn btn-primary" type="button" data-admin-quick="open-settings">Настройки</button>
+          </div>
+        </div>
+        <section class="stats-strip admin-kpis" data-admin-kpis></section>
+        <div class="grid-2 admin-split">
+          <div class="card">
+            <h3>Последние регистрации</h3>
+            <div class="panel-list" data-admin-latest-users></div>
+          </div>
+          <div class="card">
+            <h3>Последние задачи</h3>
+            <div class="panel-list" data-admin-latest-tasks></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="users">
+        <div class="admin-head"><h2>Управление пользователями</h2></div>
+        <div class="admin-toolbar">
+          <div class="chips" data-user-filter>
+            <button type="button" class="chip active" data-value="all">Все</button>
+            <button type="button" class="chip" data-value="business">Бизнес</button>
+            <button type="button" class="chip" data-value="specialist">Специалисты</button>
+            <button type="button" class="chip" data-value="admin">Админы</button>
+            <button type="button" class="chip" data-value="blocked">Заблокированные</button>
+          </div>
+          <input type="search" placeholder="Поиск по имени или email" data-user-search>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Имя</th><th>Email</th><th>Роль</th><th>Статус</th><th>Действия</th></tr></thead><tbody data-users-table></tbody></table></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="specialists">
+        <div class="admin-head"><h2>Управление специалистами</h2></div>
+        <div class="admin-grid-2">
+          <div>
+            <div class="admin-toolbar">
+              <input type="search" placeholder="Поиск специалиста" data-specialist-search>
+            </div>
+            <div class="table-wrap"><table class="table"><thead><tr><th>Специалист</th><th>Статус</th><th>Рейтинг</th><th>Цена</th><th>Действия</th></tr></thead><tbody data-specialists-table></tbody></table></div>
+          </div>
+          <form class="card" data-specialist-form>
+            <h3 data-specialist-form-title>Добавить специалиста</h3>
+            <input type="hidden" name="id">
+            <div class="field"><label>Имя</label><input name="name" required></div>
+            <div class="field"><label>Специализация</label><input name="specialization" required></div>
+            <div class="field"><label>Аватар URL</label><input name="avatar"></div>
+            <div class="field"><label>Город</label><input name="city"></div>
+            <div class="field"><label>Опыт</label><select name="experience"><option value="junior">junior</option><option value="middle">middle</option><option value="senior">senior</option></select></div>
+            <div class="field"><label>Рейтинг</label><input name="rating" type="number" step="0.1" min="0" max="5"></div>
+            <div class="field"><label>Навыки (через запятую)</label><input name="skills"></div>
+            <div class="field"><label>Стоимость (BYN)</label><input name="priceByn" type="number"></div>
+            <div class="field"><label>Описание</label><textarea name="description"></textarea></div>
+            <div class="field"><label>Instagram</label><input name="instagram"></div>
+            <div class="field"><label>TikTok</label><input name="tiktok"></div>
+            <div class="field"><label>Telegram</label><input name="telegram"></div>
+            <div class="field"><label>Behance</label><input name="behance"></div>
+            <div class="field"><label>Кейсы (каждый с новой строки)</label><textarea name="cases"></textarea></div>
+            <div class="hero-buttons">
+              <button class="btn btn-primary" type="submit">Сохранить</button>
+              <button class="btn btn-ghost" type="button" data-specialist-form-reset>Очистить</button>
+            </div>
+          </form>
+        </div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="tasks">
+        <div class="admin-head"><h2>Управление задачами</h2></div>
+        <div class="admin-toolbar">
+          <div class="chips" data-task-filter>
+            <button type="button" class="chip active" data-value="all">Все</button>
+            <button type="button" class="chip" data-value="pending_moderation">Новые</button>
+            <button type="button" class="chip" data-value="published">Активные</button>
+            <button type="button" class="chip" data-value="in_progress">В работе</button>
+            <button type="button" class="chip" data-value="completed">Завершенные</button>
+            <button type="button" class="chip" data-value="rejected">Отклоненные</button>
+          </div>
+          <input type="search" placeholder="Поиск по задаче / клиенту / категории" data-task-search>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Задача</th><th>Категория</th><th>Статус</th><th>Специалист</th><th>Действия</th></tr></thead><tbody data-tasks-table></tbody></table></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="responses">
+        <div class="admin-head"><h2>Отклики и заявки</h2></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Задача</th><th>Специалист</th><th>Сообщение</th><th>Цена</th><th>Срок</th><th>Статус</th><th>Действия</th></tr></thead><tbody data-responses-table></tbody></table></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="moderation">
+        <div class="admin-head"><h2>Модерация</h2></div>
+        <div class="panel-list" data-moderation-list></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="complaints">
+        <div class="admin-head"><h2>Жалобы</h2></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Кто пожаловался</th><th>Объект</th><th>Причина</th><th>Дата</th><th>Статус</th><th>Комментарий админа</th><th>Действия</th></tr></thead><tbody data-complaints-table></tbody></table></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="finance">
+        <div class="admin-head"><h2>Финансы</h2></div>
+        <section class="stats-strip" data-finance-kpis></section>
+        <div class="admin-toolbar">
+          <div class="chips" data-finance-filter>
+            <button type="button" class="chip active" data-value="all">Все</button>
+            <button type="button" class="chip" data-value="pending">pending</button>
+            <button type="button" class="chip" data-value="paid">paid</button>
+            <button type="button" class="chip" data-value="cancelled">cancelled</button>
+            <button type="button" class="chip" data-value="refunded">refunded</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Сделка</th><th>Сумма</th><th>Комиссия</th><th>Статус</th><th>Дата</th></tr></thead><tbody data-finance-table></tbody></table></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="ai">
+        <div class="admin-head"><h2>AI-инструменты</h2></div>
+        <div class="admin-grid-2" data-ai-tools-grid></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="settings">
+        <div class="admin-head"><h2>Настройки сайта</h2></div>
+        <form data-site-settings-form>
+          <div class="admin-grid-2">
+            <div class="field"><label>Название платформы</label><input name="platformName"></div>
+            <div class="field"><label>Логотип URL</label><input name="logoUrl"></div>
+            <div class="field"><label>Основной цвет</label><input name="primaryColor" type="color"></div>
+            <div class="field"><label>Валюта</label><select name="currency"><option>BYN</option><option>USD</option><option>EUR</option><option>RUB</option></select></div>
+            <div class="field"><label>Контактный email</label><input name="contactEmail" type="email"></div>
+            <div class="field"><label>Footer текст</label><input name="footerText"></div>
+            <div class="field"><label>Instagram</label><input name="instagram"></div>
+            <div class="field"><label>Telegram</label><input name="telegram"></div>
+            <div class="field"><label>VK</label><input name="vk"></div>
+            <div class="field"><label>TikTok</label><input name="tiktok"></div>
+          </div>
+          <div class="chips admin-switches">
+            <label class="chip"><input type="checkbox" name="registrationEnabled"> Регистрация включена</label>
+            <label class="chip"><input type="checkbox" name="taskPublishingEnabled"> Публикация задач включена</label>
+            <label class="chip"><input type="checkbox" name="specialistsCatalogEnabled"> Каталог включен</label>
+          </div>
+          <button class="btn btn-primary" type="submit">Сохранить настройки</button>
+        </form>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="content">
+        <div class="admin-head"><h2>Контентные страницы</h2></div>
+        <form data-content-settings-form>
+          <div class="field"><label>Главная: заголовок</label><input name="homeHeroTitle"></div>
+          <div class="field"><label>Блок преимуществ</label><input name="benefitsTitle"></div>
+          <div class="field"><label>FAQ</label><input name="faqTitle"></div>
+          <div class="field"><label>Правила платформы</label><textarea name="platformRules"></textarea></div>
+          <div class="field"><label>Политика конфиденциальности</label><textarea name="privacyPolicy"></textarea></div>
+          <div class="field"><label>Условия использования</label><textarea name="termsOfUse"></textarea></div>
+          <button class="btn btn-primary" type="submit">Сохранить тексты</button>
+        </form>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="notifications">
+        <div class="admin-head"><h2>Уведомления</h2></div>
+        <form data-notification-form>
+          <div class="admin-grid-2">
+            <div class="field"><label>Аудитория</label><select name="audience"><option value="all">Всем</option><option value="business">Только бизнесам</option><option value="specialist">Только специалистам</option><option value="user">Конкретному пользователю</option></select></div>
+            <div class="field"><label>ID пользователя (если выбрано)</label><input name="userId"></div>
+          </div>
+          <div class="field"><label>Заголовок</label><input name="title" required></div>
+          <div class="field"><label>Текст</label><textarea name="text" required></textarea></div>
+          <button class="btn btn-primary" type="submit">Отправить уведомление</button>
+        </form>
+        <div class="panel-list" data-notifications-list></div>
+      </article>
+
+      <article class="card admin-tab" data-admin-tab="logs">
+        <div class="admin-head"><h2>Логи действий</h2></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Дата</th><th>Действие</th><th>Кто</th><th>Объект</th><th>Детали</th></tr></thead><tbody data-logs-table></tbody></table></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>
