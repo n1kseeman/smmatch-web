@@ -420,13 +420,18 @@ button:focus-visible,
 
 .card-has-photo {
   overflow: hidden;
-  border-top-color: transparent;
+  padding-top: 0;
+}
+
+.card-has-photo .card-photo {
+  margin-top: 0;
 }
 
 .specialist-card,
 .case-card,
 .blog-item {
   overflow: hidden;
+  padding-top: 0;
 }
 
 .card-photo {
@@ -523,6 +528,10 @@ button:focus-visible,
     var(--media-photo, url("../assets/visuals/meeting-room.svg")) center/cover;
 }
 
+.specialist-card .specialist-thumb {
+  margin-top: 0;
+}
+
 .specialist-card h3 {
   margin: 12px 0 4px;
 }
@@ -572,6 +581,10 @@ button:focus-visible,
   background:
     linear-gradient(140deg, rgba(10, 16, 42, 0.16), rgba(14, 18, 40, 0.7)),
     var(--media-photo, url("../assets/visuals/growth-chart.svg")) center/cover;
+}
+
+.case-card .case-image {
+  margin-top: 0;
 }
 
 .kpi-line {
@@ -1181,6 +1194,10 @@ textarea {
   background:
     linear-gradient(130deg, rgba(123, 108, 255, 0.5), rgba(38, 198, 255, 0.24)),
     var(--media-photo, url("../assets/visuals/content-lab.svg")) center/cover;
+}
+
+.blog-item .blog-thumb {
+  margin-top: 0;
 }
 
 .card-photo,
