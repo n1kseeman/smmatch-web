@@ -330,6 +330,233 @@
     return admin;
   }
 
+  function ensureDemoBusiness(next) {
+    const businessEmail = "business@smmatch.local";
+    let business = next.users.find((item) => normalize(item.email) === businessEmail);
+    if (!business) {
+      business = {
+        id: uid("user"),
+        role: "business",
+        name: "Demo Business",
+        email: businessEmail,
+        passwordHash: hashPasswordPlaceholder("business123"),
+        blocked: false,
+        createdAt: nowIso(),
+        onboardingStatus: "completed"
+      };
+      next.users.unshift(business);
+    } else {
+      business.role = "business";
+      if (!business.passwordHash) business.passwordHash = hashPasswordPlaceholder("business123");
+      business.blocked = Boolean(business.blocked);
+      business.onboardingStatus = business.onboardingStatus || "completed";
+    }
+    return business;
+  }
+
+  function ensureDemoSpecialistUser(next, specialistId) {
+    const specialistEmail = "specialist@smmatch.local";
+    let specialistUser = next.users.find((item) => normalize(item.email) === specialistEmail);
+    if (!specialistUser) {
+      specialistUser = {
+        id: uid("user"),
+        role: "specialist",
+        name: "Demo Specialist",
+        email: specialistEmail,
+        passwordHash: hashPasswordPlaceholder("specialist123"),
+        blocked: false,
+        specialistId,
+        createdAt: nowIso(),
+        onboardingStatus: "completed"
+      };
+      next.users.unshift(specialistUser);
+    } else {
+      specialistUser.role = "specialist";
+      specialistUser.specialistId = specialistId || specialistUser.specialistId || null;
+      if (!specialistUser.passwordHash) specialistUser.passwordHash = hashPasswordPlaceholder("specialist123");
+      specialistUser.blocked = Boolean(specialistUser.blocked);
+      specialistUser.onboardingStatus = specialistUser.onboardingStatus || "completed";
+    }
+    return specialistUser;
+  }
+
+  function buildMockTasks(specialists, businessUserId) {
+    const templates = [
+      {
+        title: "SMM + Reels для сети кофеен",
+        category: "SMM",
+        niche: "кафе",
+        budgetByn: 2200,
+        platforms: "Instagram, TikTok",
+        description: "Нужна стратегия, контент и short-video под лидогенерацию и рост повторных продаж.",
+        goals: "Рост лидов и выручки из Instagram/TikTok",
+        deadline: "2026-06-15",
+        requiredSkills: ["reels", "контент-план", "таргет"]
+      },
+      {
+        title: "Таргет и контент для салона красоты",
+        category: "Таргетолог",
+        niche: "beauty",
+        budgetByn: 1800,
+        platforms: "Instagram, Telegram",
+        description: "Нужен стабильный поток заявок и контент-воронка в директ с регулярной аналитикой.",
+        goals: "Снизить стоимость лида и увеличить записи",
+        deadline: "2026-06-20",
+        requiredSkills: ["таргет", "аналитика", "контент"]
+      },
+      {
+        title: "Контент и UGC для e-commerce бренда",
+        category: "UGC creator",
+        niche: "ecommerce",
+        budgetByn: 2600,
+        platforms: "Instagram, TikTok, YouTube",
+        description: "Нужны сценарии, съемка UGC, монтаж и запуск коротких видео под продажи.",
+        goals: "Увеличить CTR и конверсию карточек товара",
+        deadline: "2026-06-30",
+        requiredSkills: ["ugc", "монтаж", "hooks"]
+      }
+    ];
+
+    return templates.map((template, index) => {
+      const responses = specialists
+        .map((specialist) => ({
+          id: uid("resp"),
+          specialistId: specialist.id,
+          ...computeMatchAnalysis(specialist, template),
+          message: "Могу подключиться к проекту и дать понятный план с KPI на первый месяц.",
+          priceByn: specialist.priceByn,
+          deadlineDays: 14,
+          attachments: [],
+          status: "new",
+          createdAt: nowIso()
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+
+      const selected = responses[0] || null;
+      if (index === 0 && selected) {
+        selected.status = "accepted";
+      } else if (index === 2 && selected) {
+        selected.status = "accepted";
+      }
+
+      return {
+        id: uid("task"),
+        title: template.title,
+        category: template.category,
+        niche: template.niche,
+        budgetTier: `до ${formatMoneyByn(template.budgetByn)}`,
+        budgetValue: template.budgetByn,
+        budgetByn: template.budgetByn,
+        platforms: template.platforms,
+        goals: template.goals,
+        description: template.description,
+        deadline: template.deadline,
+        requiredSkills: template.requiredSkills,
+        references: [],
+        attachments: [],
+        optionalNotes: "",
+        needTarget: "Да",
+        needContent: "Да",
+        needReels: "Да",
+        status: index === 0 ? "in_progress" : index === 2 ? "completed" : "published",
+        businessUserId,
+        assignedSpecialistId: selected ? selected.specialistId : null,
+        revisionCount: index === 0 ? 1 : 0,
+        responses,
+        createdAt: nowIso()
+      };
+    });
+  }
+
+  function buildMockDeals(tasks, businessUserId) {
+    return tasks
+      .filter((task) => task.assignedSpecialistId && ["in_progress", "completed"].includes(task.status))
+      .map((task) => {
+        const accepted = (task.responses || []).find((item) => item.status === "accepted");
+        const grossAmount = Number(task.budgetByn || (accepted && accepted.priceByn) || 0);
+        const platformFee = Math.round(grossAmount * 0.1);
+        const specialistNet = grossAmount - platformFee;
+        const released = task.status === "completed";
+        return {
+          id: uid("deal"),
+          taskId: task.id,
+          businessUserId,
+          specialistId: task.assignedSpecialistId,
+          responseId: accepted ? accepted.id : null,
+          grossAmount,
+          platformFee,
+          specialistNet,
+          status: released ? "released" : "held",
+          paidAt: nowIso(),
+          heldUntil: released ? null : futureIsoHours(10),
+          releasedAt: released ? nowIso() : null,
+          disputedAt: null,
+          payoutPending: false,
+          timeline: [
+            { id: uid("dt"), status: "paid", text: "Заказчик оплатил проект", ts: nowIso() },
+            { id: uid("dt"), status: released ? "released" : "held", text: released ? "Работа принята, средства выплачены" : "Средства зарезервированы в безопасной сделке", ts: nowIso() }
+          ],
+          createdAt: nowIso(),
+          revisionLimit: 2,
+          revisionUsed: task.revisionCount || 0
+        };
+      });
+  }
+
+  function buildMockConversations(tasks, deals, businessUserId) {
+    return deals.map((deal) => {
+      const task = tasks.find((item) => item.id === deal.taskId);
+      const specialistId = deal.specialistId;
+      return {
+        id: uid("conv"),
+        businessUserId,
+        specialistId,
+        messages: [
+          {
+            id: uid("msg"),
+            sender: "system",
+            text: "Заказчик оплатил проект",
+            ts: nowIso()
+          },
+          {
+            id: uid("msg"),
+            sender: "business",
+            text: `Запускаем задачу: ${task ? task.title : "Проект"}. Жду план на первую неделю.`,
+            ts: nowIso()
+          },
+          {
+            id: uid("msg"),
+            sender: "specialist",
+            text: "Принято. Сегодня подготовлю контент-план и KPI на первую итерацию.",
+            ts: nowIso()
+          }
+        ],
+        readState: {
+          businessTs: nowIso(),
+          specialistTs: nowIso()
+        }
+      };
+    });
+  }
+
+  function buildMockReviews(tasks) {
+    return tasks
+      .filter((task) => task.status === "completed" && task.assignedSpecialistId)
+      .slice(0, 4)
+      .map((task, index) => ({
+        id: uid("review"),
+        taskId: task.id,
+        specialistId: task.assignedSpecialistId,
+        rating: index % 2 === 0 ? 5 : 4,
+        comment:
+          index % 2 === 0
+            ? "Проект завершили в срок, получили ощутимый рост заявок и понятную отчетность."
+            : "Сильный подход к контенту и аналитике, было удобно работать через внутренний чат.",
+        createdAt: nowIso()
+      }));
+  }
+
   function buildMockSpecialists() {
     return [
       {
@@ -611,6 +838,7 @@
       return migrated;
     });
     ensureDemoAdmin(next);
+    const demoBusinessUser = ensureDemoBusiness(next);
 
     next.specialists = next.specialists.map(normalizeSpecialistData).map((specialist) => ({
       ...specialist,
@@ -625,6 +853,11 @@
         recommended: false,
         createdAt: nowIso()
       }));
+    }
+    const leadSpecialist = next.specialists[0] || null;
+    const demoSpecialistUser = ensureDemoSpecialistUser(next, leadSpecialist ? leadSpecialist.id : null);
+    if (leadSpecialist && !leadSpecialist.userId) {
+      leadSpecialist.userId = demoSpecialistUser.id;
     }
 
     next.tasks = next.tasks.map((task) => {
@@ -663,6 +896,9 @@
       }));
       return migrated;
     });
+    if (!next.tasks.length) {
+      next.tasks = buildMockTasks(next.specialists, demoBusinessUser.id);
+    }
 
     next.deals = next.deals.map((deal) => ({
       id: deal.id || uid("deal"),
@@ -678,11 +914,15 @@
       heldUntil: deal.heldUntil || null,
       releasedAt: deal.releasedAt || null,
       disputedAt: deal.disputedAt || null,
+      payoutPending: Boolean(deal.payoutPending),
       timeline: Array.isArray(deal.timeline) ? deal.timeline : [],
       createdAt: deal.createdAt || nowIso(),
       revisionLimit: Number(deal.revisionLimit || 2),
       revisionUsed: Number(deal.revisionUsed || 0)
     }));
+    if (!next.deals.length) {
+      next.deals = buildMockDeals(next.tasks, demoBusinessUser.id);
+    }
 
     next.disputes = next.disputes.map((item) => ({
       id: item.id || uid("dispute"),
@@ -772,6 +1012,12 @@
         specialistTs: item.readState && item.readState.specialistTs ? item.readState.specialistTs : nowIso()
       }
     }));
+    if (!next.conversations.length) {
+      next.conversations = buildMockConversations(next.tasks, next.deals, demoBusinessUser.id);
+    }
+    if (!next.reviews.length) {
+      next.reviews = buildMockReviews(next.tasks);
+    }
 
     next.version = STATE_VERSION;
     return next;
@@ -975,10 +1221,12 @@
   function advanceDealHoldStatus() {
     const now = Date.now();
     state.deals.forEach((deal) => {
-      if (deal.status !== "held" || !deal.heldUntil) return;
+      if (!["held", "paid"].includes(deal.status) || !deal.heldUntil) return;
+      if (deal.status === "paid" && !deal.payoutPending) return;
       const due = new Date(deal.heldUntil).getTime();
       if (!Number.isFinite(due) || due > now) return;
       deal.status = "released";
+      deal.payoutPending = false;
       deal.releasedAt = nowIso();
       addDealTimeline(deal, "released", "Средства переведены исполнителю.");
       const task = state.tasks.find((item) => item.id === deal.taskId);
@@ -1012,6 +1260,7 @@
       heldUntil: null,
       releasedAt: null,
       disputedAt: null,
+      payoutPending: false,
       timeline: [],
       createdAt: nowIso(),
       revisionLimit: 2,
@@ -2193,7 +2442,7 @@
       if (!filtered.length) {
         const emptyTitle = state.specialists.length
           ? "Ничего не найдено"
-          : "Профили специалистов пока не добавлены";
+          : "Каталог специалистов формируется";
         const emptyText = state.specialists.length
           ? "Попробуйте снять часть фильтров или увеличить бюджет."
           : "После регистрации и заполнения профилей карточки появятся здесь.";
@@ -2925,7 +3174,7 @@
     if (!state.specialists.length) {
       root.innerHTML = `
         <article class="card">
-          <h1>Профили пока не опубликованы</h1>
+          <h1>Профиль не найден</h1>
           <p class="meta">Зарегистрируйтесь как специалист и заполните профиль в кабинете.</p>
         </article>
       `;
@@ -2975,7 +3224,7 @@
         const ratingText =
           specialist.reviewsCount > 0
             ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})`
-            : "оценок пока нет";
+            : "без оценок";
         metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText} • ${verificationText}`;
       }
       if (price) price.textContent = `от ${formatMoneyByn(specialist.priceByn)} / мес`;
@@ -3017,7 +3266,7 @@
       const casesGrid = casesCard.querySelector(".cases-grid");
       if (casesGrid) {
         if (!specialist.cases.length) {
-          casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+          casesGrid.innerHTML = '<div class="card"><p class="meta">У специалиста еще нет опубликованных кейсов.</p></div>';
         } else {
           casesGrid.innerHTML = specialist.cases
           .map(
@@ -3060,7 +3309,7 @@
             )
             .join("");
         } else {
-          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Оценок и отзывов пока нет.</p></div>';
+          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Отзывы появятся после завершения первых сделок.</p></div>';
         }
       }
     }
@@ -3277,7 +3526,7 @@
       cards[1].querySelector("strong").textContent = "0 мин";
       cards[2].querySelector("strong").textContent = "0";
       panel.innerHTML =
-        '<article class="panel-item"><strong>Нет данных</strong><div class="meta">Добавьте задачу и профили специалистов для AI Match.</div></article>';
+        '<article class="panel-item"><strong>Недостаточно данных</strong><div class="meta">Создайте задачу или добавьте профили специалистов, чтобы получить подбор.</div></article>';
       return;
     }
 
@@ -3309,11 +3558,30 @@
             <div class="meta">${reasonText}</div>
             <div class="meta">Сильные стороны: ${strengths}</div>
             <div class="meta">Ориентир стоимости: от ${formatMoneyByn(response.estimatedCostByn || specialist.priceByn)} / мес</div>
-            <div class="chips"><a class="chip" href="${specialistProfileUrl("../../", specialist)}">Перейти в профиль</a></div>
+            <div class="chips">
+              <a class="chip" href="${specialistProfileUrl("../../", specialist)}">Перейти в профиль</a>
+              <button class="chip" type="button" data-ai-invite="${specialist.id}">Пригласить</button>
+            </div>
           </article>
         `;
       })
       .join("");
+
+    panel.onclick = (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const inviteBtn = target.closest("[data-ai-invite]");
+      if (!inviteBtn) return;
+      const specialistId = inviteBtn.getAttribute("data-ai-invite");
+      const user = requireBusinessForAction();
+      if (!user || !specialistId) return;
+      state.ui.selectedSpecialistId = specialistId;
+      saveState();
+      showToast("Специалист добавлен в приглашение к задаче");
+      window.setTimeout(() => {
+        window.location.href = appUrl("task/new/index.html");
+      }, 260);
+    };
   }
 
   function initAiAuditPage() {
@@ -3384,11 +3652,17 @@
           text: "Серия «до/после», короткие разборы ошибок и кейс-ролики на 20–30 секунд."
         }
       ];
-
-      state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
-      saveState();
-      renderAudit(state.ai.lastAudit);
-      showToast("Демо-аудит готов");
+      button.disabled = true;
+      const prevText = button.textContent;
+      button.textContent = "Анализируем...";
+      window.setTimeout(() => {
+        state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
+        saveState();
+        renderAudit(state.ai.lastAudit);
+        button.disabled = false;
+        button.textContent = prevText;
+        showToast("Демо-аудит готов");
+      }, 1100);
     });
   }
 
@@ -3485,6 +3759,41 @@
     });
   }
 
+  function renderCasesPage() {
+    if (!isPath("/cases/")) return;
+    const grid = document.querySelector(".cases-grid");
+    if (!grid) return;
+    const source = state.specialists
+      .flatMap((specialist) =>
+        (specialist.cases || []).map((item) => ({
+          ...item,
+          specialist,
+          rating: specialist.rating
+        }))
+      )
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 9);
+    if (!source.length) return;
+    grid.innerHTML = source
+      .map(
+        (item) => `
+          <article class="card case-card">
+            <div class="case-image" style="--media-photo: url('${item.specialist.avatar}')"></div>
+            <strong>${item.title}</strong>
+            <div class="meta">${item.specialist.name} • ${item.specialist.specialization} • ${item.specialist.city}</div>
+            <div class="kpi-line"><span>Ключевой результат</span><strong>${item.result1}</strong></div>
+            <div class="kpi-line"><span>Доп. метрика</span><strong>${item.result2}</strong></div>
+            <div class="kpi-line"><span>Период</span><strong>${item.period}</strong></div>
+            <div class="chips">
+              <a class="chip" href="${specialistProfileUrl("../", item.specialist)}">Профиль специалиста</a>
+              <a class="chip" href="${appUrl("task/new/index.html")}">Создать задачу</a>
+            </div>
+          </article>
+        `
+      )
+      .join("");
+  }
+
   function tasksForBusinessUser(businessUserId) {
     return state.tasks.filter((item) => item.businessUserId === businessUserId);
   }
@@ -3559,7 +3868,7 @@
     const tableBody = document.querySelector(".table tbody");
     if (tableBody) {
       if (!tasks.length) {
-        tableBody.innerHTML = "<tr><td colspan='4' class='meta'>Пока нет задач. Разместите первую задачу, чтобы получить отклики.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan='4' class='meta'>Разместите первую задачу, чтобы получить отклики специалистов.</td></tr>";
       } else {
         tableBody.innerHTML = tasks
           .slice(0, 5)
@@ -3636,7 +3945,7 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     if (!tasks.length) {
-      tbody.innerHTML = "<tr><td colspan='5' class='meta'>У вас пока нет опубликованных задач.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='5' class='meta'>Создайте первую задачу, и она появится в этом разделе.</td></tr>";
       return;
     }
     tbody.innerHTML = tasks
@@ -3662,7 +3971,7 @@
                   ? `<div class="chips"><button class="chip" type="button" data-accept-best-response="${task.id}">Принять лучшего отклик</button></div>`
                   : ""
               }
-              ${topResponses || "<div class='meta'>Откликов пока нет</div>"}
+              ${topResponses || "<div class='meta'>Отклики появятся после публикации задачи.</div>"}
             </td>
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
@@ -3687,6 +3996,9 @@
         .sort((a, b) => b.score - a.score)[0];
       if (!best) return;
       best.status = "accepted";
+      (task.responses || []).forEach((item) => {
+        if (item.id !== best.id && item.status === "new") item.status = "rejected";
+      });
       task.assignedSpecialistId = best.specialistId;
       task.status = "in_progress";
       const deal = ensureDealForAcceptedResponse(task, best);
@@ -3709,7 +4021,7 @@
     const list = document.querySelector(".panel-list");
     if (!list) return;
     if (!favorites.length) {
-      list.innerHTML = '<div class="panel-item"><div class="meta">Пока нет избранных специалистов.</div></div>';
+      list.innerHTML = '<div class="panel-item"><div class="meta">Добавьте специалистов в избранное для быстрого доступа.</div></div>';
       return;
     }
     list.innerHTML = favorites
@@ -3730,7 +4042,7 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     if (!deals.length) {
-      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделок пока нет. Сначала примите отклик в разделе задач.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделки появятся после принятия отклика в разделе задач.</td></tr>";
       return;
     }
     tbody.innerHTML = deals
@@ -3754,7 +4066,7 @@
             <td>
               <div class="chips">
                 ${deal.status === "unpaid" ? `<button class="chip" type="button" data-deal-action="pay" data-deal-id="${deal.id}">Оплатить</button>` : ""}
-                ${deal.status === "paid" ? `<button class="chip" type="button" data-deal-action="hold" data-deal-id="${deal.id}">Перевести в hold</button>` : ""}
+                ${deal.status === "paid" && !deal.payoutPending ? `<button class="chip" type="button" data-deal-action="hold" data-deal-id="${deal.id}">Перевести в hold</button>` : ""}
                 ${deal.status === "held" ? `<button class="chip" type="button" data-deal-action="revision" data-deal-id="${deal.id}">Запросить доработку</button>` : ""}
                 ${deal.status === "held" ? `<button class="chip" type="button" data-deal-action="release" data-deal-id="${deal.id}">Подтвердить и выпустить</button>` : ""}
                 ${["held", "paid"].includes(deal.status) ? `<button class="chip" type="button" data-deal-action="dispute" data-deal-id="${deal.id}">Открыть спор</button>` : ""}
@@ -3781,23 +4093,26 @@
 
       if (action === "pay") {
         deal.status = "paid";
+        deal.payoutPending = false;
         deal.paidAt = nowIso();
         addDealTimeline(deal, "paid", "Заказчик оплатил сделку.");
         if (convo) createSystemMessage(convo.id, "Проект оплачен. Средства готовы к холду.");
         showToast("Платеж проведен");
       } else if (action === "hold") {
         deal.status = "held";
+        deal.payoutPending = false;
         deal.heldUntil = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
         addDealTimeline(deal, "held", "Средства переведены в hold до приемки.");
         if (convo) createSystemMessage(convo.id, "Средства в холде. Можно отправлять работу.");
         showToast("Средства переведены в hold");
       } else if (action === "release") {
-        deal.status = "released";
-        deal.releasedAt = nowIso();
-        addDealTimeline(deal, "released", "Заказчик принял работу. Выплата выпущена.");
+        deal.status = "paid";
+        deal.payoutPending = true;
+        deal.heldUntil = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+        addDealTimeline(deal, "payout_pending", "Заказчик принял работу. Выплата перейдет в доступные после hold-периода.");
         if (task) task.status = "completed";
-        if (convo) createSystemMessage(convo.id, "Работа принята. Выплата выпущена исполнителю.");
-        showToast("Выплата выпущена");
+        if (convo) createSystemMessage(convo.id, "Работа принята. Средства будут доступны исполнителю после hold-периода.");
+        showToast("Работа принята. Выплата перейдет в доступные по таймеру.");
       } else if (action === "revision") {
         if (deal.revisionUsed >= deal.revisionLimit) {
           showToast("Лимит бесплатных доработок исчерпан. Можно открыть спор.", "error");
@@ -3861,6 +4176,7 @@
         showToast("Спор открыт");
       } else if (action === "refund") {
         deal.status = "refunded";
+        deal.payoutPending = false;
         addDealTimeline(deal, "refunded", "Заказчик запросил возврат средств.");
         if (task) task.status = "cancelled";
         const dispute = state.disputes.find((item) => item.dealId === deal.id && ["opened", "under_review"].includes(item.status));
@@ -3889,7 +4205,7 @@
                 `<div class="panel-item"><strong>${disputeStatusLabel(item.status)}</strong><div class="meta">${item.reason || "Без причины"} • ${formatDate(item.createdAt)}</div></div>`
             )
             .join("")
-        : "<div class='panel-item'><div class='meta'>Споров пока нет.</div></div>";
+        : "<div class='panel-item'><div class='meta'>Открытых споров нет. Все сделки идут по плану.</div></div>";
       infoCard.innerHTML = `<h2>Споры и арбитраж</h2><div class="panel-list">${disputesHtml}</div><a class="btn btn-ghost" href="${appUrl("safety/index.html")}">Подробнее о безопасной сделке</a>`;
     }
   }
@@ -3919,7 +4235,7 @@
           `
         )
         .join("")
-        : '<div class="panel-item"><div class="meta">Пока нет оценок и отзывов.</div></div>';
+        : '<div class="panel-item"><div class="meta">Оставьте первый отзыв после завершения сделки со специалистом.</div></div>';
     }
 
     if (!formCard) return;
@@ -3996,7 +4312,7 @@
     const listCard = articles[1];
     const convos = conversationsForBusinessUser(user.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Диалогов пока нет.</p>";
+      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
       listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
       return;
     }
@@ -4157,7 +4473,7 @@
       });
       tbody.innerHTML = rows.length
         ? rows.join("")
-        : "<tr><td colspan='4' class='meta'>Пока нет проектов и входящих задач.</td></tr>";
+        : "<tr><td colspan='4' class='meta'>Опубликуйте отклик на задачу, чтобы отследить проектный статус.</td></tr>";
     }
 
     const panels = document.querySelectorAll(".dash-panels > article.card");
@@ -4223,7 +4539,7 @@
       );
     tbody.innerHTML = rows.length
       ? rows.join("")
-      : "<tr><td colspan='4' class='meta'>Проектов и откликов пока нет.</td></tr>";
+      : "<tr><td colspan='4' class='meta'>Опубликуйте отклик на задачу, чтобы увидеть статус в этом разделе.</td></tr>";
 
     tbody.onclick = (event) => {
       const target = event.target;
@@ -4315,7 +4631,7 @@
     const listCard = articles[1];
     const convos = conversationsForSpecialist(specialist.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалогов пока нет.</p>";
+      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
       listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
       return;
     }
@@ -4405,7 +4721,7 @@
     const button = document.querySelector(".dash-panels .btn.btn-primary");
     if (casesGrid) {
       if (!specialist.cases.length) {
-        casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+        casesGrid.innerHTML = '<div class="card"><p class="meta">У специалиста еще нет опубликованных кейсов.</p></div>';
       } else {
         casesGrid.innerHTML = specialist.cases
         .map(
@@ -4517,7 +4833,7 @@
                         `<tr><td>Вывод (${item.method})</td><td>${formatMoneyByn(item.amount)}</td><td>${withdrawalStatusLabel(item.status)}</td><td>${formatDate(item.createdAt)}</td></tr>`
                     )
                     .join("")
-                : "<tr><td colspan='4' class='meta'>Выводов пока нет.</td></tr>"
+                : "<tr><td colspan='4' class='meta'>История выводов появится после первой заявки на выплату.</td></tr>"
             }
           </tbody>
         </table>
@@ -4532,7 +4848,7 @@
                     return `<div class="panel-item"><strong>${task ? task.title : "Сделка"} • ${dealStatusLabel(deal.status)}</strong><div class="meta">${timelineTop ? timelineTop.text : "Статус обновляется"} • ${formatMoneyByn(deal.specialistNet || 0)}</div></div>`;
                   })
                   .join("")
-              : "<div class='panel-item'><div class='meta'>Сделок пока нет.</div></div>"
+              : "<div class='panel-item'><div class='meta'>Сделки появятся после принятия отклика на задачу.</div></div>"
           }
         </div>
       `;
@@ -4765,7 +5081,7 @@
           ? items
               .map((user) => `<div class="panel-item"><strong>${user.name}</strong><div class="meta">${user.email} • ${roleLabel(user.role)}</div></div>`)
               .join("")
-          : `<div class="empty-state">Пользователи пока отсутствуют.</div>`;
+          : `<div class="empty-state">Пользователей еще нет. Регистрация откроет первые профили здесь.</div>`;
       }
 
       const latestTasks = root.querySelector("[data-admin-latest-tasks]");
@@ -4781,7 +5097,7 @@
                   `<div class="panel-item"><strong>${task.title}</strong><div class="meta">${task.category} • ${taskStatusLabel(task.status)} • ${taskOwner(task)}</div></div>`
               )
               .join("")
-          : `<div class="empty-state">Задач пока нет.</div>`;
+          : `<div class="empty-state">Задачи появятся после публикации брифов бизнес-аккаунтами.</div>`;
       }
     }
 
@@ -4929,7 +5245,7 @@
       if (!tbody) return;
       const list = allResponses();
       if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Откликов пока нет.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Отклики появятся после публикации задач и активности специалистов.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = list
@@ -5048,7 +5364,7 @@
       const tbody = root.querySelector("[data-complaints-table]");
       if (!tbody) return;
       if (!state.complaints.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Жалоб пока нет.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Новых жалоб нет. Качество взаимодействия остается стабильным.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = state.complaints
@@ -5169,7 +5485,7 @@
       const list = root.querySelector("[data-notifications-list]");
       if (!list) return;
       if (!state.notifications.length) {
-        list.innerHTML = `<div class="empty-state">Уведомления пока не отправлялись.</div>`;
+        list.innerHTML = `<div class="empty-state">Отправьте первое уведомление пользователям из этой панели.</div>`;
         return;
       }
       list.innerHTML = state.notifications
@@ -5186,7 +5502,7 @@
       if (!tbody) return;
       const rows = state.logs.slice(0, 300);
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Логи пока пустые.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Логи действий начнут заполняться после операций в системе.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = rows
@@ -5650,6 +5966,9 @@
 
         if (acceptBtn) {
           pair.response.status = "accepted";
+          (pair.task.responses || []).forEach((item) => {
+            if (item.id !== pair.response.id && item.status === "new") item.status = "rejected";
+          });
           pair.task.assignedSpecialistId = pair.response.specialistId;
           pair.task.status = "in_progress";
           const deal = ensureDealForAcceptedResponse(pair.task, pair.response);
@@ -6086,6 +6405,7 @@
   initSpecialistsPage();
   initTaskCreatePage();
   renderProfilePage();
+  renderCasesPage();
   initVerificationPage();
   initAiMatchPage();
   initAiAuditPage();
