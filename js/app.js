@@ -1405,7 +1405,10 @@
     const roiHref = appUrl("roi-calculator/index.html");
 
     document.querySelectorAll(".nav").forEach((nav) => {
-      if (nav.querySelector("[data-global-roi-link]")) return;
+      const hasRoi = Array.from(nav.querySelectorAll("a")).some(
+        (item) => normalizePathname(item.getAttribute("href") || "") === normalizePathname(new URL(roiHref, window.location.href).pathname)
+      );
+      if (hasRoi || nav.querySelector("[data-global-roi-link]")) return;
       const link = document.createElement("a");
       link.href = roiHref;
       link.textContent = "ROI-калькулятор";
@@ -1417,7 +1420,12 @@
     });
 
     document.querySelectorAll("[data-mobile-nav]").forEach((mobileNav) => {
-      if (mobileNav.querySelector("[data-global-roi-link]")) return;
+      const hasRoi = Array.from(mobileNav.querySelectorAll("a")).some(
+        (item) =>
+          normalize(item.textContent).includes("roi-калькулятор") ||
+          normalizePathname(item.getAttribute("href") || "").includes("/roi-calculator")
+      );
+      if (hasRoi || mobileNav.querySelector("[data-global-roi-link]")) return;
       const link = document.createElement("a");
       link.href = roiHref;
       link.textContent = "ROI-калькулятор";
@@ -1616,27 +1624,92 @@
   }
 
   function initMobileMenu() {
-    const menuBtn = document.querySelector("[data-menu-btn]");
-    const mobileNav = document.querySelector("[data-mobile-nav]");
+    const topbarWrap = document.querySelector(".topbar-wrap");
+    const topbar = document.querySelector(".topbar");
+    if (!topbarWrap || !topbar) return;
+
+    let actions = topbar.querySelector(".actions");
+    if (!actions) {
+      actions = document.createElement("div");
+      actions.className = "actions";
+      topbar.appendChild(actions);
+    }
+
+    let menuBtn = actions.querySelector("[data-menu-btn]");
+    if (!menuBtn) {
+      menuBtn = document.createElement("button");
+      menuBtn.type = "button";
+      menuBtn.className = "btn btn-ghost mobile-menu-btn";
+      menuBtn.setAttribute("data-menu-btn", "1");
+      menuBtn.textContent = "Меню";
+      actions.appendChild(menuBtn);
+    }
+
+    let mobileNav = topbarWrap.querySelector("[data-mobile-nav]");
+    if (!mobileNav) {
+      mobileNav = document.createElement("div");
+      mobileNav.className = "container mobile-nav";
+      mobileNav.setAttribute("data-mobile-nav", "1");
+      const navLinks = Array.from(topbar.querySelectorAll(".nav a"));
+      const fallbackLinks = [
+        { href: appUrl("index.html"), label: "Главная" },
+        { href: appUrl("specialists/index.html"), label: "Специалисты" },
+        { href: appUrl("cases/index.html"), label: "Кейсы" },
+        { href: appUrl("business/index.html"), label: "Для бизнеса" },
+        { href: appUrl("blog/index.html"), label: "Блог" }
+      ];
+      const source = navLinks.length
+        ? navLinks.map((link) => ({ href: link.getAttribute("href") || "#", label: (link.textContent || "").trim() }))
+        : fallbackLinks;
+      mobileNav.innerHTML = source
+        .map((item) => `<a href="${item.href}">${item.label}</a>`)
+        .join("");
+      topbarWrap.appendChild(mobileNav);
+    }
+
     if (!menuBtn || !mobileNav) return;
+
+    // De-duplicate menu links to avoid repeated entries across templates/injections.
+    const seen = new Set();
+    Array.from(mobileNav.querySelectorAll("a")).forEach((link) => {
+      const href = normalizePathname(link.getAttribute("href") || "");
+      const key = `${href}|${normalize(link.textContent)}`;
+      if (seen.has(key)) {
+        link.remove();
+      } else {
+        seen.add(key);
+      }
+    });
 
     const buttonLabel = (menuBtn.textContent || "").trim() || "Меню";
     menuBtn.innerHTML = `<span class="sr-only">${buttonLabel}</span><span class="menu-icon" aria-hidden="true"></span>`;
     menuBtn.setAttribute("aria-label", buttonLabel);
     menuBtn.setAttribute("aria-expanded", "false");
+    mobileNav.setAttribute("aria-hidden", "true");
+
+    let backdrop = document.querySelector(".mobile-nav-backdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.className = "mobile-nav-backdrop";
+      document.body.appendChild(backdrop);
+    }
 
     function openMenu() {
       menuBtn.classList.add("is-open");
       mobileNav.classList.add("show");
+      backdrop.classList.add("show");
       document.body.classList.add("menu-open");
       menuBtn.setAttribute("aria-expanded", "true");
+      mobileNav.setAttribute("aria-hidden", "false");
     }
 
     function closeMenu() {
       menuBtn.classList.remove("is-open");
       mobileNav.classList.remove("show");
+      backdrop.classList.remove("show");
       document.body.classList.remove("menu-open");
       menuBtn.setAttribute("aria-expanded", "false");
+      mobileNav.setAttribute("aria-hidden", "true");
     }
 
     menuBtn.addEventListener("click", () => {
@@ -1652,6 +1725,7 @@
       if (!(target instanceof HTMLElement)) return;
       if (target.closest("a")) closeMenu();
     });
+    backdrop.addEventListener("click", closeMenu);
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") closeMenu();
@@ -1669,6 +1743,38 @@
         option.classList.toggle("active");
       });
     });
+  }
+
+  function enhanceResponsiveTables() {
+    const tables = document.querySelectorAll(".table");
+    tables.forEach((table) => {
+      const headers = Array.from(table.querySelectorAll("thead th")).map((node) =>
+        (node.textContent || "").trim().replace(/\s+/g, " ")
+      );
+      if (!headers.length) return;
+      table.querySelectorAll("tbody tr").forEach((row) => {
+        const cells = Array.from(row.children);
+        cells.forEach((cell, index) => {
+          if (!(cell instanceof HTMLElement)) return;
+          if (!cell.dataset.label && headers[index]) {
+            cell.dataset.label = headers[index];
+          }
+        });
+      });
+    });
+  }
+
+  function initResponsiveTableObserver() {
+    enhanceResponsiveTables();
+    let raf = 0;
+    const observer = new MutationObserver(() => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        enhanceResponsiveTables();
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function initRoiCalculator() {
@@ -1722,6 +1828,7 @@
     };
     const stateCard = root.querySelector("[data-roi-state]");
     const copyBtn = root.querySelector("[data-roi-copy]");
+    const resultCard = root.querySelector(".roi-result-card");
 
     if (!fields.smmBudget || !metricNodes.roi) return;
 
@@ -1777,6 +1884,10 @@
     }
 
     function recalc() {
+      if (resultCard) {
+        resultCard.classList.add("is-updating");
+        window.setTimeout(() => resultCard.classList.remove("is-updating"), 180);
+      }
       const smmBudget = Math.max(0, parseNumber(fields.smmBudget));
       const adsBudget = Math.max(0, parseNumber(fields.adsBudget));
       const avgCheck = Math.max(0, parseNumber(fields.avgCheck));
@@ -1864,6 +1975,34 @@
         ta.remove();
         showToast("Отчет скопирован");
       }
+    }
+
+    async function shareReport() {
+      const text = buildReport();
+      if (!text) return;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "ROI-калькулятор SMM",
+            text
+          });
+          showToast("Отчет отправлен");
+          return;
+        } catch (error) {
+          // Ignore user cancel and fallback to copy.
+        }
+      }
+      await copyReport();
+    }
+
+    if (copyBtn && !root.querySelector("[data-roi-share]")) {
+      const shareBtn = document.createElement("button");
+      shareBtn.type = "button";
+      shareBtn.className = "btn btn-ghost";
+      shareBtn.textContent = "Поделиться";
+      shareBtn.setAttribute("data-roi-share", "1");
+      copyBtn.parentElement?.appendChild(shareBtn);
+      shareBtn.addEventListener("click", shareReport);
     }
 
     Object.values(fields).forEach((field) => {
@@ -2067,7 +2206,7 @@
     let currentSort = "relevance";
 
     const controls = document.createElement("div");
-    controls.className = "chips";
+    controls.className = "chips specialists-toolbar";
     controls.innerHTML = `
       <label class="chip">Сортировка:
         <select data-specialists-sort>
@@ -2087,6 +2226,73 @@
     const sortSelect = document.querySelector("[data-specialists-sort]");
     const loadMoreBtn = document.querySelector("[data-load-more-specialists]");
     let firstRenderDone = false;
+    let filtersBackdrop = null;
+
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar && !document.querySelector("[data-open-filters]")) {
+      const mobileTools = document.createElement("div");
+      mobileTools.className = "mobile-catalog-tools";
+      mobileTools.innerHTML = `
+        <button class="btn btn-primary" type="button" data-open-filters>Фильтры</button>
+      `;
+      const insertAfter = mainContainer && mainContainer.querySelector("[data-specialists-sort]")
+        ? mainContainer.querySelector("[data-specialists-sort]").closest(".chips")
+        : null;
+      if (insertAfter && insertAfter.parentElement) {
+        insertAfter.parentElement.insertBefore(mobileTools, insertAfter.nextSibling);
+      } else if (mainContainer) {
+        mainContainer.insertBefore(mobileTools, catalogGrid);
+      }
+
+      filtersBackdrop = document.createElement("div");
+      filtersBackdrop.className = "filters-backdrop";
+      document.body.appendChild(filtersBackdrop);
+
+      function closeFilters() {
+        sidebar.classList.remove("mobile-open");
+        document.body.classList.remove("filters-open");
+      }
+
+      function openFilters() {
+        sidebar.classList.add("mobile-open");
+        document.body.classList.add("filters-open");
+      }
+
+      const openBtn = mobileTools.querySelector("[data-open-filters]");
+      if (openBtn) openBtn.addEventListener("click", openFilters);
+      filtersBackdrop.addEventListener("click", closeFilters);
+
+      if (!sidebar.querySelector("[data-filters-actions]")) {
+        const actions = document.createElement("div");
+        actions.className = "filters-actions";
+        actions.setAttribute("data-filters-actions", "1");
+        actions.innerHTML = `
+          <button class="btn btn-ghost" type="button" data-reset-filters>Сбросить</button>
+          <button class="btn btn-primary" type="button" data-apply-filters>Применить</button>
+        `;
+        sidebar.appendChild(actions);
+        actions.querySelector("[data-reset-filters]")?.addEventListener("click", () => {
+          sidebar.querySelectorAll(".option.active").forEach((item) => item.classList.remove("active"));
+          if (priceRange) priceRange.value = "1500";
+          if (searchInput) searchInput.value = "";
+          renderCount = 6;
+          render();
+          closeFilters();
+        });
+        actions.querySelector("[data-apply-filters]")?.addEventListener("click", () => {
+          renderCount = 6;
+          render();
+          closeFilters();
+        });
+      }
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeFilters();
+      });
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 760) closeFilters();
+      });
+    }
 
     function renderSkeleton() {
       catalogGrid.innerHTML = Array.from({ length: 4 })
@@ -2193,7 +2399,7 @@
       if (!filtered.length) {
         const emptyTitle = state.specialists.length
           ? "Ничего не найдено"
-          : "Профили специалистов пока не добавлены";
+          : "Каталог специалистов формируется";
         const emptyText = state.specialists.length
           ? "Попробуйте снять часть фильтров или увеличить бюджет."
           : "После регистрации и заполнения профилей карточки появятся здесь.";
@@ -2925,7 +3131,7 @@
     if (!state.specialists.length) {
       root.innerHTML = `
         <article class="card">
-          <h1>Профили пока не опубликованы</h1>
+          <h1>Профиль не найден</h1>
           <p class="meta">Зарегистрируйтесь как специалист и заполните профиль в кабинете.</p>
         </article>
       `;
@@ -2975,7 +3181,7 @@
         const ratingText =
           specialist.reviewsCount > 0
             ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})`
-            : "оценок пока нет";
+            : "без оценок";
         metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText} • ${verificationText}`;
       }
       if (price) price.textContent = `от ${formatMoneyByn(specialist.priceByn)} / мес`;
@@ -3017,7 +3223,7 @@
       const casesGrid = casesCard.querySelector(".cases-grid");
       if (casesGrid) {
         if (!specialist.cases.length) {
-          casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+          casesGrid.innerHTML = '<div class="card"><p class="meta">Добавьте кейсы с результатами, чтобы усилить доверие бизнеса.</p></div>';
         } else {
           casesGrid.innerHTML = specialist.cases
           .map(
@@ -3060,7 +3266,7 @@
             )
             .join("");
         } else {
-          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Оценок и отзывов пока нет.</p></div>';
+          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Отзывы появятся после завершения первых сделок.</p></div>';
         }
       }
     }
@@ -3559,7 +3765,7 @@
     const tableBody = document.querySelector(".table tbody");
     if (tableBody) {
       if (!tasks.length) {
-        tableBody.innerHTML = "<tr><td colspan='4' class='meta'>Пока нет задач. Разместите первую задачу, чтобы получить отклики.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan='4' class='meta'>Создайте первую задачу, чтобы получить отклики специалистов.</td></tr>";
       } else {
         tableBody.innerHTML = tasks
           .slice(0, 5)
@@ -3636,7 +3842,7 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     if (!tasks.length) {
-      tbody.innerHTML = "<tr><td colspan='5' class='meta'>У вас пока нет опубликованных задач.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='5' class='meta'>Создайте первую задачу, и она появится в этом разделе.</td></tr>";
       return;
     }
     tbody.innerHTML = tasks
@@ -3662,7 +3868,7 @@
                   ? `<div class="chips"><button class="chip" type="button" data-accept-best-response="${task.id}">Принять лучшего отклик</button></div>`
                   : ""
               }
-              ${topResponses || "<div class='meta'>Откликов пока нет</div>"}
+              ${topResponses || "<div class='meta'>Отклики появятся после публикации задачи.</div>"}
             </td>
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
@@ -3709,7 +3915,7 @@
     const list = document.querySelector(".panel-list");
     if (!list) return;
     if (!favorites.length) {
-      list.innerHTML = '<div class="panel-item"><div class="meta">Пока нет избранных специалистов.</div></div>';
+      list.innerHTML = '<div class="panel-item"><div class="meta">Добавьте специалистов в избранное для быстрого доступа.</div></div>';
       return;
     }
     list.innerHTML = favorites
@@ -3730,7 +3936,7 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     if (!deals.length) {
-      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделок пока нет. Сначала примите отклик в разделе задач.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделки появятся после принятия отклика в разделе задач.</td></tr>";
       return;
     }
     tbody.innerHTML = deals
@@ -3889,7 +4095,7 @@
                 `<div class="panel-item"><strong>${disputeStatusLabel(item.status)}</strong><div class="meta">${item.reason || "Без причины"} • ${formatDate(item.createdAt)}</div></div>`
             )
             .join("")
-        : "<div class='panel-item'><div class='meta'>Споров пока нет.</div></div>";
+        : "<div class='panel-item'><div class='meta'>Открытых споров нет. Все сделки идут по плану.</div></div>";
       infoCard.innerHTML = `<h2>Споры и арбитраж</h2><div class="panel-list">${disputesHtml}</div><a class="btn btn-ghost" href="${appUrl("safety/index.html")}">Подробнее о безопасной сделке</a>`;
     }
   }
@@ -3919,7 +4125,7 @@
           `
         )
         .join("")
-        : '<div class="panel-item"><div class="meta">Пока нет оценок и отзывов.</div></div>';
+        : '<div class="panel-item"><div class="meta">Оставьте первый отзыв после завершения сделки со специалистом.</div></div>';
     }
 
     if (!formCard) return;
@@ -3996,7 +4202,7 @@
     const listCard = articles[1];
     const convos = conversationsForBusinessUser(user.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Диалогов пока нет.</p>";
+      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
       listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
       return;
     }
@@ -4157,7 +4363,7 @@
       });
       tbody.innerHTML = rows.length
         ? rows.join("")
-        : "<tr><td colspan='4' class='meta'>Пока нет проектов и входящих задач.</td></tr>";
+        : "<tr><td colspan='4' class='meta'>Опубликуйте отклик на задачу, чтобы отследить статус проекта.</td></tr>";
     }
 
     const panels = document.querySelectorAll(".dash-panels > article.card");
@@ -4223,7 +4429,7 @@
       );
     tbody.innerHTML = rows.length
       ? rows.join("")
-      : "<tr><td colspan='4' class='meta'>Проектов и откликов пока нет.</td></tr>";
+      : "<tr><td colspan='4' class='meta'>Опубликуйте отклик на задачу, чтобы увидеть статус в этом разделе.</td></tr>";
 
     tbody.onclick = (event) => {
       const target = event.target;
@@ -4315,7 +4521,7 @@
     const listCard = articles[1];
     const convos = conversationsForSpecialist(specialist.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалогов пока нет.</p>";
+      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
       listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
       return;
     }
@@ -4405,7 +4611,7 @@
     const button = document.querySelector(".dash-panels .btn.btn-primary");
     if (casesGrid) {
       if (!specialist.cases.length) {
-        casesGrid.innerHTML = '<div class="card"><p class="meta">Кейсы пока не добавлены.</p></div>';
+        casesGrid.innerHTML = '<div class="card"><p class="meta">Добавьте кейсы с результатами, чтобы усилить доверие бизнеса.</p></div>';
       } else {
         casesGrid.innerHTML = specialist.cases
         .map(
@@ -4517,7 +4723,7 @@
                         `<tr><td>Вывод (${item.method})</td><td>${formatMoneyByn(item.amount)}</td><td>${withdrawalStatusLabel(item.status)}</td><td>${formatDate(item.createdAt)}</td></tr>`
                     )
                     .join("")
-                : "<tr><td colspan='4' class='meta'>Выводов пока нет.</td></tr>"
+                : "<tr><td colspan='4' class='meta'>История выводов появится после первой заявки на выплату.</td></tr>"
             }
           </tbody>
         </table>
@@ -4532,7 +4738,7 @@
                     return `<div class="panel-item"><strong>${task ? task.title : "Сделка"} • ${dealStatusLabel(deal.status)}</strong><div class="meta">${timelineTop ? timelineTop.text : "Статус обновляется"} • ${formatMoneyByn(deal.specialistNet || 0)}</div></div>`;
                   })
                   .join("")
-              : "<div class='panel-item'><div class='meta'>Сделок пока нет.</div></div>"
+              : "<div class='panel-item'><div class='meta'>Сделки появятся после принятия отклика на задачу.</div></div>"
           }
         </div>
       `;
@@ -4765,7 +4971,7 @@
           ? items
               .map((user) => `<div class="panel-item"><strong>${user.name}</strong><div class="meta">${user.email} • ${roleLabel(user.role)}</div></div>`)
               .join("")
-          : `<div class="empty-state">Пользователи пока отсутствуют.</div>`;
+          : `<div class="empty-state">Пользователей еще нет. Регистрация откроет первые профили здесь.</div>`;
       }
 
       const latestTasks = root.querySelector("[data-admin-latest-tasks]");
@@ -4781,7 +4987,7 @@
                   `<div class="panel-item"><strong>${task.title}</strong><div class="meta">${task.category} • ${taskStatusLabel(task.status)} • ${taskOwner(task)}</div></div>`
               )
               .join("")
-          : `<div class="empty-state">Задач пока нет.</div>`;
+          : `<div class="empty-state">Задачи появятся после публикации брифов бизнес-аккаунтами.</div>`;
       }
     }
 
@@ -4929,7 +5135,7 @@
       if (!tbody) return;
       const list = allResponses();
       if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Откликов пока нет.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Отклики появятся после публикации задач и активности специалистов.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = list
@@ -5048,7 +5254,7 @@
       const tbody = root.querySelector("[data-complaints-table]");
       if (!tbody) return;
       if (!state.complaints.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Жалоб пока нет.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Новых жалоб нет. Качество взаимодействия остается стабильным.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = state.complaints
@@ -5169,7 +5375,7 @@
       const list = root.querySelector("[data-notifications-list]");
       if (!list) return;
       if (!state.notifications.length) {
-        list.innerHTML = `<div class="empty-state">Уведомления пока не отправлялись.</div>`;
+        list.innerHTML = `<div class="empty-state">Отправьте первое уведомление пользователям из этой панели.</div>`;
         return;
       }
       list.innerHTML = state.notifications
@@ -5186,7 +5392,7 @@
       if (!tbody) return;
       const rows = state.logs.slice(0, 300);
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Логи пока пустые.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Логи действий начнут заполняться после операций в системе.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = rows
@@ -6068,6 +6274,21 @@
     });
   }
 
+  function initMobileFab() {
+    const user = currentUser();
+    if (!user) return;
+    if (!window.matchMedia("(max-width: 760px)").matches) return;
+    if (!isPath("/dashboard/business/")) return;
+    if (document.querySelector("[data-mobile-fab]")) return;
+    const fab = document.createElement("a");
+    fab.href = appUrl("task/new/index.html");
+    fab.className = "mobile-fab";
+    fab.setAttribute("data-mobile-fab", "1");
+    fab.setAttribute("aria-label", "Создать задачу");
+    fab.textContent = "+ Задача";
+    document.body.appendChild(fab);
+  }
+
   if (!enforceSessionAndRole()) return;
   initGlobalRoiNavLink();
   initBrandLogos();
@@ -6104,6 +6325,8 @@
   renderSpecialistFinance();
   renderSpecialistSettings();
   initAdminPanel();
+  initResponsiveTableObserver();
+  initMobileFab();
   initQuickActions();
   initPageHeroVisuals();
   initCardVisualBoost();
