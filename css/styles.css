@@ -563,6 +563,12 @@ button:focus-visible,
   background: rgba(255, 255, 255, 0.02);
 }
 
+.chip.active {
+  border-color: rgba(183, 170, 255, 0.45);
+  color: #fff;
+  background: rgba(123, 108, 255, 0.2);
+}
+
 .cases-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1054,6 +1060,17 @@ button:focus-visible,
   color: var(--ok);
 }
 
+.verified.not_verified::before,
+.verified.rejected::before {
+  content: "!";
+  color: var(--danger);
+}
+
+.verified.pending::before {
+  content: "•";
+  color: var(--warn);
+}
+
 .catalog-side {
   display: grid;
   align-content: space-between;
@@ -1410,6 +1427,9 @@ textarea {
 .chat {
   display: grid;
   gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .chat-msg {
@@ -1424,6 +1444,17 @@ textarea {
   margin-left: auto;
   background: rgba(123, 108, 255, 0.2);
   border-color: rgba(192, 180, 255, 0.25);
+}
+
+.chat-meta {
+  margin-top: 6px;
+  font-size: 0.73rem;
+  color: rgba(214, 222, 255, 0.72);
+  text-align: right;
+}
+
+.verification-form {
+  margin-top: 12px;
 }
 
 .kpi-cards {

@@ -99,6 +99,15 @@
     return String(value || "").trim().toLowerCase();
   }
 
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   const VISUAL_LIBRARY = {
     social: [appUrl("assets/visuals/social-flow.svg"), appUrl("assets/visuals/workspace-focus.svg")],
     analytics: [appUrl("assets/visuals/analytics-grid.svg"), appUrl("assets/visuals/growth-chart.svg")],
@@ -216,6 +225,13 @@
       currentUserId: null,
       specialists: [],
       tasks: [],
+      deals: [],
+      disputes: [],
+      withdrawals: [],
+      verifications: [],
+      chatSafety: {
+        blockDirectContacts: true
+      },
       complaints: [],
       moderationHistory: [],
       notifications: [],
@@ -326,6 +342,11 @@
         country: "Беларусь",
         rating: 4.9,
         reviewsCount: 36,
+        completedOrders: 52,
+        responseRate: 96,
+        responseTimeHours: 2,
+        availabilityStatus: "available",
+        verified: true,
         specialization: "SMM-стратег",
         experience: "senior",
         description: "Стратегия роста для Instagram и Telegram с упором на лидогенерацию.",
@@ -356,6 +377,11 @@
         country: "Россия",
         rating: 4.8,
         reviewsCount: 24,
+        completedOrders: 41,
+        responseRate: 93,
+        responseTimeHours: 3,
+        availabilityStatus: "available",
+        verified: true,
         specialization: "Таргетолог / Performance",
         experience: "senior",
         description: "Meta и VK Ads, фокус на ROMI и стабильный поток лидов.",
@@ -385,6 +411,11 @@
         country: "Казахстан",
         rating: 4.8,
         reviewsCount: 19,
+        completedOrders: 33,
+        responseRate: 91,
+        responseTimeHours: 5,
+        availabilityStatus: "busy",
+        verified: true,
         specialization: "Контент-менеджер",
         experience: "middle",
         description: "Контент-матрицы и продакшн под Reels/TikTok для брендов и экспертов.",
@@ -414,6 +445,11 @@
         country: "СНГ",
         rating: 4.7,
         reviewsCount: 14,
+        completedOrders: 27,
+        responseRate: 88,
+        responseTimeHours: 6,
+        availabilityStatus: "available",
+        verified: true,
         specialization: "Reels maker / Монтажер",
         experience: "middle",
         description: "Сценарии и монтаж коротких видео, которые удерживают внимание.",
@@ -443,6 +479,11 @@
         country: "Узбекистан",
         rating: 4.9,
         reviewsCount: 28,
+        completedOrders: 47,
+        responseRate: 97,
+        responseTimeHours: 2,
+        availabilityStatus: "available",
+        verified: true,
         specialization: "SMM + UGC creator",
         experience: "senior",
         description: "Контент и UGC-креативы для ecom и beauty с фокусом на конверсию.",
@@ -487,6 +528,12 @@
     if (!Array.isArray(next.cases)) next.cases = [];
     if (!next.stats) next.stats = {};
     next.avatar = next.avatar || appUrl("assets/visuals/team-sync.svg");
+    next.verified = next.verified !== false;
+    next.completedOrders = Number(next.completedOrders || 0);
+    next.responseRate = Number(next.responseRate || 0);
+    next.responseTimeHours = Number(next.responseTimeHours || 24);
+    next.availabilityStatus = next.availabilityStatus || "available";
+    next.portfolioLinks = Array.isArray(next.portfolioLinks) ? next.portfolioLinks : [];
     next.stats = {
       er: next.stats.er || "0%",
       ctr: next.stats.ctr || "0%",
@@ -503,6 +550,10 @@
     if (!Array.isArray(next.users)) next.users = [];
     if (!Array.isArray(next.specialists)) next.specialists = [];
     if (!Array.isArray(next.tasks)) next.tasks = [];
+    if (!Array.isArray(next.deals)) next.deals = [];
+    if (!Array.isArray(next.disputes)) next.disputes = [];
+    if (!Array.isArray(next.withdrawals)) next.withdrawals = [];
+    if (!Array.isArray(next.verifications)) next.verifications = [];
     if (!Array.isArray(next.complaints)) next.complaints = [];
     if (!Array.isArray(next.moderationHistory)) next.moderationHistory = [];
     if (!Array.isArray(next.notifications)) next.notifications = [];
@@ -511,6 +562,8 @@
     if (!Array.isArray(next.conversations)) next.conversations = [];
     if (!Array.isArray(next.payments)) next.payments = [];
     if (!next.favoritesByUser || typeof next.favoritesByUser !== "object") next.favoritesByUser = {};
+    if (!next.chatSafety || typeof next.chatSafety !== "object") next.chatSafety = { blockDirectContacts: true };
+    next.chatSafety = { blockDirectContacts: next.chatSafety.blockDirectContacts !== false };
     if (!next.ai || typeof next.ai !== "object") next.ai = { lastMatchTaskId: null, lastAudit: null, lastContentIdeas: null };
     if (!next.settings || typeof next.settings !== "object") next.settings = {};
     if (!next.settings.site || typeof next.settings.site !== "object") next.settings.site = {};
@@ -526,6 +579,7 @@
       socials: { ...defaultSiteSettings().socials, ...(next.settings.site.socials || {}) }
     };
     next.settings.site.primaryColor = "#7b6cff";
+    next.settings.site.currency = "BYN";
     next.settings.aiTools = {
       ...defaultAiToolsSettings(),
       ...next.settings.aiTools,
@@ -545,6 +599,15 @@
       migrated.role = migrated.role === "admin" ? "admin" : migrated.role === "specialist" ? "specialist" : "business";
       migrated.blocked = Boolean(migrated.blocked);
       migrated.createdAt = migrated.createdAt || nowIso();
+      migrated.avatar = migrated.avatar || appUrl("assets/visuals/team-sync.svg");
+      migrated.onboardingStatus = migrated.onboardingStatus || "incomplete";
+      migrated.wallet = {
+        held: Number(migrated.wallet && migrated.wallet.held) || 0,
+        pending: Number(migrated.wallet && migrated.wallet.pending) || 0,
+        available: Number(migrated.wallet && migrated.wallet.available) || 0,
+        withdrawn: Number(migrated.wallet && migrated.wallet.withdrawn) || 0,
+        platformFees: Number(migrated.wallet && migrated.wallet.platformFees) || 0
+      };
       return migrated;
     });
     ensureDemoAdmin(next);
@@ -579,6 +642,11 @@
       migrated.status = statusMap[migrated.status] || migrated.status || "published";
       migrated.hidden = Boolean(migrated.hidden);
       migrated.createdAt = migrated.createdAt || nowIso();
+      migrated.attachments = Array.isArray(migrated.attachments) ? migrated.attachments : [];
+      migrated.requiredSkills = Array.isArray(migrated.requiredSkills) ? migrated.requiredSkills : [];
+      migrated.references = Array.isArray(migrated.references) ? migrated.references : [];
+      migrated.optionalNotes = migrated.optionalNotes || "";
+      migrated.revisionCount = Number(migrated.revisionCount || 0);
       migrated.responses = migrated.responses.map((response) => ({
         id: response.id || uid("resp"),
         specialistId: response.specialistId,
@@ -589,11 +657,79 @@
         message: response.message || "Готов(а) подключиться к задаче и предложить план работ.",
         priceByn: Number(response.priceByn || response.estimatedCostByn || 0),
         deadlineDays: Number(response.deadlineDays || 14),
+        attachments: Array.isArray(response.attachments) ? response.attachments : [],
         status: response.status || "new",
         createdAt: response.createdAt || migrated.createdAt || nowIso()
       }));
       return migrated;
     });
+
+    next.deals = next.deals.map((deal) => ({
+      id: deal.id || uid("deal"),
+      taskId: deal.taskId || "",
+      businessUserId: deal.businessUserId || null,
+      specialistId: deal.specialistId || null,
+      responseId: deal.responseId || null,
+      grossAmount: Number(deal.grossAmount || deal.amount || 0),
+      platformFee: Number(deal.platformFee || 0),
+      specialistNet: Number(deal.specialistNet || 0),
+      status: deal.status || "unpaid",
+      paidAt: deal.paidAt || null,
+      heldUntil: deal.heldUntil || null,
+      releasedAt: deal.releasedAt || null,
+      disputedAt: deal.disputedAt || null,
+      timeline: Array.isArray(deal.timeline) ? deal.timeline : [],
+      createdAt: deal.createdAt || nowIso(),
+      revisionLimit: Number(deal.revisionLimit || 2),
+      revisionUsed: Number(deal.revisionUsed || 0)
+    }));
+
+    next.disputes = next.disputes.map((item) => ({
+      id: item.id || uid("dispute"),
+      dealId: item.dealId || null,
+      taskId: item.taskId || null,
+      businessUserId: item.businessUserId || null,
+      specialistId: item.specialistId || null,
+      status: item.status || "opened",
+      reason: item.reason || "",
+      description: item.description || "",
+      desiredResolution: item.desiredResolution || "resolved_partial",
+      attachments: Array.isArray(item.attachments) ? item.attachments : [],
+      adminComment: item.adminComment || "",
+      timeline: Array.isArray(item.timeline) ? item.timeline : [],
+      createdAt: item.createdAt || nowIso(),
+      updatedAt: item.updatedAt || nowIso()
+    }));
+
+    next.withdrawals = next.withdrawals.map((item) => ({
+      id: item.id || uid("wd"),
+      userId: item.userId || null,
+      amount: Number(item.amount || 0),
+      method: item.method || "bank_card",
+      requisites: item.requisites || "",
+      status: item.status || "requested",
+      createdAt: item.createdAt || nowIso(),
+      updatedAt: item.updatedAt || nowIso()
+    }));
+
+    next.verifications = next.verifications.map((item) => ({
+      id: item.id || uid("ver"),
+      userId: item.userId || null,
+      specialistId: item.specialistId || null,
+      fullName: item.fullName || "",
+      country: item.country || "",
+      city: item.city || "",
+      phone: item.phone || "",
+      email: item.email || "",
+      portfolio: item.portfolio || "",
+      socialLinks: item.socialLinks || "",
+      attachments: Array.isArray(item.attachments) ? item.attachments : [],
+      statusType: item.statusType || "individual",
+      status: item.status || "not_verified",
+      notes: item.notes || "",
+      createdAt: item.createdAt || nowIso(),
+      updatedAt: item.updatedAt || nowIso()
+    }));
 
     next.complaints = next.complaints.map((item) => ({
       id: item.id || uid("complaint"),
@@ -626,6 +762,17 @@
       details: item.details || ""
     }));
 
+    next.conversations = next.conversations.map((item) => ({
+      id: item.id || uid("conv"),
+      businessUserId: item.businessUserId || null,
+      specialistId: item.specialistId || null,
+      messages: Array.isArray(item.messages) ? item.messages : [],
+      readState: {
+        businessTs: item.readState && item.readState.businessTs ? item.readState.businessTs : nowIso(),
+        specialistTs: item.readState && item.readState.specialistTs ? item.readState.specialistTs : nowIso()
+      }
+    }));
+
     next.version = STATE_VERSION;
     return next;
   }
@@ -653,6 +800,8 @@
   }
 
   const state = loadState();
+  advanceDealHoldStatus();
+  recalculateWallets();
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -683,7 +832,11 @@
       pending_moderation: "На модерации",
       published: "Опубликована",
       in_progress: "В работе",
+      work_submitted: "Работа отправлена",
+      revision_requested: "Запрошена доработка",
+      dispute_opened: "Открыт спор",
       completed: "Завершена",
+      cancelled: "Отменена",
       rejected: "Отклонена",
       archived: "В архиве"
     };
@@ -698,6 +851,177 @@
       cancelled: "Отменен"
     };
     return labels[status] || status || "—";
+  }
+
+  function dealStatusLabel(status) {
+    const labels = {
+      unpaid: "Не оплачен",
+      paid: "Оплачен",
+      held: "В холде",
+      released: "Выплачен",
+      refunded: "Возврат",
+      disputed: "Спор"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function withdrawalStatusLabel(status) {
+    const labels = {
+      requested: "Запрошен",
+      processing: "В обработке",
+      completed: "Выполнен",
+      rejected: "Отклонен"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function disputeStatusLabel(status) {
+    const labels = {
+      opened: "Открыт",
+      under_review: "На рассмотрении",
+      resolved_refund: "Решено: возврат",
+      resolved_release: "Решено: выплата",
+      resolved_partial: "Решено: частично",
+      rejected: "Отклонен"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function verificationStatusLabel(status) {
+    const labels = {
+      not_verified: "Не верифицирован",
+      pending: "На проверке",
+      verified: "Верифицирован",
+      rejected: "Отклонен"
+    };
+    return labels[status] || status || "—";
+  }
+
+  function availabilityStatusLabel(status) {
+    if (status === "available") return "Доступен";
+    if (status === "busy") return "Занят";
+    return "Оффлайн";
+  }
+
+  function containsDirectContact(text) {
+    const source = String(text || "").toLowerCase();
+    if (!source) return false;
+    const rules = [
+      /\+?\d[\d\s\-()]{7,}/,
+      /@[\w._-]{3,}/,
+      /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/,
+      /(t\.me\/|telegram|whatsapp|wa\.me|instagram\.com|vk\.com)/i
+    ];
+    return rules.some((rule) => rule.test(source));
+  }
+
+  function createSystemMessage(conversationId, text) {
+    addMessage(conversationId, "system", `⚙ ${text}`);
+  }
+
+  function findDealByTaskId(taskId) {
+    return state.deals.find((item) => item.taskId === taskId) || null;
+  }
+
+  function ensureWallet(userId) {
+    const user = findUserById(userId);
+    if (!user) return null;
+    if (!user.wallet || typeof user.wallet !== "object") {
+      user.wallet = { held: 0, pending: 0, available: 0, withdrawn: 0, platformFees: 0 };
+    }
+    return user.wallet;
+  }
+
+  function addDealTimeline(deal, status, text) {
+    if (!deal) return;
+    deal.timeline.unshift({ id: uid("dline"), status, text, ts: nowIso() });
+    if (deal.timeline.length > 80) deal.timeline = deal.timeline.slice(0, 80);
+  }
+
+  function recalculateWallets() {
+    state.users.forEach((user) => {
+      const wallet = ensureWallet(user.id);
+      if (!wallet) return;
+      wallet.held = 0;
+      wallet.pending = 0;
+      wallet.available = 0;
+      wallet.platformFees = 0;
+    });
+
+    state.deals.forEach((deal) => {
+      const businessWallet = deal.businessUserId ? ensureWallet(deal.businessUserId) : null;
+      const specialist = findSpecialistById(deal.specialistId);
+      const specialistWallet = specialist && specialist.userId ? ensureWallet(specialist.userId) : null;
+
+      if (businessWallet) businessWallet.platformFees += Number(deal.platformFee || 0);
+      if (!specialistWallet) return;
+
+      if (deal.status === "held" || deal.status === "disputed") {
+        specialistWallet.held += Number(deal.specialistNet || 0);
+      } else if (deal.status === "paid") {
+        specialistWallet.pending += Number(deal.specialistNet || 0);
+      } else if (deal.status === "released") {
+        specialistWallet.available += Number(deal.specialistNet || 0);
+      }
+    });
+
+    state.withdrawals.forEach((wd) => {
+      const wallet = ensureWallet(wd.userId);
+      if (!wallet) return;
+      if (wd.status === "completed") wallet.withdrawn += Number(wd.amount || 0);
+    });
+  }
+
+  function advanceDealHoldStatus() {
+    const now = Date.now();
+    state.deals.forEach((deal) => {
+      if (deal.status !== "held" || !deal.heldUntil) return;
+      const due = new Date(deal.heldUntil).getTime();
+      if (!Number.isFinite(due) || due > now) return;
+      deal.status = "released";
+      deal.releasedAt = nowIso();
+      addDealTimeline(deal, "released", "Средства переведены исполнителю.");
+      const task = state.tasks.find((item) => item.id === deal.taskId);
+      if (task && task.assignedSpecialistId) {
+        const convo = ensureConversation(deal.businessUserId, task.assignedSpecialistId);
+        createSystemMessage(convo.id, "Платеж выпущен. Средства доступны исполнителю.");
+      }
+      logEvent("deal_released", "deal", deal.id, `Deal released for task ${deal.taskId}`);
+    });
+    recalculateWallets();
+  }
+
+  function ensureDealForAcceptedResponse(task, response) {
+    if (!task || !response) return null;
+    let deal = findDealByTaskId(task.id);
+    if (deal) return deal;
+    const gross = Number(response.priceByn || task.budgetByn || 0);
+    const platformFee = Math.round(gross * 0.1 * 100) / 100;
+    const specialistNet = Math.max(0, gross - platformFee);
+    deal = {
+      id: uid("deal"),
+      taskId: task.id,
+      businessUserId: task.businessUserId || null,
+      specialistId: response.specialistId,
+      responseId: response.id,
+      grossAmount: gross,
+      platformFee,
+      specialistNet,
+      status: "unpaid",
+      paidAt: null,
+      heldUntil: null,
+      releasedAt: null,
+      disputedAt: null,
+      timeline: [],
+      createdAt: nowIso(),
+      revisionLimit: 2,
+      revisionUsed: 0
+    };
+    addDealTimeline(deal, "unpaid", "Сделка создана. Ожидается оплата.");
+    state.deals.unshift(deal);
+    recalculateWallets();
+    logEvent("deal_created", "deal", deal.id, `Task ${task.id}`);
+    return deal;
   }
 
   function aiToolConfig(key) {
@@ -735,7 +1059,11 @@
         id: uid("conv"),
         businessUserId,
         specialistId,
-        messages: [{ id: uid("msg"), senderRole: "system", text: "Диалог создан.", ts: nowIso() }]
+        messages: [{ id: uid("msg"), senderRole: "system", text: "Диалог создан.", ts: nowIso() }],
+        readState: {
+          businessTs: nowIso(),
+          specialistTs: nowIso()
+        }
       };
       state.conversations.unshift(convo);
       saveState();
@@ -746,8 +1074,82 @@
   function addMessage(conversationId, senderRole, text) {
     const convo = state.conversations.find((item) => item.id === conversationId);
     if (!convo) return;
-    convo.messages.push({ id: uid("msg"), senderRole, text, ts: nowIso() });
+    const ts = nowIso();
+    convo.messages.push({ id: uid("msg"), senderRole, text, ts });
+    if (!convo.readState) {
+      convo.readState = { businessTs: ts, specialistTs: ts };
+    }
+    if (senderRole === "business") convo.readState.businessTs = ts;
+    if (senderRole === "specialist") convo.readState.specialistTs = ts;
+    if (senderRole === "system") {
+      convo.readState.businessTs = convo.readState.businessTs || ts;
+      convo.readState.specialistTs = convo.readState.specialistTs || ts;
+    }
     saveState();
+  }
+
+  function markConversationRead(conversation, role) {
+    if (!conversation) return;
+    if (!conversation.readState) {
+      conversation.readState = { businessTs: nowIso(), specialistTs: nowIso() };
+    }
+    const key = role === "business" ? "businessTs" : "specialistTs";
+    conversation.readState[key] = nowIso();
+  }
+
+  function unreadCountForRole(conversation, role) {
+    if (!conversation || !Array.isArray(conversation.messages)) return 0;
+    const lastRead = conversation.readState
+      ? role === "business"
+        ? conversation.readState.businessTs
+        : conversation.readState.specialistTs
+      : null;
+    const lastReadTs = lastRead ? new Date(lastRead).getTime() : 0;
+    const incomingRole = role === "business" ? "specialist" : "business";
+    return conversation.messages.filter((msg) => {
+      const ts = new Date(msg.ts || 0).getTime();
+      return Number.isFinite(ts) && ts > lastReadTs && msg.senderRole === incomingRole;
+    }).length;
+  }
+
+  function sendMessageWithSafety(conversationId, senderRole, textRaw) {
+    const text = String(textRaw || "").trim();
+    if (!text) return false;
+    if (state.chatSafety && state.chatSafety.blockDirectContacts && containsDirectContact(text)) {
+      showToast("Нельзя отправлять контакты в чате до завершения сделки", "error");
+      return false;
+    }
+    addMessage(conversationId, senderRole, text);
+    return true;
+  }
+
+  function simulateTypingReply(conversationId, senderRole) {
+    const convo = state.conversations.find((item) => item.id === conversationId);
+    if (!convo) return;
+    const oppositeRole = senderRole === "business" ? "specialist" : "business";
+    const typingText = oppositeRole === "specialist" ? "Специалист печатает..." : "Клиент печатает...";
+    const typingId = uid("typing");
+    convo.messages.push({ id: typingId, senderRole: "system", text: typingText, ts: nowIso() });
+    saveState();
+    window.setTimeout(() => {
+      const freshConvo = state.conversations.find((item) => item.id === conversationId);
+      if (!freshConvo) return;
+      freshConvo.messages = freshConvo.messages.filter((msg) => msg.id !== typingId);
+      const templates =
+        oppositeRole === "specialist"
+          ? [
+              "Принял(а), спасибо. Подготовлю план и вернусь с деталями.",
+              "Супер, уточню детали и отправлю следующий шаг.",
+              "Вижу задачу, беру в работу и дам апдейт в ближайшее время."
+            ]
+          : [
+              "Отлично, жду следующий апдейт по задаче.",
+              "Принято, спасибо. Если нужно, отправлю комментарии по правкам.",
+              "Ок, держите меня в курсе по срокам и статусу."
+            ];
+      const text = templates[Math.floor(Math.random() * templates.length)];
+      addMessage(conversationId, oppositeRole, text);
+    }, 1200);
   }
 
   function specialistName(id) {
@@ -1591,6 +1993,13 @@
   function renderCatalogCard(specialist, rootPrefix) {
     const ratingText =
       specialist.reviewsCount > 0 ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})` : "без оценок";
+    const verification = verificationForSpecialist(specialist);
+    const verificationState = verification ? verification.status : specialist.verified ? "verified" : "not_verified";
+    const verificationText = verification
+      ? verificationStatusLabel(verification.status)
+      : specialist.verified
+        ? "Верифицирован"
+        : "Не верифицирован";
     const socialEntries = [
       ["Instagram", specialist.socials.instagram],
       ["TikTok", specialist.socials.tiktok],
@@ -1603,7 +2012,7 @@
         <div>
           <h3>${specialist.name}</h3>
           <div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div>
-          <div class="verified">Verified профиль</div>
+          <div class="verified ${verificationState}">${verificationText}</div>
           <p class="meta">${specialist.description}</p>
           <div class="chips">
             ${specialist.platforms.slice(0, 3).map((item) => `<span class="chip">${item}</span>`).join("")}
@@ -1628,9 +2037,10 @@
             <div class="meta">${specialist.cases.length} кейсов</div>
           </div>
           <div class="catalog-metrics">
-            <span>ER: ${specialist.stats.er}</span>
-            <span>CTR: ${specialist.stats.ctr}</span>
-            <span>Рост: ${specialist.stats.reachGrowth}</span>
+            <span>Заказов: ${specialist.completedOrders}</span>
+            <span>Ответов: ${specialist.responseRate}%</span>
+            <span>Ответ: ~${specialist.responseTimeHours} ч</span>
+            <span>Статус: ${availabilityStatusLabel(specialist.availabilityStatus)}</span>
           </div>
           <div class="chips">
             <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Смотреть профиль</a>
@@ -1653,6 +2063,46 @@
     const priceGroup = priceRange ? priceRange.closest(".filter-group") : null;
     const priceTitle = priceGroup ? priceGroup.querySelector("h4") : null;
     const searchInput = document.querySelector("[data-specialists-search]");
+    let renderCount = 6;
+    let currentSort = "relevance";
+
+    const controls = document.createElement("div");
+    controls.className = "chips";
+    controls.innerHTML = `
+      <label class="chip">Сортировка:
+        <select data-specialists-sort>
+          <option value="relevance">По релевантности</option>
+          <option value="rating">По рейтингу</option>
+          <option value="priceAsc">Сначала дешевле</option>
+          <option value="priceDesc">Сначала дороже</option>
+          <option value="orders">По заказам</option>
+        </select>
+      </label>
+      <button class="chip" type="button" data-load-more-specialists>Показать ещё</button>
+    `;
+    const mainContainer = catalogGrid.parentElement;
+    if (mainContainer && !mainContainer.querySelector("[data-specialists-sort]")) {
+      mainContainer.insertBefore(controls, catalogGrid);
+    }
+    const sortSelect = document.querySelector("[data-specialists-sort]");
+    const loadMoreBtn = document.querySelector("[data-load-more-specialists]");
+    let firstRenderDone = false;
+
+    function renderSkeleton() {
+      catalogGrid.innerHTML = Array.from({ length: 4 })
+        .map(
+          () => `
+            <article class="card catalog-card">
+              <div class="avatar"></div>
+              <div>
+                <h3>Загрузка...</h3>
+                <div class="meta">Подбираем специалистов под ваши фильтры</div>
+              </div>
+            </article>
+          `
+        )
+        .join("");
+    }
 
     function selectedOptions(groupIndex, groupName) {
       const namedGroup = groupName
@@ -1667,10 +2117,13 @@
       const selectedCategories = selectedOptions(0, "categories");
       const selectedPlatforms = selectedOptions(1, "platforms");
       const selectedCities = selectedOptions(2, "city");
+      const selectedCountries = selectedOptions(3, "country");
       const selectedExperience = selectedOptions(4, "experience");
       const selectedNiches = selectedOptions(5, "niche");
       const selectedRatings = selectedOptions(6, "rating");
       const selectedSkills = selectedOptions(7, "skills");
+      const selectedVerified = selectedOptions(8, "verified");
+      const selectedAvailability = selectedOptions(9, "availability");
       const maxPrice = Number(priceRange ? priceRange.value : 3000);
       const searchText = normalize(searchInput ? searchInput.value : "");
 
@@ -1690,6 +2143,9 @@
         const cityOk =
           selectedCities.length === 0 ||
           selectedCities.some((city) => normalize(specialist.city).includes(city));
+        const countryOk =
+          selectedCountries.length === 0 ||
+          selectedCountries.some((country) => normalize(specialist.country).includes(country));
         const experienceOk =
           selectedExperience.length === 0 ||
           selectedExperience.some((item) => specialistMatchesExperience(specialist, item));
@@ -1708,13 +2164,30 @@
         const skillsOk =
           selectedSkills.length === 0 ||
           selectedSkills.some((skill) => specialist.skills.some((item) => normalize(item).includes(skill)));
+        const verifiedOk =
+          selectedVerified.length === 0 ||
+          selectedVerified.some((item) => item.includes("verified") ? specialist.verified : true);
+        const availabilityOk =
+          selectedAvailability.length === 0 ||
+          selectedAvailability.some((item) => {
+            const label = specialist.availabilityStatus === "available" ? "доступен" : specialist.availabilityStatus === "busy" ? "занят" : "оффлайн";
+            return label.includes(item);
+          });
         const searchOk =
           !searchText ||
           normalize(specialist.name).includes(searchText) ||
           normalize(specialist.description).includes(searchText) ||
           specialist.skills.some((skill) => normalize(skill).includes(searchText));
 
-        return categoryOk && platformOk && cityOk && experienceOk && nicheOk && priceOk && ratingOk && skillsOk && searchOk;
+        return categoryOk && platformOk && cityOk && countryOk && experienceOk && nicheOk && priceOk && ratingOk && skillsOk && verifiedOk && availabilityOk && searchOk;
+      });
+
+      filtered.sort((a, b) => {
+        if (currentSort === "rating") return b.rating - a.rating;
+        if (currentSort === "priceAsc") return a.priceByn - b.priceByn;
+        if (currentSort === "priceDesc") return b.priceByn - a.priceByn;
+        if (currentSort === "orders") return b.completedOrders - a.completedOrders;
+        return b.rating - a.rating || a.priceByn - b.priceByn;
       });
 
       if (!filtered.length) {
@@ -1725,12 +2198,17 @@
           ? "Попробуйте снять часть фильтров или увеличить бюджет."
           : "После регистрации и заполнения профилей карточки появятся здесь.";
         catalogGrid.innerHTML = `<article class="card"><h3>${emptyTitle}</h3><p class="meta">${emptyText}</p></article>`;
+        if (loadMoreBtn) loadMoreBtn.style.display = "none";
         return;
       }
 
-      catalogGrid.innerHTML = filtered
+      const visible = filtered.slice(0, renderCount);
+      catalogGrid.innerHTML = visible
         .map((specialist) => renderCatalogCard(specialist, "../"))
         .join("");
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display = filtered.length > visible.length ? "inline-flex" : "none";
+      }
     }
 
     catalogGrid.addEventListener("click", (event) => {
@@ -1773,14 +2251,35 @@
     if (searchInput) {
       searchInput.addEventListener("input", render);
     }
+    if (sortSelect) {
+      sortSelect.addEventListener("change", () => {
+        currentSort = sortSelect.value || "relevance";
+        render();
+      });
+    }
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener("click", () => {
+        renderCount += 6;
+        render();
+      });
+    }
 
     document.querySelectorAll(".option").forEach((option) => {
       option.addEventListener("click", () => {
+        renderCount = 6;
         window.setTimeout(render, 0);
       });
     });
 
-    render();
+    if (!firstRenderDone) {
+      renderSkeleton();
+      window.setTimeout(() => {
+        firstRenderDone = true;
+        render();
+      }, 260);
+    } else {
+      render();
+    }
   }
 
   function renderTaskPreviewMatches(task, wrapper) {
@@ -1815,6 +2314,8 @@
     if (!isPath("/task/new/")) return;
     const form = document.querySelector("main form");
     if (!form) return;
+    const draftKey = "smmatch_task_draft";
+    const draftNote = document.querySelector("[data-task-draft-note]");
 
     const secondPanel = document.querySelectorAll("main article.card")[1] || null;
     const previewTitle = secondPanel ? secondPanel.querySelector("h3") : null;
@@ -1831,10 +2332,83 @@
       renderTaskPreviewMatches(latest, previewTitle.parentElement);
     }
 
+    function setDraftNote(text) {
+      if (draftNote) draftNote.textContent = text;
+    }
+
+    function collectDraftPayload() {
+      const attachmentsInput = form.querySelector("#task_attachments");
+      const attachmentNames = attachmentsInput && attachmentsInput.files
+        ? Array.from(attachmentsInput.files).map((file) => file.name)
+        : [];
+      return {
+        title: (form.querySelector("#task_title") || { value: "" }).value,
+        category: (form.querySelector("#task_category") || { value: "" }).value,
+        niche: (form.querySelector("#niche") || { value: "" }).value,
+        budgetTier: (form.querySelector("#budget") || { value: "" }).value,
+        budgetByn: (form.querySelector("#task_budget") || { value: "" }).value,
+        platforms: (form.querySelector("#platforms") || { value: "" }).value,
+        description: (form.querySelector("#task_description") || { value: "" }).value,
+        skillsRequired: (form.querySelector("#task_skills_required") || { value: "" }).value,
+        references: (form.querySelector("#task_references") || { value: "" }).value,
+        attachments: attachmentNames,
+        deadline: (form.querySelector("#task_deadline") || { value: "" }).value,
+        needTarget: (form.querySelector("#task_need_target") || { value: "Не уверен" }).value,
+        needContent: (form.querySelector("#task_need_content") || { value: "Частично" }).value,
+        needReels: (form.querySelector("#task_need_reels") || { value: "Да" }).value,
+        optionalNotes: (form.querySelector("#task_optional_notes") || { value: "" }).value,
+        updatedAt: nowIso()
+      };
+    }
+
+    function saveDraft() {
+      const payload = collectDraftPayload();
+      localStorage.setItem(draftKey, JSON.stringify(payload));
+      setDraftNote(`Черновик сохранен: ${new Date(payload.updatedAt).toLocaleTimeString("ru-RU")}`);
+    }
+
+    function restoreDraft() {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      try {
+        const draft = JSON.parse(raw);
+        [
+          ["#task_title", "title"],
+          ["#task_category", "category"],
+          ["#niche", "niche"],
+          ["#budget", "budgetTier"],
+          ["#task_budget", "budgetByn"],
+          ["#platforms", "platforms"],
+          ["#task_description", "description"],
+          ["#task_skills_required", "skillsRequired"],
+          ["#task_references", "references"],
+          ["#task_deadline", "deadline"],
+          ["#task_need_target", "needTarget"],
+          ["#task_need_content", "needContent"],
+          ["#task_need_reels", "needReels"],
+          ["#task_optional_notes", "optionalNotes"]
+        ].forEach(([selector, key]) => {
+          const input = form.querySelector(selector);
+          if (!input || draft[key] === undefined || draft[key] === null) return;
+          input.value = String(draft[key]);
+        });
+        setDraftNote(`Черновик восстановлен: ${new Date(draft.updatedAt || nowIso()).toLocaleString("ru-RU")}`);
+      } catch (error) {
+        localStorage.removeItem(draftKey);
+      }
+    }
+
+    restoreDraft();
+    form.querySelectorAll("input, select, textarea").forEach((field) => {
+      field.addEventListener("input", saveDraft);
+      field.addEventListener("change", saveDraft);
+    });
+
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       const user = requireBusinessForAction();
       if (!user) return;
+      const submitBtn = form.querySelector("button[type='submit']");
       const titleField = form.querySelector("#task_title");
       const categoryField = form.querySelector("#task_category");
       const budgetField = form.querySelector("#task_budget");
@@ -1843,6 +2417,10 @@
       const needTargetField = form.querySelector("#task_need_target");
       const needContentField = form.querySelector("#task_need_content");
       const needReelsField = form.querySelector("#task_need_reels");
+      const skillsRequiredField = form.querySelector("#task_skills_required");
+      const referencesField = form.querySelector("#task_references");
+      const attachmentsField = form.querySelector("#task_attachments");
+      const optionalNotesField = form.querySelector("#task_optional_notes");
 
       const title = titleField ? titleField.value.trim() : "";
       const category = categoryField ? categoryField.value.trim() : "";
@@ -1871,6 +2449,11 @@
         return;
       }
 
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Публикуем задачу...";
+      }
+
       const taskInput = {
         title,
         category,
@@ -1881,6 +2464,23 @@
         description,
         goals: description,
         deadline,
+        requiredSkills: skillsRequiredField
+          ? skillsRequiredField.value
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
+        references: referencesField
+          ? referencesField.value
+              .split("\n")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
+        attachments:
+          attachmentsField && attachmentsField.files
+            ? Array.from(attachmentsField.files).map((file) => ({ id: uid("att"), name: file.name }))
+            : [],
+        optionalNotes: optionalNotesField ? optionalNotesField.value.trim() : "",
         needTarget: needTargetField ? needTargetField.value : "Не уверен",
         needContent: needContentField ? needContentField.value : "Частично",
         needReels: needReelsField ? needReelsField.value : "Да"
@@ -1904,8 +2504,7 @@
         .slice(0, 5);
 
       const businessUserId = user.id;
-      const assignedSpecialistId = responses[0] ? responses[0].specialistId : null;
-      const holdAmount = Math.round(budgetByn * 0.4);
+      const assignedSpecialistId = null;
 
       const task = {
         id: uid("task"),
@@ -1919,43 +2518,45 @@
         goals: taskInput.goals || "Рост заявок и охватов",
         description: taskInput.description,
         deadline: taskInput.deadline || "",
+        requiredSkills: taskInput.requiredSkills,
+        references: taskInput.references,
+        attachments: taskInput.attachments,
+        optionalNotes: taskInput.optionalNotes,
         needTarget: taskInput.needTarget,
         needContent: taskInput.needContent,
         needReels: taskInput.needReels,
-        status: "pending_moderation",
+        status: "published",
         businessUserId,
         assignedSpecialistId,
+        revisionCount: 0,
         responses,
         createdAt: nowIso()
       };
 
-      state.tasks.unshift(task);
-      state.ai.lastMatchTaskId = task.id;
-      state.ui.selectedSpecialistId = assignedSpecialistId || state.ui.selectedSpecialistId;
-      state.payments.unshift({
-        id: uid("pay"),
-        taskId: task.id,
-        amount: holdAmount,
-        status: "Холд",
-        date: nowIso()
-      });
-
-      if (assignedSpecialistId) {
-        const convo = ensureConversation(businessUserId, assignedSpecialistId);
-        addMessage(convo.id, "business", `Создана новая задача: ${task.title}. Цель: ${task.goals}`);
-        state.ui.selectedBusinessConversationId = convo.id;
-      }
-
-      saveState();
-      logEvent("task_created", "task", task.id, `Создана задача ${task.title}`, user.id);
-      if (secondPanel && previewTitle) {
-        renderTaskPreviewMatches(task, previewTitle.parentElement);
-      }
-      showToast("Задача опубликована. AI Match обновлен.");
-      form.reset();
       window.setTimeout(() => {
-        window.location.href = appUrl("dashboard/business/index.html");
-      }, 420);
+        state.tasks.unshift(task);
+        state.ai.lastMatchTaskId = task.id;
+        state.ui.selectedSpecialistId = assignedSpecialistId || state.ui.selectedSpecialistId;
+
+        if (assignedSpecialistId) {
+          const convo = ensureConversation(businessUserId, assignedSpecialistId);
+          addMessage(convo.id, "business", `Создана новая задача: ${task.title}. Цель: ${task.goals}`);
+          state.ui.selectedBusinessConversationId = convo.id;
+        }
+
+        saveState();
+        localStorage.removeItem(draftKey);
+        logEvent("task_created", "task", task.id, `Создана задача ${task.title}`, user.id);
+        if (secondPanel && previewTitle) {
+          renderTaskPreviewMatches(task, previewTitle.parentElement);
+        }
+        showToast("Задача опубликована. AI Match обновлен.");
+        form.reset();
+        setDraftNote("Черновик очищен");
+        window.setTimeout(() => {
+          window.location.href = appUrl("dashboard/business/index.html");
+        }, 420);
+      }, 650);
     });
   }
 
@@ -1975,6 +2576,166 @@
         window.location.href = `${appUrl("auth/register/index.html")}?role=${encodeURIComponent(roleIntent)}`;
       });
     });
+  }
+
+  function renderHomeMarketplaceSections() {
+    if (!(isPath("/index.html") || normalizePathname(window.location.pathname) === "" || normalizePathname(window.location.pathname) === "/")) {
+      return;
+    }
+
+    const heroProof = document.querySelector(".hero-proof .meta");
+    if (heroProof) {
+      heroProof.textContent = `${state.specialists.length} специалистов уже в каталоге`;
+    }
+    const floatCards = document.querySelectorAll(".hero-board .float-card strong");
+    if (floatCards.length >= 3) {
+      const avgRating = state.specialists.length
+        ? (
+            state.specialists.reduce((sum, item) => sum + Number(item.rating || 0), 0) / state.specialists.length
+          ).toFixed(1)
+        : "0.0";
+      const dealsCount = state.deals.length;
+      const success = state.deals.length
+        ? Math.round((state.deals.filter((item) => item.status === "released").length / state.deals.length) * 100)
+        : 0;
+      floatCards[0].textContent = `${avgRating}/5`;
+      floatCards[1].textContent = `${dealsCount}`;
+      floatCards[2].textContent = `${success}%`;
+    }
+    const floatMeta = document.querySelectorAll(".hero-board .float-card small");
+    if (floatMeta.length >= 3) {
+      floatMeta[0].textContent = "средний рейтинг специалистов";
+      floatMeta[1].textContent = "сделок через escrow";
+      floatMeta[2].textContent = "успешных завершений";
+    }
+
+    const topTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
+      normalize(item.textContent).includes("топ-специалист")
+    );
+    if (topTitle) topTitle.textContent = "Топ-специалисты для вашего бизнеса";
+    const specialistGrid = document.querySelector(".specialist-grid");
+    if (specialistGrid) {
+      const top = state.specialists
+        .filter((item) => item.status !== "blocked" && item.status !== "hidden")
+        .slice()
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 4);
+      specialistGrid.innerHTML = top.length
+        ? top
+            .map(
+              (item) => `
+                <article class="card specialist-card">
+                  <div class="specialist-thumb" style="--media-photo: url('${item.avatar}')"></div>
+                  <h3>${item.name}</h3>
+                  <p class="meta">${item.specialization} • ${item.city}</p>
+                  <p class="meta">Рейтинг: ${item.rating.toFixed(1)} • Заказов: ${item.completedOrders}</p>
+                  <div class="price">от ${formatMoneyByn(item.priceByn)} / мес</div>
+                  <div class="chips">
+                    <a class="chip" href="${specialistProfileUrl("", item)}">Профиль</a>
+                    <a class="chip" href="specialists/index.html">Найти похожих</a>
+                  </div>
+                </article>
+              `
+            )
+            .join("")
+        : "<article class='card'><p class='meta'>Специалисты появятся после регистрации.</p></article>";
+    }
+
+    const casesTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
+      normalize(item.textContent).includes("реальные кейсы") || normalize(item.textContent).includes("подтвержденные кейсы")
+    );
+    if (casesTitle) casesTitle.textContent = "Кейсы с измеримым результатом";
+    const casesGrid = document.querySelector(".cases-grid");
+    if (casesGrid) {
+      const cases = state.specialists
+        .flatMap((item) => (item.cases || []).map((caseItem) => ({ ...caseItem, specialist: item.name, city: item.city })))
+        .slice(0, 3);
+      casesGrid.innerHTML = cases.length
+        ? cases
+            .map(
+              (item) => `
+                <article class="card case-card">
+                  <div class="case-image"></div>
+                  <strong>${item.title}</strong>
+                  <div class="meta">${item.specialist} • ${item.city}</div>
+                  <div class="kpi-line"><span>Результат</span><strong>${item.result1}</strong></div>
+                  <div class="kpi-line"><span>Дополнительно</span><strong>${item.result2}</strong></div>
+                  <div class="kpi-line"><span>Период</span><strong>${item.period}</strong></div>
+                </article>
+              `
+            )
+            .join("")
+        : "<article class='card'><p class='meta'>Кейсы появятся после публикации специалистами.</p></article>";
+    }
+
+    const reviewsTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
+      normalize(item.textContent).includes("отзывы бизнеса")
+    );
+    if (reviewsTitle) reviewsTitle.textContent = "Что говорят клиенты платформы";
+    const reviewsGrid = document.querySelector(".reviews");
+    if (reviewsGrid) {
+      const reviewItems = state.reviews.slice(-3).reverse();
+      const fallback = [
+        { date: nowIso(), rating: 5, comment: "Быстро нашли специалиста под запуск Reels. Результат в заявках уже в первый месяц." },
+        { date: nowIso(), rating: 5, comment: "Удобная безопасная сделка и прозрачный чат по проекту. Вся коммуникация внутри платформы." },
+        { date: nowIso(), rating: 4, comment: "Понравился AI Match и фильтры по нише. Подобрали релевантного эксперта под наш бюджет." }
+      ];
+      const source = reviewItems.length
+        ? reviewItems.map((item) => ({ date: item.createdAt, rating: item.rating, comment: item.comment }))
+        : fallback;
+      reviewsGrid.innerHTML = source
+        .slice(0, 3)
+        .map(
+          (item) => `
+            <article class="card">
+              <strong>${formatDate(item.date)}</strong>
+              <div class="review-stars">${"★".repeat(Number(item.rating || 5))}${"☆".repeat(5 - Number(item.rating || 5))}</div>
+              <p class="meta">${item.comment}</p>
+            </article>
+          `
+        )
+        .join("");
+    }
+
+    const statsStrip = document.querySelector(".stats-strip");
+    if (statsStrip) {
+      const activeSpecialists = state.specialists.filter((item) => !["hidden", "blocked"].includes(item.status)).length;
+      const projects = state.tasks.length;
+      const completed = state.tasks.filter((item) => item.status === "completed").length;
+      const avgRating = state.specialists.length
+        ? (
+            state.specialists.reduce((sum, item) => sum + Number(item.rating || 0), 0) / state.specialists.length
+          ).toFixed(1)
+        : "0.0";
+      statsStrip.innerHTML = `
+        <article class="card stat-box"><strong>${activeSpecialists}</strong><span class="meta">специалистов в каталоге</span></article>
+        <article class="card stat-box"><strong>${projects}</strong><span class="meta">проектов на платформе</span></article>
+        <article class="card stat-box"><strong>${completed}</strong><span class="meta">завершенных задач</span></article>
+        <article class="card stat-box"><strong>${avgRating}</strong><span class="meta">средний рейтинг</span></article>
+      `;
+    }
+
+    const cta = document.querySelector(".cta");
+    if (cta && !document.querySelector("[data-home-trust-section]")) {
+      const trust = document.createElement("section");
+      trust.className = "section";
+      trust.setAttribute("data-home-trust-section", "1");
+      trust.innerHTML = `
+        <div class="section-head">
+          <span class="pill">Trust & Safety</span>
+          <h2 class="section-title">Почему бизнесу безопасно работать через SMMatch</h2>
+        </div>
+        <div class="grid-3">
+          <article class="card"><h3>Escrow и комиссия 10%</h3><p class="meta">Оплата проходит через безопасную сделку: 10% платформе, остальное исполнителю после подтверждения.</p></article>
+          <article class="card"><h3>Внутренний чат</h3><p class="meta">Проектные сообщения, системные статусы и история коммуникации без потери контекста.</p></article>
+          <article class="card"><h3>Споры и арбитраж</h3><p class="meta">При конфликте открывается dispute-case, средства остаются в hold до решения.</p></article>
+          <article class="card"><h3>Доработки</h3><p class="meta">До 2 бесплатных ревизий в рамках сделки до финальной приемки результата.</p></article>
+          <article class="card"><h3>Верификация специалистов</h3><p class="meta">Проверка данных, соцсетей и портфолио снижает риски и повышает качество подбора.</p></article>
+          <article class="card"><h3>Антифрод-защита</h3><p class="meta">Контроль передачи прямых контактов и логирование действий в системе.</p></article>
+        </div>
+      `;
+      cta.parentElement.insertBefore(trust, cta);
+    }
   }
 
   function initAuthPages() {
@@ -2009,6 +2770,9 @@
         }
 
         button.addEventListener("click", () => {
+          button.disabled = true;
+          const prevText = button.textContent;
+          button.textContent = "Создаем аккаунт...";
           const inputs = card.querySelectorAll("input");
           const role = normalize(roleInput ? roleInput.value : "business");
           const name = inputs[1] ? inputs[1].value.trim() : "";
@@ -2017,15 +2781,21 @@
 
           if (!name || !email || !password) {
             showToast("Заполните все поля", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
           if (password.length < 6) {
             showToast("Пароль должен быть от 6 символов", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
           const exists = state.users.some((user) => normalize(user.email) === normalize(email));
           if (exists) {
             showToast("Email уже зарегистрирован", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
 
@@ -2078,7 +2848,7 @@
           showToast("Аккаунт создан");
           window.setTimeout(() => {
             window.location.href = resolvePostAuthDestination(user);
-          }, 300);
+          }, 350);
         });
       }
     }
@@ -2088,6 +2858,9 @@
       const button = card ? card.querySelector(".btn.btn-primary") : null;
       if (card && button) {
         button.addEventListener("click", () => {
+          button.disabled = true;
+          const prevText = button.textContent;
+          button.textContent = "Входим...";
           const inputs = card.querySelectorAll("input");
           const email = inputs[0] ? inputs[0].value.trim() : "";
           const password = inputs[1] ? inputs[1].value.trim() : "";
@@ -2096,10 +2869,14 @@
           );
           if (!user) {
             showToast("Неверный email или пароль", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
           if (user.blocked) {
             showToast("Аккаунт заблокирован", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
           state.currentUserId = user.id;
@@ -2110,7 +2887,7 @@
           showToast("Вы вошли в систему");
           window.setTimeout(() => {
             window.location.href = resolvePostAuthDestination(user);
-          }, 300);
+          }, 320);
         });
       }
     }
@@ -2120,13 +2897,22 @@
       const button = card ? card.querySelector(".btn.btn-primary") : null;
       if (card && button) {
         button.addEventListener("click", () => {
+          button.disabled = true;
+          const prevText = button.textContent;
+          button.textContent = "Отправляем...";
           const input = card.querySelector("input[type='email']");
           const email = input ? input.value.trim() : "";
           if (!email) {
             showToast("Введите email", "error");
+            button.disabled = false;
+            button.textContent = prevText;
             return;
           }
           showToast("Ссылка для восстановления отправлена");
+          window.setTimeout(() => {
+            button.disabled = false;
+            button.textContent = prevText;
+          }, 900);
         });
       }
     }
@@ -2177,6 +2963,12 @@
       const metas = header.querySelectorAll(".meta");
       const price = header.querySelector(".price");
       const chips = header.querySelector(".chips");
+      const verification = verificationForSpecialist(specialist);
+      const verificationText = verification
+        ? verificationStatusLabel(verification.status)
+        : specialist.verified
+          ? "Верифицирован"
+          : "Не верифицирован";
       if (h1) h1.textContent = specialist.name;
       if (avatar) avatar.style.setProperty("--media-photo", `url("${specialist.avatar}")`);
       if (metas[0]) {
@@ -2184,11 +2976,14 @@
           specialist.reviewsCount > 0
             ? `${specialist.rating.toFixed(1)} (${specialist.reviewsCount})`
             : "оценок пока нет";
-        metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText}`;
+        metas[0].textContent = `${specialist.city} • ${specialist.specialization} • ${ratingText} • ${verificationText}`;
       }
       if (price) price.textContent = `от ${formatMoneyByn(specialist.priceByn)} / мес`;
       if (chips) {
         chips.innerHTML = specialist.skills.map((skill) => `<span class="chip">${skill}</span>`).join("");
+        chips.innerHTML += `<span class="chip">${availabilityStatusLabel(specialist.availabilityStatus)}</span>`;
+        chips.innerHTML += `<span class="chip">Заказов: ${specialist.completedOrders}</span>`;
+        chips.innerHTML += `<span class="chip">Response: ${specialist.responseRate}%</span>`;
       }
     }
 
@@ -2295,25 +3090,173 @@
       });
     }
 
+    const socialCard = Array.from(document.querySelectorAll("article.card")).find((card) =>
+      normalize(card.querySelector("h2")?.textContent).includes("соцсет")
+    );
+    if (socialCard) {
+      const portfolioLinks = Array.isArray(specialist.portfolioLinks) ? specialist.portfolioLinks.filter(Boolean) : [];
+      if (portfolioLinks.length) {
+        const list = document.createElement("div");
+        list.className = "chips";
+        list.innerHTML = portfolioLinks
+          .slice(0, 4)
+          .map((link) => `<a class="chip" href="${link}" target="_blank" rel="noopener noreferrer">Портфолио</a>`)
+          .join("");
+        socialCard.appendChild(list);
+      }
+    }
+
     document.querySelectorAll("a.btn.btn-primary").forEach((button) => {
       if (!normalize(button.textContent).includes("связ")) return;
+      button.href = appUrl("dashboard/business/messages/index.html");
       button.addEventListener("click", (event) => {
         const user = requireBusinessForAction();
         if (!user) {
           event.preventDefault();
           return;
         }
+        event.preventDefault();
         const convo = ensureConversation(user.id, specialist.id);
         state.ui.selectedBusinessConversationId = convo.id;
         saveState();
+        window.location.href = appUrl("dashboard/business/messages/index.html");
       });
     });
+
+    const headerButtonsWrap = document.querySelector(".profile-header .hero-buttons");
+    if (headerButtonsWrap && !headerButtonsWrap.querySelector("[data-invite-task]")) {
+      const inviteBtn = document.createElement("a");
+      inviteBtn.className = "btn btn-ghost";
+      inviteBtn.href = appUrl("task/new/index.html");
+      inviteBtn.textContent = "Пригласить в задачу";
+      inviteBtn.setAttribute("data-invite-task", "1");
+      inviteBtn.addEventListener("click", (event) => {
+        const user = requireBusinessForAction();
+        if (!user) {
+          event.preventDefault();
+          return;
+        }
+        state.ui.selectedSpecialistId = specialist.id;
+        saveState();
+      });
+      headerButtonsWrap.appendChild(inviteBtn);
+    }
 
     document.querySelectorAll("[data-report-specialist]").forEach((button) => {
       button.setAttribute("data-report-type", "specialist");
       button.setAttribute("data-report-id", specialist.id);
     });
 
+  }
+
+  function initVerificationPage() {
+    if (!isPath("/verification/")) return;
+    const main = document.querySelector("main.container.section");
+    if (!main) return;
+
+    const sessionUser = currentUser();
+    const specialist =
+      sessionUser && sessionUser.role === "specialist" && sessionUser.specialistId
+        ? findSpecialistById(sessionUser.specialistId)
+        : null;
+    const existing = specialist ? verificationForSpecialist(specialist) : null;
+
+    const card = document.createElement("article");
+    card.className = "card";
+    card.setAttribute("data-verification-widget", "1");
+    card.innerHTML = `
+      <h2>Заявка на верификацию</h2>
+      <p class="meta">Заполните данные, чтобы получить бейдж Verified и повысить доверие клиентов.</p>
+      <div class="panel-item">
+        <strong>Текущий статус: ${existing ? verificationStatusLabel(existing.status) : specialist && specialist.verified ? "Верифицирован" : "Не отправлена"}</strong>
+        <div class="meta">${
+          existing
+            ? `Тип: ${existing.statusType} • Обновлено: ${formatDate(existing.updatedAt)}${existing.notes ? ` • Комментарий: ${existing.notes}` : ""}`
+            : "После отправки заявка попадет в модерацию."
+        }</div>
+      </div>
+      <form class="grid-2 verification-form" data-verification-form>
+        <div class="field"><label>ФИО</label><input name="fullName" required value="${existing ? escapeHtml(existing.fullName) : ""}"></div>
+        <div class="field"><label>Страна</label><input name="country" required value="${existing ? escapeHtml(existing.country) : specialist ? escapeHtml(specialist.country) : ""}"></div>
+        <div class="field"><label>Город</label><input name="city" required value="${existing ? escapeHtml(existing.city) : specialist ? escapeHtml(specialist.city) : ""}"></div>
+        <div class="field"><label>Телефон</label><input name="phone" placeholder="+375..." value="${existing ? escapeHtml(existing.phone) : ""}"></div>
+        <div class="field"><label>Email</label><input name="email" type="email" required value="${existing ? escapeHtml(existing.email) : sessionUser ? escapeHtml(sessionUser.email) : ""}"></div>
+        <div class="field"><label>Тип</label><select name="statusType"><option value="individual">individual</option><option value="self-employed">self-employed</option><option value="company">company</option></select></div>
+        <div class="field"><label>Портфолио</label><input name="portfolio" placeholder="https://..." value="${existing ? escapeHtml(existing.portfolio) : ""}"></div>
+        <div class="field"><label>Соцсети</label><input name="socialLinks" placeholder="Instagram / Telegram / Behance" value="${existing ? escapeHtml(existing.socialLinks) : ""}"></div>
+        <div class="field"><label>Документы / файлы (демо)</label><input name="attachments" type="file" multiple></div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Комментарий для модерации</label>
+          <textarea name="notes" placeholder="Кратко опишите опыт и ссылки на кейсы">${existing ? escapeHtml(existing.notes) : ""}</textarea>
+        </div>
+        <div class="hero-buttons" style="grid-column: 1 / -1;">
+          <button class="btn btn-primary" type="submit">Отправить на проверку</button>
+          <a class="btn btn-ghost" href="${appUrl("dashboard/specialist/settings/index.html")}">Профиль специалиста</a>
+        </div>
+      </form>
+    `;
+    main.appendChild(card);
+
+    const form = card.querySelector("[data-verification-form]");
+    if (!(form instanceof HTMLFormElement)) return;
+    if (existing && form.elements.statusType) form.elements.statusType.value = existing.statusType || "individual";
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const user = requireSpecialistForAction();
+      if (!user) return;
+      const currentSpecialist = user.specialistId ? findSpecialistById(user.specialistId) : null;
+      if (!currentSpecialist) {
+        showToast("Профиль специалиста не найден", "error");
+        return;
+      }
+
+      const fullName = String(form.elements.fullName.value || "").trim();
+      const country = String(form.elements.country.value || "").trim();
+      const city = String(form.elements.city.value || "").trim();
+      const email = String(form.elements.email.value || "").trim();
+      if (!fullName || !country || !city || !email) {
+        showToast("Заполните обязательные поля", "error");
+        return;
+      }
+
+      const next = {
+        id: existing ? existing.id : uid("ver"),
+        userId: user.id,
+        specialistId: currentSpecialist.id,
+        fullName,
+        country,
+        city,
+        phone: String(form.elements.phone.value || "").trim(),
+        email,
+        portfolio: String(form.elements.portfolio.value || "").trim(),
+        socialLinks: String(form.elements.socialLinks.value || "").trim(),
+        attachments:
+          form.elements.attachments && form.elements.attachments.files
+            ? Array.from(form.elements.attachments.files).map((file) => file.name)
+            : existing && Array.isArray(existing.attachments)
+              ? existing.attachments
+              : [],
+        statusType: String(form.elements.statusType.value || "individual"),
+        status: "pending",
+        notes: String(form.elements.notes.value || "").trim(),
+        createdAt: existing ? existing.createdAt : nowIso(),
+        updatedAt: nowIso()
+      };
+
+      const idx = state.verifications.findIndex((item) => item.id === next.id);
+      if (idx >= 0) state.verifications[idx] = next;
+      else state.verifications.unshift(next);
+      currentSpecialist.verified = false;
+      currentSpecialist.country = country;
+      currentSpecialist.city = city;
+      logEvent("verification_submitted", "verification", next.id, `${currentSpecialist.name}`, user.id);
+      saveState();
+      showToast("Заявка отправлена на модерацию");
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 260);
+    });
   }
 
   function initAiMatchPage() {
@@ -2562,9 +3505,17 @@
     return state.payments.filter((payment) => taskIds.includes(payment.taskId));
   }
 
+  function dealsForBusinessUser(businessUserId) {
+    return state.deals.filter((deal) => deal.businessUserId === businessUserId);
+  }
+
   function paymentsForSpecialist(specialistId) {
     const taskIds = tasksForSpecialist(specialistId).map((task) => task.id);
     return state.payments.filter((payment) => taskIds.includes(payment.taskId));
+  }
+
+  function dealsForSpecialist(specialistId) {
+    return state.deals.filter((deal) => deal.specialistId === specialistId);
   }
 
   function conversationsForBusinessUser(businessUserId) {
@@ -2573,6 +3524,16 @@
 
   function conversationsForSpecialist(specialistId) {
     return state.conversations.filter((item) => item.specialistId === specialistId);
+  }
+
+  function notificationsForUser(user) {
+    if (!user) return [];
+    return state.notifications.filter((item) => {
+      if (item.audience === "all") return true;
+      if (item.audience === "user" && item.userId === user.id) return true;
+      if (item.audience === user.role) return true;
+      return false;
+    });
   }
 
   function renderBusinessOverview() {
@@ -2655,6 +3616,16 @@
         latestMessagesCard.appendChild(p);
       });
     }
+
+    const notifications = notificationsForUser(user).slice(0, 2);
+    if (notifications.length && latestMessagesCard) {
+      notifications.forEach((item) => {
+        const p = document.createElement("p");
+        p.className = "meta";
+        p.textContent = `Уведомление: ${item.title}`;
+        latestMessagesCard.appendChild(p);
+      });
+    }
   }
 
   function renderBusinessTasks() {
@@ -2669,18 +3640,65 @@
       return;
     }
     tbody.innerHTML = tasks
-      .map(
-        (task) => `
+      .map((task) => {
+        const topResponses = (task.responses || [])
+          .slice()
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .map((response) => {
+            const specialist = findSpecialistById(response.specialistId);
+            const attachments = Array.isArray(response.attachments) && response.attachments.length
+              ? ` • вложения: ${response.attachments.slice(0, 2).join(", ")}`
+              : "";
+            return `<div class="meta">${specialist ? specialist.name : "Специалист"} • ${response.score}% • ${formatMoneyByn(response.priceByn)} • ${response.deadlineDays} дн.${attachments}</div>`;
+          })
+          .join("");
+        return `
           <tr>
-            <td>${task.title}</td>
+            <td>
+              ${task.title}
+              ${
+                !task.assignedSpecialistId && (task.responses || []).length
+                  ? `<div class="chips"><button class="chip" type="button" data-accept-best-response="${task.id}">Принять лучшего отклик</button></div>`
+                  : ""
+              }
+              ${topResponses || "<div class='meta'>Откликов пока нет</div>"}
+            </td>
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
             <td>${task.responses.length}</td>
             <td><span class="status">${taskStatusLabel(task.status)}</span></td>
           </tr>
-        `
-      )
+        `;
+      })
       .join("");
+
+    tbody.onclick = (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const button = target.closest("[data-accept-best-response]");
+      if (!button) return;
+      const taskId = button.getAttribute("data-accept-best-response");
+      const task = state.tasks.find((item) => item.id === taskId && item.businessUserId === user.id);
+      if (!task) return;
+      const best = (task.responses || [])
+        .filter((item) => item.status !== "rejected" && item.status !== "cancelled")
+        .slice()
+        .sort((a, b) => b.score - a.score)[0];
+      if (!best) return;
+      best.status = "accepted";
+      task.assignedSpecialistId = best.specialistId;
+      task.status = "in_progress";
+      const deal = ensureDealForAcceptedResponse(task, best);
+      if (deal) {
+        const convo = ensureConversation(user.id, best.specialistId);
+        createSystemMessage(convo.id, "Заказчик принял отклик. Создана безопасная сделка.");
+      }
+      logEvent("response_accepted", "response", best.id, task.title, user.id);
+      saveState();
+      renderBusinessTasks();
+      showToast("Отклик принят. Перейдите в раздел платежей для оплаты сделки.");
+    };
   }
 
   function renderBusinessFavorites() {
@@ -2708,26 +3726,172 @@
     if (!isPath("/dashboard/business/payments/")) return;
     const user = requireLoggedInBusiness(true);
     if (!user) return;
-    const payments = paymentsForBusinessUser(user.id);
+    const deals = dealsForBusinessUser(user.id);
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
-    if (!payments.length) {
-      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Платежей пока нет.</td></tr>";
+    if (!deals.length) {
+      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделок пока нет. Сначала примите отклик в разделе задач.</td></tr>";
       return;
     }
-    tbody.innerHTML = payments
-      .map((payment) => {
-        const task = state.tasks.find((item) => item.id === payment.taskId);
+    tbody.innerHTML = deals
+      .map((deal) => {
+        const task = state.tasks.find((item) => item.id === deal.taskId);
+        const specialist = findSpecialistById(deal.specialistId);
+        const holdUntilText = deal.heldUntil ? new Date(deal.heldUntil).toLocaleString("ru-RU") : "—";
+        const timelinePreview = (deal.timeline || [])
+          .slice(0, 2)
+          .map((item) => `${item.status}: ${item.text}`)
+          .join(" • ");
         return `
           <tr>
-            <td>${task ? task.title : "Проект"}</td>
-            <td>${formatMoneyByn(payment.amount)}</td>
-            <td><span class="status ${normalize(payment.status).includes("ожидает") ? "warn" : ""}">${payment.status}</span></td>
-            <td>${formatDate(payment.date)}</td>
+            <td>
+              ${task ? task.title : "Проект"}
+              <div class="meta">${specialist ? specialist.name : "Исполнитель"} • комиссия 10% (${formatMoneyByn(deal.platformFee)}) • доработки ${deal.revisionUsed}/${deal.revisionLimit}</div>
+              ${timelinePreview ? `<div class="meta">${timelinePreview}</div>` : ""}
+            </td>
+            <td>${formatMoneyByn(deal.grossAmount)}</td>
+            <td><span class="status ${deal.status === "disputed" ? "warn" : ""}">${dealStatusLabel(deal.status)}</span><div class="meta">Hold до: ${holdUntilText}</div></td>
+            <td>
+              <div class="chips">
+                ${deal.status === "unpaid" ? `<button class="chip" type="button" data-deal-action="pay" data-deal-id="${deal.id}">Оплатить</button>` : ""}
+                ${deal.status === "paid" ? `<button class="chip" type="button" data-deal-action="hold" data-deal-id="${deal.id}">Перевести в hold</button>` : ""}
+                ${deal.status === "held" ? `<button class="chip" type="button" data-deal-action="revision" data-deal-id="${deal.id}">Запросить доработку</button>` : ""}
+                ${deal.status === "held" ? `<button class="chip" type="button" data-deal-action="release" data-deal-id="${deal.id}">Подтвердить и выпустить</button>` : ""}
+                ${["held", "paid"].includes(deal.status) ? `<button class="chip" type="button" data-deal-action="dispute" data-deal-id="${deal.id}">Открыть спор</button>` : ""}
+                ${deal.status === "disputed" ? `<button class="chip" type="button" data-deal-action="refund" data-deal-id="${deal.id}">Запросить возврат</button>` : ""}
+              </div>
+            </td>
           </tr>
         `;
       })
       .join("");
+
+    tbody.onclick = (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const actionNode = target.closest("[data-deal-action]");
+      if (!actionNode) return;
+      const action = actionNode.getAttribute("data-deal-action");
+      const dealId = actionNode.getAttribute("data-deal-id");
+      const deal = state.deals.find((item) => item.id === dealId && item.businessUserId === user.id);
+      if (!deal) return;
+      const task = state.tasks.find((item) => item.id === deal.taskId);
+      const specialist = findSpecialistById(deal.specialistId);
+      const convo = specialist && task ? ensureConversation(user.id, specialist.id) : null;
+
+      if (action === "pay") {
+        deal.status = "paid";
+        deal.paidAt = nowIso();
+        addDealTimeline(deal, "paid", "Заказчик оплатил сделку.");
+        if (convo) createSystemMessage(convo.id, "Проект оплачен. Средства готовы к холду.");
+        showToast("Платеж проведен");
+      } else if (action === "hold") {
+        deal.status = "held";
+        deal.heldUntil = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+        addDealTimeline(deal, "held", "Средства переведены в hold до приемки.");
+        if (convo) createSystemMessage(convo.id, "Средства в холде. Можно отправлять работу.");
+        showToast("Средства переведены в hold");
+      } else if (action === "release") {
+        deal.status = "released";
+        deal.releasedAt = nowIso();
+        addDealTimeline(deal, "released", "Заказчик принял работу. Выплата выпущена.");
+        if (task) task.status = "completed";
+        if (convo) createSystemMessage(convo.id, "Работа принята. Выплата выпущена исполнителю.");
+        showToast("Выплата выпущена");
+      } else if (action === "revision") {
+        if (deal.revisionUsed >= deal.revisionLimit) {
+          showToast("Лимит бесплатных доработок исчерпан. Можно открыть спор.", "error");
+          return;
+        }
+        const note = window.prompt("Опишите правки для доработки");
+        if (!note || !note.trim()) return;
+        deal.revisionUsed += 1;
+        if (task) {
+          task.status = "revision_requested";
+          task.revisionCount = Number(task.revisionCount || 0) + 1;
+        }
+        addDealTimeline(deal, "revision_requested", note.trim());
+        if (convo) createSystemMessage(convo.id, `Запрошена доработка: ${note.trim()}`);
+        showToast("Доработка отправлена исполнителю");
+      } else if (action === "dispute") {
+        const reason = window.prompt("Причина спора");
+        if (!reason || !reason.trim()) return;
+        const description = window.prompt("Подробное описание ситуации", "") || "";
+        const desiredResolution =
+          window.prompt("Желаемое решение: resolved_refund / resolved_release / resolved_partial", "resolved_partial") ||
+          "resolved_partial";
+        const attachmentsRaw = window.prompt("Ссылки на доказательства (через запятую)", "") || "";
+        const attachments = attachmentsRaw
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+        deal.status = "disputed";
+        deal.disputedAt = nowIso();
+        addDealTimeline(deal, "disputed", reason.trim());
+        if (task) task.status = "dispute_opened";
+        state.disputes.unshift({
+          id: uid("dispute"),
+          dealId: deal.id,
+          taskId: deal.taskId,
+          businessUserId: user.id,
+          specialistId: deal.specialistId,
+          status: "opened",
+          reason: reason.trim(),
+          description: description.trim(),
+          desiredResolution: ["resolved_refund", "resolved_release", "resolved_partial"].includes(desiredResolution.trim())
+            ? desiredResolution.trim()
+            : "resolved_partial",
+          attachments,
+          adminComment: "",
+          timeline: [{ id: uid("dt"), status: "opened", text: reason.trim(), ts: nowIso() }],
+          createdAt: nowIso(),
+          updatedAt: nowIso()
+        });
+        state.complaints.unshift({
+          id: uid("complaint"),
+          reporterUserId: user.id,
+          targetType: "task",
+          targetId: deal.taskId,
+          reason: `Спор по сделке: ${reason.trim()}`,
+          status: "new",
+          adminComment: "",
+          createdAt: nowIso()
+        });
+        if (convo) createSystemMessage(convo.id, "Открыт спор. Средства заморожены до решения арбитража.");
+        showToast("Спор открыт");
+      } else if (action === "refund") {
+        deal.status = "refunded";
+        addDealTimeline(deal, "refunded", "Заказчик запросил возврат средств.");
+        if (task) task.status = "cancelled";
+        const dispute = state.disputes.find((item) => item.dealId === deal.id && ["opened", "under_review"].includes(item.status));
+        if (dispute) {
+          dispute.status = "resolved_refund";
+          dispute.updatedAt = nowIso();
+          dispute.timeline.unshift({ id: uid("dt"), status: "resolved_refund", text: "Возврат подтвержден заказчиком.", ts: nowIso() });
+        }
+        if (convo) createSystemMessage(convo.id, "Запрошен возврат. Сделка переведена в статус refund.");
+        showToast("Статус сделки: возврат");
+      }
+
+      recalculateWallets();
+      logEvent("deal_action", "deal", deal.id, action || "unknown", user.id);
+      saveState();
+      renderBusinessPayments();
+    };
+
+    const infoCard = document.querySelector(".dash-panels > article.card:nth-child(2)");
+    if (infoCard) {
+      const disputes = state.disputes.filter((item) => item.businessUserId === user.id).slice(0, 4);
+      const disputesHtml = disputes.length
+        ? disputes
+            .map(
+              (item) =>
+                `<div class="panel-item"><strong>${disputeStatusLabel(item.status)}</strong><div class="meta">${item.reason || "Без причины"} • ${formatDate(item.createdAt)}</div></div>`
+            )
+            .join("")
+        : "<div class='panel-item'><div class='meta'>Споров пока нет.</div></div>";
+      infoCard.innerHTML = `<h2>Споры и арбитраж</h2><div class="panel-list">${disputesHtml}</div><a class="btn btn-ghost" href="${appUrl("safety/index.html")}">Подробнее о безопасной сделке</a>`;
+    }
   }
 
   function renderBusinessReviews() {
@@ -2811,7 +3975,12 @@
     return conversation.messages
       .map((message) => {
         const mine = message.senderRole === rolePerspective;
-        return `<div class="chat-msg ${mine ? "mine" : ""}">${message.text}</div>`;
+        return `
+          <div class="chat-msg ${mine ? "mine" : ""}">
+            <div>${escapeHtml(message.text)}</div>
+            <div class="chat-meta">${new Date(message.ts || nowIso()).toLocaleString("ru-RU", { hour: "2-digit", minute: "2-digit" })}</div>
+          </div>
+        `;
       })
       .join("");
   }
@@ -2841,6 +4010,8 @@
 
     function render() {
       const selected = convos.find((item) => item.id === selectedId) || convos[0];
+      markConversationRead(selected, "business");
+      saveState();
       const selectedSpecialist = findSpecialistById(selected.specialistId);
       chatCard.innerHTML = `
         <h2>Чат: ${selectedSpecialist ? selectedSpecialist.name : "Специалист"}</h2>
@@ -2848,6 +4019,7 @@
         <form class="field" data-chat-form>
           <label>Новое сообщение</label>
           <textarea placeholder="Напишите сообщение"></textarea>
+          <div class="meta">Контакты и ссылки на мессенджеры скрываются до завершения сделки.</div>
           <button class="btn btn-primary" type="submit">Отправить</button>
         </form>
       `;
@@ -2859,12 +4031,14 @@
             .map((convo) => {
               const specialist = findSpecialistById(convo.specialistId);
               const last = convo.messages[convo.messages.length - 1];
+              const unread = unreadCountForRole(convo, "business");
               return `
                 <div class="panel-item" data-conversation-id="${convo.id}" style="${
                   convo.id === selectedId ? "border-color: rgba(183,170,255,0.45);" : ""
                 }">
                   <strong>${specialist ? specialist.name : "Специалист"}</strong>
-                  <div class="meta">${last ? last.text : "Нет сообщений"}</div>
+                  <div class="meta">${last ? escapeHtml(last.text) : "Нет сообщений"}</div>
+                  ${unread ? `<div class="meta">Непрочитано: ${unread}</div>` : ""}
                 </div>
               `;
             })
@@ -2880,9 +4054,11 @@
           const textArea = form.querySelector("textarea");
           const text = textArea ? textArea.value.trim() : "";
           if (!text) return;
-          addMessage(selected.id, "business", text);
+          if (!sendMessageWithSafety(selected.id, "business", text)) return;
           if (textArea) textArea.value = "";
+          simulateTypingReply(selected.id, "business");
           render();
+          window.setTimeout(render, 1300);
         });
       }
     }
@@ -2910,6 +4086,16 @@
       return findSpecialistById(user.specialistId) || state.specialists[0];
     }
     return findSpecialistById(state.ui.selectedSpecialistId) || state.specialists[0];
+  }
+
+  function verificationForSpecialist(specialist) {
+    if (!specialist) return null;
+    const bySpecialist = state.verifications.find((item) => item.specialistId && item.specialistId === specialist.id);
+    if (bySpecialist) return bySpecialist;
+    if (specialist.userId) {
+      return state.verifications.find((item) => item.userId && item.userId === specialist.userId) || null;
+    }
+    return null;
   }
 
   function renderSpecialistOverview() {
@@ -2973,37 +4159,64 @@
         ? rows.join("")
         : "<tr><td colspan='4' class='meta'>Пока нет проектов и входящих задач.</td></tr>";
     }
+
+    const panels = document.querySelectorAll(".dash-panels > article.card");
+    const financePanel = panels[2];
+    if (financePanel && user) {
+      const notifications = notificationsForUser(user).slice(0, 2);
+      notifications.forEach((item) => {
+        const node = document.createElement("p");
+        node.className = "meta";
+        node.textContent = `Уведомление: ${item.title}`;
+        financePanel.appendChild(node);
+      });
+    }
   }
 
   function renderSpecialistProjects() {
     if (!isPath("/dashboard/specialist/projects/")) return;
     const specialist = currentSpecialistForSession();
     if (!specialist) return;
+    const user = requireSpecialistForAction();
+    if (!user) return;
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     const tasks = tasksForSpecialist(specialist.id);
     const incoming = incomingTasksForSpecialist(specialist.id);
+    const available = state.tasks.filter(
+      (task) => task.status === "published" && !task.assignedSpecialistId && !task.hidden
+    );
     const rows = tasks
-      .map(
-        (task) => `
-          <tr>
-            <td>${task.title}</td>
-            <td>${specialist.specialization}</td>
-            <td>${formatDate(task.createdAt)}</td>
-            <td><span class="status">В работе</span></td>
-          </tr>
-        `
-      )
+      .map((task) => `
+        <tr>
+          <td>${task.title}</td>
+          <td>${specialist.specialization}</td>
+          <td>${formatDate(task.createdAt)}</td>
+          <td>
+            <span class="status">${taskStatusLabel(task.status)}</span>
+            ${
+              task.status === "in_progress"
+                ? `<div class="chips"><button class="chip" type="button" data-specialist-submit-work="${task.id}">Отправить работу</button></div>`
+                : ""
+            }
+          </td>
+        </tr>
+      `)
       .concat(
-        incoming.map((task) => {
+        available.map((task) => {
           const response = (task.responses || []).find((item) => item.specialistId === specialist.id);
           const score = response ? `${response.score}%` : "—";
           return `
             <tr>
-              <td>${task.title}</td>
-              <td>Отклик (${score})</td>
-              <td>${formatDate(task.createdAt)}</td>
-              <td><span class="status warn">Доступна</span></td>
+              <td>${task.title}<div class="meta">${task.category} • бюджет ${formatMoneyByn(task.budgetByn || 0)}</div></td>
+              <td>${response ? `Отклик (${score})` : "Новая задача"}</td>
+              <td>${task.deadline ? formatDate(task.deadline) : "—"}</td>
+              <td>
+                <span class="status ${response ? "" : "warn"}">${response ? responseStatusLabel(response.status) : "Доступна"}</span>
+                <div class="chips">
+                  <button class="chip" type="button" data-specialist-respond="${task.id}">${response ? "Обновить отклик" : "Откликнуться"}</button>
+                </div>
+              </td>
             </tr>
           `;
         })
@@ -3011,6 +4224,84 @@
     tbody.innerHTML = rows.length
       ? rows.join("")
       : "<tr><td colspan='4' class='meta'>Проектов и откликов пока нет.</td></tr>";
+
+    tbody.onclick = (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const btn = target.closest("[data-specialist-respond]");
+      const submitWorkBtn = target.closest("[data-specialist-submit-work]");
+      if (submitWorkBtn) {
+        const taskId = submitWorkBtn.getAttribute("data-specialist-submit-work");
+        const task = state.tasks.find((item) => item.id === taskId && item.assignedSpecialistId === specialist.id);
+        if (!task) return;
+        task.status = "work_submitted";
+        const businessUserId = task.businessUserId || null;
+        if (businessUserId) {
+          const convo = ensureConversation(businessUserId, specialist.id);
+          createSystemMessage(convo.id, "Исполнитель отправил работу на проверку.");
+        }
+        const deal = findDealByTaskId(task.id);
+        if (deal) addDealTimeline(deal, "work_submitted", "Работа отправлена заказчику.");
+        logEvent("work_submitted", "task", task.id, specialist.name, user.id);
+        saveState();
+        renderSpecialistProjects();
+        showToast("Работа отправлена на проверку");
+        return;
+      }
+      if (!btn) return;
+      const taskId = btn.getAttribute("data-specialist-respond");
+      const task = state.tasks.find((item) => item.id === taskId && item.status === "published");
+      if (!task) return;
+      const prev = (task.responses || []).find((item) => item.specialistId === specialist.id);
+      const priceRaw = window.prompt("Ваша цена (BYN)", String(prev ? prev.priceByn : specialist.priceByn || task.budgetByn || 0));
+      const deadlineRaw = window.prompt("Срок выполнения (дней)", String(prev ? prev.deadlineDays : 14));
+      const messageRaw = window.prompt("Сообщение заказчику", prev ? prev.message : "Готов(а) подключиться к задаче и предложить план запуска.");
+      const attachmentsRaw = window.prompt("Ссылки/вложения (через запятую)", prev && prev.attachments ? prev.attachments.join(", ") : "");
+      const price = Math.max(0, Number(priceRaw || 0));
+      const deadlineDays = Math.max(1, Number(deadlineRaw || 14));
+      const message = String(messageRaw || "").trim();
+      const attachments = String(attachmentsRaw || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      if (!price || !message) {
+        showToast("Укажите цену и сообщение", "error");
+        return;
+      }
+      const scoreMeta = computeMatchAnalysis(specialist, task);
+      if (prev) {
+        prev.priceByn = price;
+        prev.deadlineDays = deadlineDays;
+        prev.message = message;
+        prev.attachments = attachments;
+        prev.score = scoreMeta.score;
+        prev.reasons = scoreMeta.reasons;
+        prev.strongestAreas = scoreMeta.strongestAreas;
+        prev.estimatedCostByn = price;
+        prev.status = "new";
+        prev.createdAt = nowIso();
+      } else {
+        task.responses = Array.isArray(task.responses) ? task.responses : [];
+        task.responses.unshift({
+          id: uid("resp"),
+          specialistId: specialist.id,
+          score: scoreMeta.score,
+          reasons: scoreMeta.reasons,
+          strongestAreas: scoreMeta.strongestAreas,
+          estimatedCostByn: price,
+          message,
+          priceByn: price,
+          deadlineDays,
+          attachments,
+          status: "new",
+          createdAt: nowIso()
+        });
+      }
+      logEvent("response_created", "task", task.id, `${specialist.name}: ${formatMoneyByn(price)}`, user.id);
+      saveState();
+      renderSpecialistProjects();
+      showToast(prev ? "Отклик обновлен" : "Отклик отправлен");
+    };
   }
 
   function initSpecialistMessagesPage() {
@@ -3038,6 +4329,8 @@
 
     function render() {
       const selected = convos.find((item) => item.id === selectedId) || convos[0];
+      markConversationRead(selected, "specialist");
+      saveState();
       const user = findUserById(selected.businessUserId);
       chatCard.innerHTML = `
         <h2>Чат: ${user ? user.name : "Клиент"}</h2>
@@ -3045,6 +4338,7 @@
         <form class="field" data-chat-form>
           <label>Новое сообщение</label>
           <textarea placeholder="Напишите сообщение"></textarea>
+          <div class="meta">Контакты и ссылки на мессенджеры скрываются до завершения сделки.</div>
           <button class="btn btn-primary" type="submit">Отправить</button>
         </form>
       `;
@@ -3055,12 +4349,14 @@
             .map((convo) => {
               const business = findUserById(convo.businessUserId);
               const last = convo.messages[convo.messages.length - 1];
+              const unread = unreadCountForRole(convo, "specialist");
               return `
                 <div class="panel-item" data-conversation-id="${convo.id}" style="${
                   convo.id === selectedId ? "border-color: rgba(183,170,255,0.45);" : ""
                 }">
                   <strong>${business ? business.name : "Бизнес"}</strong>
-                  <div class="meta">${last ? last.text : "Нет сообщений"}</div>
+                  <div class="meta">${last ? escapeHtml(last.text) : "Нет сообщений"}</div>
+                  ${unread ? `<div class="meta">Непрочитано: ${unread}</div>` : ""}
                 </div>
               `;
             })
@@ -3072,12 +4368,15 @@
       if (form) {
         form.addEventListener("submit", (event) => {
           event.preventDefault();
+          if (!requireSpecialistForAction()) return;
           const textArea = form.querySelector("textarea");
           const text = textArea ? textArea.value.trim() : "";
           if (!text) return;
-          addMessage(selected.id, "specialist", text);
+          if (!sendMessageWithSafety(selected.id, "specialist", text)) return;
           if (textArea) textArea.value = "";
+          simulateTypingReply(selected.id, "specialist");
           render();
+          window.setTimeout(render, 1300);
         });
       }
     }
@@ -3166,32 +4465,133 @@
     if (!isPath("/dashboard/specialist/finance/")) return;
     const specialist = currentSpecialistForSession();
     if (!specialist) return;
-    const payments = paymentsForSpecialist(specialist.id);
-    const total = payments.reduce((sum, payment) => sum + payment.amount, 0);
-    const hold = payments
-      .filter((payment) => normalize(payment.status).includes("холд") || normalize(payment.status).includes("ожидает"))
-      .reduce((sum, payment) => sum + payment.amount, 0);
-    const commission = Math.round(total * 0.1);
-    const available = Math.max(0, total - hold - commission);
+    recalculateWallets();
+    const user = currentUser();
+    const wallet = user ? ensureWallet(user.id) : null;
+    const deals = dealsForSpecialist(specialist.id);
+    const available = wallet ? wallet.available : 0;
+    const pending = wallet ? wallet.pending : 0;
+    const held = wallet ? wallet.held : 0;
+    const turnover = deals.reduce((sum, deal) => sum + Number(deal.grossAmount || 0), 0);
 
     const boxes = document.querySelectorAll(".stats-strip .stat-box strong");
     if (boxes.length >= 4) {
-      boxes[0].textContent = formatMoneyRub(total);
-      boxes[1].textContent = formatMoneyRub(available);
+      boxes[0].textContent = formatMoneyByn(turnover);
+      boxes[1].textContent = formatMoneyByn(available);
       boxes[2].textContent = "10%";
-      boxes[3].textContent = formatMoneyRub(hold);
+      boxes[3].textContent = formatMoneyByn(held);
+    }
+
+    const panels = document.querySelector(".dash-panels");
+    if (panels && !panels.querySelector("[data-specialist-finance-history]")) {
+      const historyCard = document.createElement("article");
+      historyCard.className = "card";
+      historyCard.setAttribute("data-specialist-finance-history", "1");
+      panels.appendChild(historyCard);
+    }
+    const historyCard = document.querySelector("[data-specialist-finance-history]");
+    if (historyCard) {
+      const activeFilter = state.ui.specialistFinanceFilter || "all";
+      const withdrawalsRaw = user ? state.withdrawals.filter((item) => item.userId === user.id).slice(0, 20) : [];
+      const withdrawals = activeFilter === "all" ? withdrawalsRaw : withdrawalsRaw.filter((item) => item.status === activeFilter);
+      const dealsTimeline = deals.slice(0, 6);
+      historyCard.innerHTML = `
+        <h2>Кошелек и операции</h2>
+        <div class="meta">Held: ${formatMoneyByn(held)} • Pending: ${formatMoneyByn(pending)} • Available: ${formatMoneyByn(available)}</div>
+        <div class="chips">
+          <button class="chip ${activeFilter === "all" ? "active" : ""}" type="button" data-fin-filter="all">Все</button>
+          <button class="chip ${activeFilter === "requested" ? "active" : ""}" type="button" data-fin-filter="requested">requested</button>
+          <button class="chip ${activeFilter === "processing" ? "active" : ""}" type="button" data-fin-filter="processing">processing</button>
+          <button class="chip ${activeFilter === "completed" ? "active" : ""}" type="button" data-fin-filter="completed">completed</button>
+          <button class="chip ${activeFilter === "rejected" ? "active" : ""}" type="button" data-fin-filter="rejected">rejected</button>
+          <button class="chip" type="button" data-fin-export>Экспорт истории</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>Операция</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
+          <tbody>
+            ${
+              withdrawals.length
+                ? withdrawals
+                    .map(
+                      (item) =>
+                        `<tr><td>Вывод (${item.method})</td><td>${formatMoneyByn(item.amount)}</td><td>${withdrawalStatusLabel(item.status)}</td><td>${formatDate(item.createdAt)}</td></tr>`
+                    )
+                    .join("")
+                : "<tr><td colspan='4' class='meta'>Выводов пока нет.</td></tr>"
+            }
+          </tbody>
+        </table>
+        <h3>Таймлайн сделок</h3>
+        <div class="panel-list">
+          ${
+            dealsTimeline.length
+              ? dealsTimeline
+                  .map((deal) => {
+                    const task = state.tasks.find((item) => item.id === deal.taskId);
+                    const timelineTop = (deal.timeline || [])[0];
+                    return `<div class="panel-item"><strong>${task ? task.title : "Сделка"} • ${dealStatusLabel(deal.status)}</strong><div class="meta">${timelineTop ? timelineTop.text : "Статус обновляется"} • ${formatMoneyByn(deal.specialistNet || 0)}</div></div>`;
+                  })
+                  .join("")
+              : "<div class='panel-item'><div class='meta'>Сделок пока нет.</div></div>"
+          }
+        </div>
+      `;
+      historyCard.onclick = async (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const filterBtn = target.closest("[data-fin-filter]");
+        if (filterBtn) {
+          state.ui.specialistFinanceFilter = filterBtn.getAttribute("data-fin-filter") || "all";
+          saveState();
+          renderSpecialistFinance();
+          return;
+        }
+        const exportBtn = target.closest("[data-fin-export]");
+        if (exportBtn) {
+          const text = withdrawalsRaw
+            .map((item) => `${formatDate(item.createdAt)} • ${formatMoneyByn(item.amount)} • ${withdrawalStatusLabel(item.status)} • ${item.method}`)
+            .join("\n");
+          try {
+            await navigator.clipboard.writeText(text || "История пуста");
+            showToast("История скопирована");
+          } catch (error) {
+            showToast("Не удалось скопировать", "error");
+          }
+        }
+      };
     }
 
     const button = document.querySelector(".dash-panels .btn.btn-primary");
     if (button) {
-      button.addEventListener("click", () => {
+      button.onclick = () => {
         if (!requireSpecialistForAction()) return;
         if (available <= 0) {
           showToast("Нет доступных средств к выводу", "error");
           return;
         }
-        showToast(`Запрос на вывод ${formatMoneyRub(available)} отправлен`);
-      });
+        const amountRaw = window.prompt("Сумма вывода (BYN)", String(Math.floor(available)));
+        const amount = Number(amountRaw || 0);
+        if (!amount || amount <= 0 || amount > available) {
+          showToast("Некорректная сумма вывода", "error");
+          return;
+        }
+        const method = window.prompt("Способ вывода (card / iban / crypto)", "card") || "card";
+        const requisites = window.prompt("Реквизиты для вывода", "") || "";
+        state.withdrawals.unshift({
+          id: uid("wd"),
+          userId: user ? user.id : null,
+          amount,
+          method,
+          requisites,
+          status: "requested",
+          createdAt: nowIso(),
+          updatedAt: nowIso()
+        });
+        logEvent("withdrawal_requested", "withdrawal", state.withdrawals[0].id, `${amount} BYN`, user ? user.id : null);
+        saveState();
+        renderSpecialistFinance();
+        showToast(`Запрос на вывод ${formatMoneyByn(amount)} отправлен`);
+      };
     }
   }
 
@@ -3504,7 +4904,7 @@
               <td>${task.category}</td>
               <td>
                 <select data-task-status="${task.id}">
-                  ${["draft", "pending_moderation", "published", "in_progress", "completed", "rejected", "archived"]
+                  ${["draft", "pending_moderation", "published", "in_progress", "work_submitted", "revision_requested", "dispute_opened", "completed", "cancelled", "rejected", "archived"]
                     .map((status) => `<option value="${status}" ${task.status === status ? "selected" : ""}>${status}</option>`)
                     .join("")}
                 </select>
@@ -3562,6 +4962,8 @@
       if (!panel) return;
       const specialistQueue = state.specialists.filter((item) => item.status === "pending_moderation");
       const taskQueue = state.tasks.filter((item) => item.status === "pending_moderation");
+      const verificationQueue = state.verifications.filter((item) => item.status === "pending");
+      const disputesQueue = state.disputes.filter((item) => ["opened", "under_review"].includes(item.status));
       const complaintQueue = state.complaints.filter((item) => item.status === "new");
       const rows = [];
 
@@ -3589,6 +4991,39 @@
               <button class="chip" type="button" data-mod-approve-task="${item.id}">Одобрить</button>
               <button class="chip" type="button" data-mod-rework-task="${item.id}">На доработку</button>
               <button class="chip" type="button" data-mod-reject-task="${item.id}">Отклонить</button>
+            </div>
+          </article>
+        `);
+      });
+
+      verificationQueue.forEach((item) => {
+        const specialist = byId(state.specialists, item.specialistId);
+        rows.push(`
+          <article class="panel-item">
+            <strong>Верификация: ${specialist ? specialist.name : item.fullName}</strong>
+            <div class="meta">${item.statusType} • ${item.country}, ${item.city} • ${item.email}</div>
+            <div class="meta">${item.notes ? escapeHtml(item.notes) : "Комментарий не добавлен"}</div>
+            <div class="chips">
+              <button class="chip" type="button" data-mod-approve-verification="${item.id}">Одобрить</button>
+              <button class="chip" type="button" data-mod-rework-verification="${item.id}">На доработку</button>
+              <button class="chip" type="button" data-mod-reject-verification="${item.id}">Отклонить</button>
+            </div>
+          </article>
+        `);
+      });
+
+      disputesQueue.forEach((item) => {
+        const task = byId(state.tasks, item.taskId);
+        rows.push(`
+          <article class="panel-item">
+            <strong>Спор: ${task ? task.title : item.taskId}</strong>
+            <div class="meta">${disputeStatusLabel(item.status)} • ${item.reason || "Без причины"}</div>
+            <div class="chips">
+              <button class="chip" type="button" data-mod-dispute-review="${item.id}">В review</button>
+              <button class="chip" type="button" data-mod-dispute-release="${item.id}">Решить: выплата</button>
+              <button class="chip" type="button" data-mod-dispute-refund="${item.id}">Решить: возврат</button>
+              <button class="chip" type="button" data-mod-dispute-partial="${item.id}">Решить: частично</button>
+              <button class="chip" type="button" data-mod-dispute-reject="${item.id}">Отклонить</button>
             </div>
           </article>
         `);
@@ -3646,37 +5081,36 @@
       const financeKpis = root.querySelector("[data-finance-kpis]");
       const tbody = root.querySelector("[data-finance-table]");
       if (!financeKpis || !tbody) return;
-      const list = state.payments.map((item) => {
-        const statusRaw = normalize(item.status);
-        const status =
-          statusRaw.includes("холд") || statusRaw.includes("ожидает")
-            ? "pending"
-            : statusRaw.includes("отмен") ? "cancelled" : statusRaw.includes("refund") ? "refunded" : "paid";
-        return { ...item, status };
-      });
-
-      const turnover = list.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const platformIncome = Math.round(turnover * 0.1);
-      const avgCheck = list.length ? Math.round(turnover / list.length) : 0;
+      const deals = state.deals.slice();
+      const withdrawals = state.withdrawals.slice();
+      const turnover = deals.reduce((sum, item) => sum + Number(item.grossAmount || 0), 0);
+      const platformIncome = deals.reduce((sum, item) => sum + Number(item.platformFee || 0), 0);
+      const avgCheck = deals.length ? Math.round(turnover / deals.length) : 0;
       financeKpis.innerHTML = `
         <div class="stat-box"><strong>${formatMoneyByn(turnover)}</strong><span class="meta">оборот</span></div>
         <div class="stat-box"><strong>${formatMoneyByn(platformIncome)}</strong><span class="meta">доход платформы</span></div>
         <div class="stat-box"><strong>${formatMoneyByn(avgCheck)}</strong><span class="meta">средний чек</span></div>
-        <div class="stat-box"><strong>${list.length}</strong><span class="meta">сделок</span></div>
+        <div class="stat-box"><strong>${deals.length}</strong><span class="meta">сделок</span></div>
       `;
 
-      const filtered = local.financeFilter === "all" ? list : list.filter((item) => item.status === local.financeFilter);
-      if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">Платежи не найдены.</div></td></tr>`;
-        return;
-      }
-      tbody.innerHTML = filtered
-        .map((item) => {
-          const fee = Math.round(Number(item.amount || 0) * 0.1);
-          const task = byId(state.tasks, item.taskId);
-          return `<tr><td>${task ? task.title : "Сделка"}</td><td>${formatMoneyByn(item.amount)}</td><td>${formatMoneyByn(fee)}</td><td>${item.status}</td><td>${formatDate(item.date || nowIso())}</td></tr>`;
-        })
-        .join("");
+      const filteredDeals =
+        local.financeFilter === "all" ? deals : deals.filter((item) => item.status === local.financeFilter);
+      const filteredWithdrawals =
+        local.financeFilter === "all"
+          ? withdrawals
+          : withdrawals.filter((item) => item.status === local.financeFilter);
+      const dealRows = filteredDeals.map((item) => {
+        const task = byId(state.tasks, item.taskId);
+        return `<tr><td>${task ? task.title : "Сделка"}</td><td>${formatMoneyByn(item.grossAmount)}</td><td>${formatMoneyByn(item.platformFee)}</td><td>${dealStatusLabel(item.status)}</td><td>${formatDate(item.createdAt || nowIso())}</td></tr>`;
+      });
+      const withdrawalRows = filteredWithdrawals.map((item) => {
+        const user = byId(state.users, item.userId);
+        return `<tr><td>Вывод средств (${user ? user.email : "специалист"})</td><td>${formatMoneyByn(item.amount)}</td><td>—</td><td>${withdrawalStatusLabel(item.status)}</td><td>${formatDate(item.createdAt || nowIso())}</td></tr>`;
+      });
+      const rows = dealRows.concat(withdrawalRows);
+      tbody.innerHTML = rows.length
+        ? rows.join("")
+        : `<tr><td colspan="5"><div class="empty-state">Операции не найдены.</div></td></tr>`;
     }
 
     function renderAiTools() {
@@ -4218,6 +5652,11 @@
           pair.response.status = "accepted";
           pair.task.assignedSpecialistId = pair.response.specialistId;
           pair.task.status = "in_progress";
+          const deal = ensureDealForAcceptedResponse(pair.task, pair.response);
+          if (deal && pair.task.businessUserId && pair.task.assignedSpecialistId) {
+            const convo = ensureConversation(pair.task.businessUserId, pair.task.assignedSpecialistId);
+            createSystemMessage(convo.id, "Отклик принят. Создана безопасная сделка.");
+          }
           logEvent("response_accepted", "response", pair.response.id, pair.task.title, adminUser.id);
           saveState();
           rerenderAll();
@@ -4324,6 +5763,60 @@
           return;
         }
 
+        const approveVerification = target.closest("[data-mod-approve-verification]");
+        if (approveVerification) {
+          const id = approveVerification.getAttribute("data-mod-approve-verification");
+          const verification = byId(state.verifications, id);
+          if (!verification) return;
+          verification.status = "verified";
+          verification.notes = verification.notes || "Проверено администратором";
+          verification.updatedAt = nowIso();
+          const specialist = verification.specialistId ? byId(state.specialists, verification.specialistId) : null;
+          if (specialist) specialist.verified = true;
+          addModerationRecord("verification", verification.id, "approved");
+          logEvent("verification_approved", "verification", verification.id, specialist ? specialist.name : "", adminUser.id);
+          saveState();
+          rerenderAll();
+          showToast("Верификация подтверждена");
+          return;
+        }
+
+        const reworkVerification = target.closest("[data-mod-rework-verification]");
+        if (reworkVerification) {
+          const id = reworkVerification.getAttribute("data-mod-rework-verification");
+          const verification = byId(state.verifications, id);
+          if (!verification) return;
+          const reason = window.prompt("Комментарий для доработки", "Добавьте больше подтверждающих данных");
+          verification.status = "pending";
+          verification.notes = reason || verification.notes;
+          verification.updatedAt = nowIso();
+          addModerationRecord("verification", verification.id, "rework", reason || "");
+          logEvent("verification_rework", "verification", verification.id, reason || "", adminUser.id);
+          saveState();
+          rerenderAll();
+          showToast("Комментарий отправлен");
+          return;
+        }
+
+        const rejectVerification = target.closest("[data-mod-reject-verification]");
+        if (rejectVerification) {
+          const id = rejectVerification.getAttribute("data-mod-reject-verification");
+          const verification = byId(state.verifications, id);
+          if (!verification) return;
+          const reason = window.prompt("Причина отклонения", "Недостаточно подтверждающих данных");
+          verification.status = "rejected";
+          verification.notes = reason || verification.notes;
+          verification.updatedAt = nowIso();
+          const specialist = verification.specialistId ? byId(state.specialists, verification.specialistId) : null;
+          if (specialist) specialist.verified = false;
+          addModerationRecord("verification", verification.id, "rejected", reason || "");
+          logEvent("verification_rejected", "verification", verification.id, reason || "", adminUser.id);
+          saveState();
+          rerenderAll();
+          showToast("Верификация отклонена");
+          return;
+        }
+
         const reworkTask = target.closest("[data-mod-rework-task]");
         if (reworkTask) {
           const id = reworkTask.getAttribute("data-mod-rework-task");
@@ -4348,6 +5841,56 @@
           logEvent("moderation_rejected", "task", task.id, reason || "", adminUser.id);
           saveState();
           rerenderAll();
+          return;
+        }
+
+        const disputeReview = target.closest("[data-mod-dispute-review]");
+        const disputeRelease = target.closest("[data-mod-dispute-release]");
+        const disputeRefund = target.closest("[data-mod-dispute-refund]");
+        const disputePartial = target.closest("[data-mod-dispute-partial]");
+        const disputeReject = target.closest("[data-mod-dispute-reject]");
+        const disputeId =
+          (disputeReview && disputeReview.getAttribute("data-mod-dispute-review")) ||
+          (disputeRelease && disputeRelease.getAttribute("data-mod-dispute-release")) ||
+          (disputeRefund && disputeRefund.getAttribute("data-mod-dispute-refund")) ||
+          (disputePartial && disputePartial.getAttribute("data-mod-dispute-partial")) ||
+          (disputeReject && disputeReject.getAttribute("data-mod-dispute-reject")) ||
+          "";
+        if (disputeId) {
+          const dispute = byId(state.disputes, disputeId);
+          if (!dispute) return;
+          const deal = byId(state.deals, dispute.dealId);
+          if (disputeReview) dispute.status = "under_review";
+          if (disputeRelease) dispute.status = "resolved_release";
+          if (disputeRefund) dispute.status = "resolved_refund";
+          if (disputePartial) dispute.status = "resolved_partial";
+          if (disputeReject) dispute.status = "rejected";
+          dispute.updatedAt = nowIso();
+          dispute.timeline.unshift({
+            id: uid("dt"),
+            status: dispute.status,
+            text: `Обновлено администратором: ${disputeStatusLabel(dispute.status)}`,
+            ts: nowIso()
+          });
+          if (deal) {
+            if (dispute.status === "resolved_release") deal.status = "released";
+            if (dispute.status === "resolved_refund") deal.status = "refunded";
+            if (dispute.status === "resolved_partial") deal.status = "released";
+            if (dispute.status === "resolved_release" || dispute.status === "resolved_partial") {
+              deal.releasedAt = nowIso();
+            }
+            addDealTimeline(deal, dispute.status, `Решение спора: ${disputeStatusLabel(dispute.status)}`);
+          }
+          const task = dispute.taskId ? byId(state.tasks, dispute.taskId) : null;
+          if (task) {
+            if (dispute.status === "resolved_refund") task.status = "cancelled";
+            if (["resolved_release", "resolved_partial"].includes(dispute.status)) task.status = "completed";
+          }
+          logEvent("dispute_status_changed", "dispute", dispute.id, dispute.status, adminUser.id);
+          recalculateWallets();
+          saveState();
+          rerenderAll();
+          showToast(`Спор: ${disputeStatusLabel(dispute.status)}`);
           return;
         }
 
@@ -4535,6 +6078,7 @@
   initGlobalComplaintActions();
   initMobileMenu();
   initLandingRoleFlow();
+  renderHomeMarketplaceSections();
   initFilterOptionToggle();
   initRoiCalculator();
   initRoiCalculatorPage();
@@ -4542,6 +6086,7 @@
   initSpecialistsPage();
   initTaskCreatePage();
   renderProfilePage();
+  initVerificationPage();
   initAiMatchPage();
   initAiAuditPage();
   initAiContentPage();

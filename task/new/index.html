@@ -39,6 +39,7 @@
     <article class="card">
       <h1>Создать задачу</h1>
       <p class="meta">Заполните mini-бриф, и AI Match предложит релевантных специалистов.</p>
+      <p class="meta" data-task-draft-note>Черновик не сохранен</p>
       <form>
         <div class="field">
           <label for="task_title">Название задачи</label>
@@ -93,6 +94,18 @@
           <textarea id="task_description" placeholder="Что нужно сделать, какие KPI и ожидания по результату." required></textarea>
         </div>
         <div class="field">
+          <label for="task_skills_required">Нужные навыки</label>
+          <input id="task_skills_required" placeholder="reels, таргет, контент-план">
+        </div>
+        <div class="field">
+          <label for="task_references">Референсы / ссылки</label>
+          <textarea id="task_references" placeholder="Ссылки на примеры, бренд-гайд, прошлые кампании"></textarea>
+        </div>
+        <div class="field">
+          <label for="task_attachments">Вложения (демо)</label>
+          <input id="task_attachments" type="file" multiple>
+        </div>
+        <div class="field">
           <label for="task_deadline">Дедлайн</label>
           <input id="task_deadline" type="date" required>
         </div>
@@ -107,6 +120,10 @@
         <div class="field">
           <label>Нужны ли reels?</label>
           <select id="task_need_reels"><option>Да</option><option>Нет</option><option>1-2 в неделю</option></select>
+        </div>
+        <div class="field">
+          <label for="task_optional_notes">Дополнительные комментарии</label>
+          <textarea id="task_optional_notes" placeholder="Любые детали по процессу, коммуникации, NDA и т.д."></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Опубликовать задачу</button>
       </form>
