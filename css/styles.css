@@ -106,13 +106,14 @@ img {
 }
 
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 8px 0;
   position: relative;
   z-index: 260;
+  min-width: 0;
 }
 
 .brand {
@@ -144,14 +145,17 @@ img {
 .nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 26px;
   color: #d5dcf8;
   font-weight: 500;
   font-size: 0.95rem;
+  min-width: 0;
 }
 
 .nav a {
   opacity: 0.9;
+  white-space: nowrap;
 }
 
 .nav a.active,
@@ -164,6 +168,8 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .topbar .btn {
@@ -171,6 +177,7 @@ img {
   font-size: 0.86rem;
   min-height: 36px;
   border-radius: 10px;
+  white-space: nowrap;
 }
 
 .btn {
@@ -1314,20 +1321,28 @@ textarea {
   display: none;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1240px) {
   .nav {
-    gap: 14px;
-    font-size: 0.88rem;
+    gap: 16px;
+    font-size: 0.9rem;
   }
 
   .topbar .btn {
-    padding: 8px 11px;
+    padding: 8px 12px;
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1180px) {
   .nav {
     display: none;
+  }
+
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .actions {
+    justify-self: end;
   }
 
   .mobile-menu-btn {
@@ -2789,5 +2804,62 @@ body.filters-open .filters-backdrop {
   .mobile-nav a {
     font-size: 0.92rem;
     min-height: 46px;
+  }
+}
+
+/* Final layout guard: prevents header/card overlap on desktop and narrow laptops. */
+.topbar,
+.nav,
+.actions,
+.hero,
+.page-hero,
+.catalog-card,
+.profile-header,
+.roi-layout,
+.auth-split {
+  min-width: 0;
+}
+
+.nav a,
+.actions .btn,
+.chip,
+.tab {
+  max-width: 100%;
+}
+
+@media (min-width: 1181px) {
+  .mobile-menu-btn {
+    display: none !important;
+  }
+
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .nav {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .actions {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 640px) {
+  .actions .keep-mobile:not(:last-of-type) {
+    display: none;
   }
 }
