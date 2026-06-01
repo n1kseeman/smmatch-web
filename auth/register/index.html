@@ -10,8 +10,25 @@
   <link rel="stylesheet" href="../../css/styles.css">
 </head>
 <body>
-  <div class="topbar-wrap"><header class="container topbar"><a href="../../index.html" class="brand">SM<span>MATCH</span></a></header></div>
-  <main class="container auth-wrap">
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../../index.html" class="brand">SM<span>MATCH</span></a>
+      <div class="actions">
+        <a class="btn btn-ghost keep-mobile" href="../login/index.html">Войти</a>
+      </div>
+    </header>
+  </div>
+  <main class="container auth-wrap auth-split">
+    <section class="auth-copy">
+      <span class="pill">Start in SMMATCH</span>
+      <h1>Создайте рабочее пространство для роста в соцсетях.</h1>
+      <p>Бизнес получает проверенных специалистов и безопасную сделку. Специалисты получают понятные задачи, профиль и финансы в одном месте.</p>
+      <div class="auth-proof-grid">
+        <div><strong>AI</strong><span>подбор под бриф</span></div>
+        <div><strong>Escrow</strong><span>защита оплаты</span></div>
+        <div><strong>Cases</strong><span>доверие через KPI</span></div>
+      </div>
+    </section>
     <section class="card auth-card">
       <h1>Создать аккаунт</h1>
       <div class="field">
@@ -22,9 +39,17 @@
           <button type="button" class="btn btn-ghost role-btn" data-role-btn="specialist" aria-pressed="false">Специалист</button>
         </div>
       </div>
-      <div class="field"><label>Имя</label><input placeholder="Ваше имя"></div>
-      <div class="field"><label>Email</label><input type="email" placeholder="you@company.com"></div>
-      <div class="field"><label>Пароль</label><input type="password" placeholder="••••••••"></div>
+      <div class="social-auth">
+        <a class="btn btn-ghost" href="https://accounts.google.com/">Google</a>
+        <a class="btn btn-ghost" href="https://telegram.org/">Telegram</a>
+        <a class="btn btn-ghost" href="https://appleid.apple.com/">Apple</a>
+      </div>
+      <div class="auth-divider">или email</div>
+      <div class="field"><label>Имя</label><input autocomplete="name" placeholder="Ваше имя"></div>
+      <div class="field"><label>Email</label><input type="email" autocomplete="email" placeholder="you@company.com"></div>
+      <div class="field"><label>Пароль</label><input type="password" autocomplete="new-password" placeholder="Минимум 6 символов"></div>
+      <div class="field"><label>Повторите пароль</label><input name="confirm_password" type="password" autocomplete="new-password" placeholder="Повторите пароль"></div>
+      <label class="check-row"><input name="terms" type="checkbox"> <span>Принимаю условия платформы и политику безопасности сделок</span></label>
       <button class="btn btn-primary">Зарегистрироваться</button>
       <div class="chips"><a class="chip" href="../login/index.html">Уже есть аккаунт? Войти</a></div>
     </section>

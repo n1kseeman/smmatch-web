@@ -10,11 +10,24 @@
   <link rel="stylesheet" href="../../css/styles.css">
 </head>
 <body>
-  <div class="topbar-wrap"><header class="container topbar"><a href="../../index.html" class="brand">SM<span>MATCH</span></a></header></div>
-  <main class="container auth-wrap">
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../../index.html" class="brand">SM<span>MATCH</span></a>
+      <div class="actions">
+        <a class="btn btn-ghost keep-mobile" href="../login/index.html">Войти</a>
+      </div>
+    </header>
+  </div>
+  <main class="container auth-wrap auth-split">
+    <section class="auth-copy">
+      <span class="pill">Account Recovery</span>
+      <h1>Вернем доступ без лишнего трения.</h1>
+      <p>После подтверждения email вы сможете задать новый пароль и продолжить работу с задачами, сделками и сообщениями.</p>
+    </section>
     <section class="card auth-card">
       <h1>Восстановить пароль</h1>
-      <div class="field"><label>Email</label><input type="email" placeholder="you@company.com"></div>
+      <p class="meta">Укажите email, который использовали при регистрации.</p>
+      <div class="field"><label>Email</label><input type="email" autocomplete="email" placeholder="you@company.com"></div>
       <button class="btn btn-primary">Отправить ссылку</button>
       <div class="chips"><a class="chip" href="../login/index.html">Назад ко входу</a></div>
     </section>

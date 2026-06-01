@@ -10,15 +10,38 @@
   <link rel="stylesheet" href="../../css/styles.css">
 </head>
 <body>
-  <div class="topbar-wrap"><header class="container topbar"><a href="../../index.html" class="brand">SM<span>MATCH</span></a></header></div>
-  <main class="container auth-wrap">
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../../index.html" class="brand">SM<span>MATCH</span></a>
+      <div class="actions">
+        <a class="btn btn-ghost keep-mobile" href="../../index.html">На главную</a>
+      </div>
+    </header>
+  </div>
+  <main class="container auth-wrap auth-split">
+    <section class="auth-copy">
+      <span class="pill">SMMATCH Workspace</span>
+      <h1>Единый кабинет для задач, откликов, сделок и коммуникации.</h1>
+      <div class="auth-proof-grid">
+        <div><strong>5 мин</strong><span>до первого подбора</span></div>
+        <div><strong>10%</strong><span>комиссия escrow</span></div>
+        <div><strong>4.8+</strong><span>средний рейтинг</span></div>
+      </div>
+    </section>
     <section class="card auth-card">
       <h1>Войти в аккаунт</h1>
-      <div class="field"><label>Email</label><input type="email" placeholder="you@company.com"></div>
-      <div class="field"><label>Пароль</label><input type="password" placeholder="••••••••"></div>
+      <p class="meta">Войдите, чтобы продолжить работу с задачами, сообщениями, сделками и аналитикой.</p>
+      <div class="social-auth">
+        <a class="btn btn-ghost" href="https://accounts.google.com/">Google</a>
+        <a class="btn btn-ghost" href="https://telegram.org/">Telegram</a>
+        <a class="btn btn-ghost" href="https://appleid.apple.com/">Apple</a>
+      </div>
+      <div class="auth-divider">или email</div>
+      <div class="field"><label>Email</label><input type="email" autocomplete="email" placeholder="you@company.com"></div>
+      <div class="field"><label>Пароль</label><input type="password" autocomplete="current-password" placeholder="Введите пароль"></div>
+      <label class="check-row"><input type="checkbox"> <span>Запомнить меня на этом устройстве</span></label>
       <button class="btn btn-primary">Войти</button>
-      <div class="chips"><a class="chip" href="../register/index.html">Регистрация</a><a class="chip" href="../forgot/index.html">Забыли пароль?</a></div>
-      <div class="chips"><a class="chip" href="https://accounts.google.com/">Google</a><a class="chip" href="https://telegram.org/">Telegram</a><a class="chip" href="https://appleid.apple.com/">Apple</a></div>
+      <div class="chips"><a class="chip" href="../register/index.html">Создать аккаунт</a><a class="chip" href="../forgot/index.html">Забыли пароль?</a></div>
     </section>
   </main>
   <script src="../../js/app.js"></script>

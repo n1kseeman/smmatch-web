@@ -70,6 +70,7 @@
             <div class="field"><label for="conversion">Конверсия заявки в покупку (%)</label><input id="conversion" name="conversion" type="number" placeholder="18" value="18"></div>
             <div class="field"><label for="margin">Маржинальность (%)</label><input id="margin" name="margin" type="number" placeholder="40" value="40"></div>
           </div>
+          <button class="btn btn-primary" type="button" data-roi-calculate>Рассчитать прогноз</button>
         </article>
 
         <aside class="roi-result-wrap">
@@ -80,12 +81,14 @@
             </div>
 
             <div class="roi-metric-grid">
-              <article class="roi-metric"><span>🧲 Прогноз новых заявок</span><strong data-roi-value="new-leads">0</strong></article>
-              <article class="roi-metric"><span>🛍 Прогноз продаж</span><strong data-roi-value="sales">0</strong></article>
-              <article class="roi-metric"><span>💰 Прогноз выручки</span><strong data-roi-value="revenue">0 BYN</strong></article>
-              <article class="roi-metric"><span>✨ Прогноз прибыли</span><strong data-roi-value="profit">0 BYN</strong></article>
-              <article class="roi-metric roi-accent-main"><span>📈 ROI</span><strong data-roi-value="roi">0%</strong></article>
-              <article class="roi-metric"><span>⏱ Окупаемость</span><strong data-roi-value="payback">0 мес</strong></article>
+              <article class="roi-metric"><span>Новые заявки</span><strong data-roi-value="new-leads">0</strong></article>
+              <article class="roi-metric"><span>Продажи</span><strong data-roi-value="sales">0</strong></article>
+              <article class="roi-metric"><span>Выручка</span><strong data-roi-value="revenue">0 BYN</strong></article>
+              <article class="roi-metric"><span>Прибыль</span><strong data-roi-value="profit">0 BYN</strong></article>
+              <article class="roi-metric"><span>CPL</span><strong data-roi-value="cpl">0 BYN</strong></article>
+              <article class="roi-metric"><span>CAC</span><strong data-roi-value="cac">0 BYN</strong></article>
+              <article class="roi-metric roi-accent-main"><span>ROI</span><strong data-roi-value="roi">0%</strong></article>
+              <article class="roi-metric"><span>Окупаемость</span><strong data-roi-value="payback">0 мес</strong></article>
             </div>
 
             <div class="roi-state neutral" data-roi-state>Введите данные для расчета ROI.</div>

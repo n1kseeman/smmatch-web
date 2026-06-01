@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "smmatch_state_v1";
-  const STATE_VERSION = 3;
+  const STATE_VERSION = 4;
 
   const path = window.location.pathname;
   const isPath = (chunk) => path.includes(chunk);
@@ -259,18 +259,18 @@
           specialistsCatalogEnabled: true
         },
         aiTools: {
-          aiMatch: { enabled: true, mode: "demo", limitPerDay: 200, hint: "AI Match использует демо-алгоритм подбора." },
+          aiMatch: { enabled: true, mode: "demo", limitPerDay: 200, hint: "AI Match использует алгоритм подбора по брифу и кейсам." },
           instagramAudit: {
             enabled: true,
             mode: "demo",
             limitPerDay: 200,
-            hint: "Instagram Audit показывает пример демо-анализа."
+            hint: "Instagram Audit формирует экспресс-аудит профиля по открытым параметрам."
           },
           contentGenerator: {
             enabled: true,
             mode: "demo",
             limitPerDay: 200,
-            hint: "Content Generator создает демо-идеи на основе формы."
+            hint: "Content Generator создает идеи на основе ниши, платформы и цели."
           },
           roiCalculator: { enabled: true, mode: "demo", limitPerDay: 500, hint: "ROI калькулятор показывает прогноз по введенным данным." }
         },
@@ -328,6 +328,128 @@
       admin.blocked = Boolean(admin.blocked);
     }
     return admin;
+  }
+
+  function ensureDemoAccounts(next) {
+    const businessEmail = "business@smmatch.local";
+    const specialistEmail = "specialist@smmatch.local";
+    let business = next.users.find((item) => normalize(item.email) === businessEmail);
+    if (!business) {
+      business = {
+        id: "user_demo_business",
+        role: "business",
+        name: "Roastery Lab",
+        email: businessEmail,
+        passwordHash: hashPasswordPlaceholder("demo123"),
+        blocked: false,
+        createdAt: nowIso()
+      };
+      next.users.push(business);
+    }
+
+    let specialist = next.users.find((item) => normalize(item.email) === specialistEmail);
+    if (!specialist) {
+      specialist = {
+        id: "user_demo_specialist",
+        role: "specialist",
+        name: "Алина Смирнова",
+        email: specialistEmail,
+        passwordHash: hashPasswordPlaceholder("demo123"),
+        specialistId: "spec_alina",
+        blocked: false,
+        createdAt: nowIso()
+      };
+      next.users.push(specialist);
+    }
+
+    return { business, specialist };
+  }
+
+  function buildDemoReviews(businessUserId) {
+    return [
+      {
+        id: "review_demo_roastery",
+        businessUserId,
+        specialistId: "spec_alina",
+        rating: 5,
+        comment: "За 6 недель получили понятную контент-систему, рост заявок и спокойный процесс без хаоса в чатах.",
+        createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "review_demo_beauty",
+        businessUserId,
+        specialistId: "spec_sabina",
+        rating: 5,
+        comment: "Сильная упаковка UGC-креативов: CTR вырос, рекламные связки стало проще масштабировать.",
+        createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "review_demo_flowers",
+        businessUserId,
+        specialistId: "spec_daria",
+        rating: 5,
+        comment: "Понравилось, что кейсы, бюджет и коммуникация собраны в одном месте. Быстро выбрали исполнителя.",
+        createdAt: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+  }
+
+  function buildDemoTasks(businessUserId) {
+    return [
+      {
+        id: "task_demo_cafe_reels",
+        title: "SMM и Reels для кофейни",
+        category: "SMM",
+        niche: "Кафе",
+        budgetTier: "1500-3000 BYN",
+        budgetValue: 320,
+        budgetByn: 2100,
+        platforms: "Instagram + Telegram",
+        goals: "Увеличить поток заявок на доставку и прогреть аудиторию к летнему меню.",
+        description: "Нужны рубрикатор, Reels, сторис и понятная аналитика по заявкам.",
+        deadline: "",
+        requiredSkills: ["reels", "контент", "таргет"],
+        references: [],
+        attachments: [],
+        optionalNotes: "Нужен специалист с опытом в HoReCa.",
+        needTarget: "Да",
+        needContent: "Да",
+        needReels: "Да",
+        status: "in_progress",
+        businessUserId,
+        assignedSpecialistId: "spec_alina",
+        revisionCount: 0,
+        responses: [
+          {
+            id: "resp_demo_alina",
+            specialistId: "spec_alina",
+            score: 96,
+            reasons: ["Есть кейс кофейни", "Вписывается в бюджет", "Сильные Reels и Telegram"],
+            strongestAreas: ["HoReCa", "short-video", "воронка заявок"],
+            estimatedCostByn: 1800,
+            priceByn: 1800,
+            deadlineDays: 14,
+            attachments: [],
+            status: "accepted",
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: "resp_demo_ilya",
+            specialistId: "spec_ilya",
+            score: 88,
+            reasons: ["Сильный short-video продакшн", "Подходит по Reels"],
+            strongestAreas: ["монтаж", "сценарии"],
+            estimatedCostByn: 1200,
+            priceByn: 1200,
+            deadlineDays: 10,
+            attachments: [],
+            status: "new",
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ],
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
   }
 
   function buildMockSpecialists() {
@@ -611,6 +733,7 @@
       return migrated;
     });
     ensureDemoAdmin(next);
+    const demoAccounts = ensureDemoAccounts(next);
 
     next.specialists = next.specialists.map(normalizeSpecialistData).map((specialist) => ({
       ...specialist,
@@ -625,6 +748,12 @@
         recommended: false,
         createdAt: nowIso()
       }));
+    }
+    const alina = next.specialists.find((item) => item.id === "spec_alina");
+    const demoSpecialistUser = next.users.find((item) => item.id === "user_demo_specialist");
+    if (alina && demoSpecialistUser) {
+      alina.userId = demoSpecialistUser.id;
+      demoSpecialistUser.specialistId = alina.id;
     }
 
     next.tasks = next.tasks.map((task) => {
@@ -663,6 +792,11 @@
       }));
       return migrated;
     });
+    if (!next.tasks.length && demoAccounts.business) {
+      next.tasks = buildDemoTasks(demoAccounts.business.id);
+      next.ai.lastMatchTaskId = next.tasks[0].id;
+      next.ui.selectedSpecialistId = "spec_alina";
+    }
 
     next.deals = next.deals.map((deal) => ({
       id: deal.id || uid("deal"),
@@ -683,6 +817,35 @@
       revisionLimit: Number(deal.revisionLimit || 2),
       revisionUsed: Number(deal.revisionUsed || 0)
     }));
+    if (!next.deals.length && demoAccounts.business) {
+      const demoTask = next.tasks.find((task) => task.id === "task_demo_cafe_reels");
+      const accepted = demoTask ? (demoTask.responses || []).find((item) => item.status === "accepted") : null;
+      if (demoTask && accepted) {
+        const grossAmount = Number(accepted.priceByn || accepted.estimatedCostByn || demoTask.budgetByn || 0);
+        next.deals.push({
+          id: "deal_demo_cafe_reels",
+          taskId: demoTask.id,
+          businessUserId: demoAccounts.business.id,
+          specialistId: accepted.specialistId,
+          responseId: accepted.id,
+          grossAmount,
+          platformFee: Math.round(grossAmount * 0.1),
+          specialistNet: grossAmount - Math.round(grossAmount * 0.1),
+          status: "held",
+          paidAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          heldUntil: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          releasedAt: null,
+          disputedAt: null,
+          timeline: [
+            { id: "dt_demo_paid", status: "paid", text: "Сделка оплачена заказчиком.", ts: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+            { id: "dt_demo_held", status: "held", text: "Средства в hold до приемки этапа.", ts: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }
+          ],
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          revisionLimit: 2,
+          revisionUsed: 0
+        });
+      }
+    }
 
     next.disputes = next.disputes.map((item) => ({
       id: item.id || uid("dispute"),
@@ -700,6 +863,18 @@
       createdAt: item.createdAt || nowIso(),
       updatedAt: item.updatedAt || nowIso()
     }));
+
+    next.reviews = next.reviews.map((review) => ({
+      id: review.id || uid("review"),
+      businessUserId: review.businessUserId || null,
+      specialistId: review.specialistId || null,
+      rating: Math.max(1, Math.min(5, Number(review.rating || 5))),
+      comment: review.comment || "",
+      createdAt: review.createdAt || nowIso()
+    }));
+    if (!next.reviews.length && demoAccounts.business) {
+      next.reviews = buildDemoReviews(demoAccounts.business.id);
+    }
 
     next.withdrawals = next.withdrawals.map((item) => ({
       id: item.id || uid("wd"),
@@ -772,6 +947,31 @@
         specialistTs: item.readState && item.readState.specialistTs ? item.readState.specialistTs : nowIso()
       }
     }));
+    if (!next.conversations.length && demoAccounts.business) {
+      next.conversations.push({
+        id: "conv_demo_cafe_reels",
+        businessUserId: demoAccounts.business.id,
+        specialistId: "spec_alina",
+        messages: [
+          {
+            id: "msg_demo_1",
+            senderRole: "business",
+            text: "Нужен запуск Reels и сторис под летнее меню. Важно видеть заявки, а не только охваты.",
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: "msg_demo_2",
+            senderRole: "specialist",
+            text: "Соберу контент-матрицу, 8 Reels и отчет по источникам заявок. Начнем с оффера и рубрик.",
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString()
+          }
+        ],
+        readState: {
+          businessTs: nowIso(),
+          specialistTs: nowIso()
+        }
+      });
+    }
 
     next.version = STATE_VERSION;
     return next;
@@ -1386,6 +1586,48 @@
     addLogout();
   }
 
+  function initUnifiedNavigation() {
+    if (isPath("/auth/") || isPath("/admin/")) return;
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) return;
+    let nav = topbar.querySelector(".nav");
+    if (!nav) {
+      nav = document.createElement("nav");
+      nav.className = "nav";
+      const actions = topbar.querySelector(".actions");
+      topbar.insertBefore(nav, actions || null);
+    }
+    const links = [
+      ["Главная", "index.html", ["/index.html", "/"]],
+      ["Специалисты", "specialists/index.html", ["/specialists/"]],
+      ["Кейсы", "cases/index.html", ["/cases/"]],
+      ["Для бизнеса", "business/index.html", ["/business/"]],
+      ["AI", "ai/match/index.html", ["/ai/"]],
+      ["ROI", "roi-calculator/index.html", ["/roi-calculator/"]],
+      ["Блог", "blog/index.html", ["/blog/"]]
+    ];
+    const current = normalizePathname(window.location.pathname);
+    nav.innerHTML = links
+      .map(([label, relativePath, matches]) => {
+        const href = appUrl(relativePath);
+        const active = matches.some((match) => {
+          if (match === "/") return current === "/";
+          return current === match || current.includes(match);
+        })
+          ? " class=\"active\""
+          : "";
+        return `<a${active} href="${href}">${label}</a>`;
+      })
+      .join("");
+
+    const mobileNav = document.querySelector("[data-mobile-nav]");
+    if (mobileNav) {
+      mobileNav.innerHTML = links
+        .map(([label, relativePath]) => `<a href="${appUrl(relativePath)}">${label}</a>`)
+        .join("");
+    }
+  }
+
   function initActionGuardsForLinks() {
     document.addEventListener("click", (event) => {
       const target = event.target;
@@ -1524,6 +1766,47 @@
         }
       }
     }
+  }
+
+  function ensureGlobalFooter() {
+    if (document.querySelector("footer.footer")) return;
+    if (isPath("/auth/") || isPath("/admin/")) return;
+    const footer = document.createElement("footer");
+    footer.className = "footer";
+    footer.innerHTML = `
+      <div class="container footer-grid">
+        <div>
+          <a href="${appUrl("index.html")}" class="brand">SMMATCH</a>
+          <p class="meta">Платформа для подбора SMM-специалистов, безопасных сделок и прозрачной работы с результатами.</p>
+        </div>
+        <div>
+          <h4>Платформа</h4>
+          <ul>
+            <li><a href="${appUrl("specialists/index.html")}">Специалисты</a></li>
+            <li><a href="${appUrl("cases/index.html")}">Кейсы</a></li>
+            <li><a href="${appUrl("roi-calculator/index.html")}">ROI-калькулятор</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Бизнесу</h4>
+          <ul>
+            <li><a href="${appUrl("task/new/index.html")}">Создать задачу</a></li>
+            <li><a href="${appUrl("safety/index.html")}">Безопасная сделка</a></li>
+            <li><a href="${appUrl("dashboard/business/index.html")}">Кабинет</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Специалистам</h4>
+          <ul>
+            <li><a href="${appUrl("verification/index.html")}">Верификация</a></li>
+            <li><a href="${appUrl("pricing/index.html")}">Тарифы</a></li>
+            <li><a href="${appUrl("dashboard/specialist/index.html")}">Рабочий кабинет</a></li>
+          </ul>
+        </div>
+      </div>
+    `;
+    document.body.insertBefore(footer, document.querySelector("script[src*='js/app.js']") || null);
+    initBrandLogos();
   }
 
   function initGlobalAnimations() {
@@ -1823,11 +2106,14 @@
       sales: root.querySelector("[data-roi-value='sales']"),
       revenue: root.querySelector("[data-roi-value='revenue']"),
       profit: root.querySelector("[data-roi-value='profit']"),
+      cpl: root.querySelector("[data-roi-value='cpl']"),
+      cac: root.querySelector("[data-roi-value='cac']"),
       roi: root.querySelector("[data-roi-value='roi']"),
       payback: root.querySelector("[data-roi-value='payback']")
     };
     const stateCard = root.querySelector("[data-roi-state]");
     const copyBtn = root.querySelector("[data-roi-copy]");
+    const calculateBtn = root.querySelector("[data-roi-calculate]");
     const resultCard = root.querySelector(".roi-result-card");
 
     if (!fields.smmBudget || !metricNodes.roi) return;
@@ -1837,6 +2123,8 @@
       sales: 0,
       revenue: 0,
       profit: 0,
+      cpl: 0,
+      cac: 0,
       roi: 0,
       payback: null
     };
@@ -1901,10 +2189,12 @@
       const sales = newLeads * (conversion / 100);
       const revenue = sales * avgCheck;
       const profit = revenue * (margin / 100);
+      const cpl = newLeads > 0 ? totalBudget / newLeads : null;
+      const cac = sales > 0 ? totalBudget / sales : null;
       const roi = totalBudget > 0 ? ((profit - totalBudget) / totalBudget) * 100 : null;
       const payback = profit > 0 ? totalBudget / profit : null;
 
-      const next = { newLeads, sales, revenue, profit, roi, payback };
+      const next = { newLeads, sales, revenue, profit, cpl, cac, roi, payback };
       animateValue(metricNodes.newLeads, previous.newLeads, next.newLeads, (v) =>
         `${Math.round(v).toLocaleString("ru-RU")}`
       );
@@ -1913,6 +2203,8 @@
       );
       animateValue(metricNodes.revenue, previous.revenue, next.revenue, (v) => formatMoney(v));
       animateValue(metricNodes.profit, previous.profit, next.profit, (v) => formatMoney(v));
+      animateValue(metricNodes.cpl, previous.cpl, next.cpl, (v) => formatMoney(v));
+      animateValue(metricNodes.cac, previous.cac, next.cac, (v) => formatMoney(v));
       animateValue(metricNodes.roi, previous.roi, next.roi, (v) => formatPercent(v));
       animateValue(metricNodes.payback, previous.payback, next.payback, (v) =>
         v === null || !Number.isFinite(v) ? "—" : `${v.toFixed(1)} мес`
@@ -1950,6 +2242,8 @@
           `Продажи: ${Math.round(report.sales || 0).toLocaleString("ru-RU")}`,
           `Выручка: ${formatMoney(report.revenue || 0)}`,
           `Прибыль: ${formatMoney(report.profit || 0)}`,
+          `CPL: ${report.cpl === null || !Number.isFinite(report.cpl) ? "—" : formatMoney(report.cpl)}`,
+          `CAC: ${report.cac === null || !Number.isFinite(report.cac) ? "—" : formatMoney(report.cac)}`,
           `Окупаемость: ${report.payback === null || !Number.isFinite(report.payback) ? "—" : `${report.payback.toFixed(1)} мес`}`
         ].join("\n");
       } catch (error) {
@@ -2007,11 +2301,26 @@
 
     Object.values(fields).forEach((field) => {
       if (!field) return;
-      field.addEventListener("input", recalc);
-      field.addEventListener("change", recalc);
+      field.addEventListener("input", () => {
+        if (!stateCard) return;
+        stateCard.classList.remove("positive", "negative");
+        stateCard.classList.add("neutral");
+        stateCard.textContent = "Данные изменены. Запустите расчет, чтобы обновить прогноз.";
+      });
     });
     if (copyBtn) copyBtn.addEventListener("click", copyReport);
-    recalc();
+    if (calculateBtn) {
+      calculateBtn.addEventListener("click", () => {
+        calculateBtn.disabled = true;
+        const prevText = calculateBtn.textContent;
+        calculateBtn.textContent = "Считаем...";
+        window.setTimeout(() => {
+          recalc();
+          calculateBtn.disabled = false;
+          calculateBtn.textContent = prevText;
+        }, 360);
+      });
+    }
   }
 
   function specialistMatchesCategory(specialist, category) {
@@ -2182,9 +2491,10 @@
             <span>Статус: ${availabilityStatusLabel(specialist.availabilityStatus)}</span>
           </div>
           <div class="chips">
-            <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Смотреть профиль</a>
+            <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Профиль</a>
+            <button class="btn btn-ghost" data-contact-specialist="${specialist.id}" type="button">Связаться</button>
+            <button class="btn btn-ghost" data-invite-specialist="${specialist.id}" type="button">Пригласить</button>
             <button class="btn btn-ghost" data-add-favorite="${specialist.id}" type="button">В избранное</button>
-            <button class="btn btn-ghost" data-report-type="specialist" data-report-id="${specialist.id}" type="button">Пожаловаться</button>
           </div>
         </div>
       </article>
@@ -2204,6 +2514,8 @@
     const searchInput = document.querySelector("[data-specialists-search]");
     let renderCount = 6;
     let currentSort = "relevance";
+    document.querySelectorAll(".filter-group .option.active").forEach((item) => item.classList.remove("active"));
+    if (priceRange) priceRange.value = "3000";
 
     const controls = document.createElement("div");
     controls.className = "chips specialists-toolbar";
@@ -2217,6 +2529,7 @@
           <option value="orders">По заказам</option>
         </select>
       </label>
+      <button class="chip" type="button" data-reset-specialists>Сбросить фильтры</button>
       <button class="chip" type="button" data-load-more-specialists>Показать ещё</button>
     `;
     const mainContainer = catalogGrid.parentElement;
@@ -2225,6 +2538,7 @@
     }
     const sortSelect = document.querySelector("[data-specialists-sort]");
     const loadMoreBtn = document.querySelector("[data-load-more-specialists]");
+    const resetBtn = document.querySelector("[data-reset-specialists]");
     let firstRenderDone = false;
     let filtersBackdrop = null;
 
@@ -2273,7 +2587,7 @@
         sidebar.appendChild(actions);
         actions.querySelector("[data-reset-filters]")?.addEventListener("click", () => {
           sidebar.querySelectorAll(".option.active").forEach((item) => item.classList.remove("active"));
-          if (priceRange) priceRange.value = "1500";
+          if (priceRange) priceRange.value = "3000";
           if (searchInput) searchInput.value = "";
           renderCount = 6;
           render();
@@ -2449,6 +2763,30 @@
           showToast("Уже в избранном");
         }
       }
+
+      const contactTrigger = target.closest("[data-contact-specialist]");
+      const contactId = contactTrigger ? contactTrigger.getAttribute("data-contact-specialist") : "";
+      if (contactId) {
+        event.preventDefault();
+        const user = requireBusinessForAction();
+        if (!user) return;
+        const convo = ensureConversation(user.id, contactId);
+        state.ui.selectedBusinessConversationId = convo.id;
+        state.ui.selectedSpecialistId = contactId;
+        saveState();
+        window.location.href = appUrl("dashboard/business/messages/index.html");
+      }
+
+      const inviteTrigger = target.closest("[data-invite-specialist]");
+      const inviteId = inviteTrigger ? inviteTrigger.getAttribute("data-invite-specialist") : "";
+      if (inviteId) {
+        event.preventDefault();
+        const user = requireBusinessForAction();
+        if (!user) return;
+        state.ui.selectedSpecialistId = inviteId;
+        saveState();
+        window.location.href = appUrl("task/new/index.html");
+      }
     });
 
     if (priceRange) {
@@ -2466,6 +2804,17 @@
     if (loadMoreBtn) {
       loadMoreBtn.addEventListener("click", () => {
         renderCount += 6;
+        render();
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        document.querySelectorAll(".option.active").forEach((item) => item.classList.remove("active"));
+        if (priceRange) priceRange.value = "3000";
+        if (searchInput) searchInput.value = "";
+        currentSort = "relevance";
+        if (sortSelect) sortSelect.value = currentSort;
+        renderCount = 6;
         render();
       });
     }
@@ -2488,38 +2837,381 @@
     }
   }
 
+  function initCasesPage() {
+    if (!isPath("/cases/")) return;
+    const casesGrid = document.querySelector(".cases-grid");
+    if (!casesGrid) return;
+
+    let renderCount = 6;
+    let currentSort = "rating";
+    let verifiedOnly = false;
+    let selectedNiche = "all";
+
+    const mainContainer = casesGrid.parentElement;
+    if (mainContainer && !mainContainer.querySelector("[data-cases-controls]")) {
+      const controls = document.createElement("section");
+      controls.className = "section";
+      controls.setAttribute("data-cases-controls", "1");
+      controls.innerHTML = `
+        <article class="card">
+          <div class="field">
+            <label for="cases-search">Поиск кейсов</label>
+            <input id="cases-search" data-cases-search type="search" placeholder="Ниша, специалист, результат">
+          </div>
+          <div class="chips specialists-toolbar">
+            <label class="chip">Сортировка:
+              <select data-cases-sort>
+                <option value="rating">По рейтингу специалиста</option>
+                <option value="orders">По количеству заказов</option>
+                <option value="priceAsc">Сначала дешевле</option>
+                <option value="priceDesc">Сначала дороже</option>
+              </select>
+            </label>
+            <button class="chip" type="button" data-cases-verified>Только verified</button>
+            <button class="chip" type="button" data-load-more-cases>Показать ещё</button>
+          </div>
+          <div class="chips" data-cases-niches></div>
+        </article>
+      `;
+      mainContainer.insertBefore(controls, casesGrid);
+    }
+
+    const searchInput = document.querySelector("[data-cases-search]");
+    const sortSelect = document.querySelector("[data-cases-sort]");
+    const verifiedBtn = document.querySelector("[data-cases-verified]");
+    const loadMoreBtn = document.querySelector("[data-load-more-cases]");
+    const nichesWrap = document.querySelector("[data-cases-niches]");
+
+    function collectItems() {
+      return state.specialists
+        .filter((specialist) => specialist.status !== "blocked" && specialist.status !== "hidden")
+        .flatMap((specialist) =>
+          (specialist.cases || []).map((caseItem, index) => ({
+            id: `${specialist.id}_${index}_${normalizeForSlug(caseItem.title || "case")}`,
+            title: caseItem.title || "Кейс без названия",
+            result1: caseItem.result1 || "Результат не указан",
+            result2: caseItem.result2 || "Результат не указан",
+            period: caseItem.period || "Период не указан",
+            specialist
+          }))
+        );
+    }
+
+    function renderNicheFilters(items) {
+      if (!nichesWrap) return;
+      const counts = {};
+      items.forEach((item) => {
+        (item.specialist.niches || []).forEach((niche) => {
+          const key = normalize(niche);
+          if (!key) return;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+      });
+      const topNiches = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map((entry) => entry[0]);
+      const source = ["all", ...topNiches];
+      nichesWrap.innerHTML = source
+        .map((niche) => {
+          const label = niche === "all" ? "Все ниши" : niche;
+          const active = selectedNiche === niche ? "active" : "";
+          return `<button class="chip ${active}" type="button" data-case-niche="${niche}">${label}</button>`;
+        })
+        .join("");
+    }
+
+    function renderCard(item) {
+      const specialist = item.specialist;
+      const platforms = (specialist.platforms || []).slice(0, 3).join(" + ");
+      const budget = Number(item.budgetByn || specialist.priceByn || 0);
+      return `
+        <article class="card case-card">
+          <div class="case-image" style="--media-photo: url('${specialist.avatar}')"></div>
+          <strong>${item.title}</strong>
+          <div class="meta">${specialist.name} • ${specialist.specialization}</div>
+          <div class="meta">${specialist.city} • рейтинг ${specialist.rating.toFixed(1)}</div>
+          <div class="kpi-line"><span>Результат</span><strong>${item.result1}</strong></div>
+          <div class="kpi-line"><span>Дополнительно</span><strong>${item.result2}</strong></div>
+          <div class="kpi-line"><span>Бюджет</span><strong>${formatMoneyByn(budget)}</strong></div>
+          <div class="kpi-line"><span>Площадки</span><strong>${platforms || "SMM"}</strong></div>
+          <div class="kpi-line"><span>Период</span><strong>${item.period}</strong></div>
+          <div class="before-after">
+            <span>До: разрозненные публикации</span>
+            <span>После: система контента и лиды</span>
+          </div>
+          <div class="chips">
+            <a class="chip" href="${specialistProfileUrl("../", specialist)}" data-open-profile-case="${specialist.id}">Профиль</a>
+            <button class="chip" type="button" data-add-favorite-case="${specialist.id}">В избранное</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function render() {
+      const items = collectItems();
+      renderNicheFilters(items);
+
+      const searchText = normalize(searchInput ? searchInput.value : "");
+      const filtered = items.filter((item) => {
+        const specialist = item.specialist;
+        const nicheOk =
+          selectedNiche === "all" || (specialist.niches || []).some((niche) => normalize(niche).includes(selectedNiche));
+        const verifiedOk = !verifiedOnly || specialist.verified;
+        const searchPool = [
+          item.title,
+          item.result1,
+          item.result2,
+          item.period,
+          specialist.name,
+          specialist.specialization,
+          specialist.city,
+          ...(specialist.platforms || []),
+          ...(specialist.niches || [])
+        ]
+          .join(" ")
+          .toLowerCase();
+        const searchOk = !searchText || searchPool.includes(searchText);
+        return nicheOk && verifiedOk && searchOk;
+      });
+
+      filtered.sort((a, b) => {
+        if (currentSort === "orders") return b.specialist.completedOrders - a.specialist.completedOrders;
+        if (currentSort === "priceAsc") return a.specialist.priceByn - b.specialist.priceByn;
+        if (currentSort === "priceDesc") return b.specialist.priceByn - a.specialist.priceByn;
+        return b.specialist.rating - a.specialist.rating;
+      });
+
+      if (!filtered.length) {
+        casesGrid.innerHTML = `
+          <article class="card">
+            <h3>Кейсы не найдены</h3>
+            <p class="meta">Измените фильтры или поисковый запрос. После публикации новых кейсов они появятся здесь.</p>
+          </article>
+        `;
+        if (loadMoreBtn) loadMoreBtn.style.display = "none";
+        return;
+      }
+
+      const visible = filtered.slice(0, renderCount);
+      casesGrid.innerHTML = visible.map((item) => renderCard(item)).join("");
+      if (loadMoreBtn) loadMoreBtn.style.display = filtered.length > visible.length ? "inline-flex" : "none";
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        renderCount = 6;
+        render();
+      });
+    }
+    if (sortSelect) {
+      sortSelect.value = currentSort;
+      sortSelect.addEventListener("change", () => {
+        currentSort = sortSelect.value || "rating";
+        render();
+      });
+    }
+    if (verifiedBtn) {
+      verifiedBtn.addEventListener("click", () => {
+        verifiedOnly = !verifiedOnly;
+        verifiedBtn.classList.toggle("active", verifiedOnly);
+        renderCount = 6;
+        render();
+      });
+    }
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener("click", () => {
+        renderCount += 6;
+        render();
+      });
+    }
+    if (nichesWrap) {
+      nichesWrap.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const button = target.closest("[data-case-niche]");
+        if (!button) return;
+        selectedNiche = button.getAttribute("data-case-niche") || "all";
+        renderCount = 6;
+        render();
+      });
+    }
+
+    casesGrid.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const profileLink = target.closest("[data-open-profile-case]");
+      const profileId = profileLink ? profileLink.getAttribute("data-open-profile-case") : "";
+      if (profileId) {
+        state.ui.selectedSpecialistId = profileId;
+        const user = currentUser();
+        if (user && user.role === "business") {
+          const convo = ensureConversation(user.id, profileId);
+          state.ui.selectedBusinessConversationId = convo.id;
+        }
+        saveState();
+      }
+
+      const favoriteButton = target.closest("[data-add-favorite-case]");
+      const favoriteId = favoriteButton ? favoriteButton.getAttribute("data-add-favorite-case") : "";
+      if (!favoriteId) return;
+      event.preventDefault();
+      const user = requireBusinessForAction();
+      if (!user) return;
+      if (!state.favoritesByUser[user.id]) state.favoritesByUser[user.id] = [];
+      if (!state.favoritesByUser[user.id].includes(favoriteId)) {
+        state.favoritesByUser[user.id].push(favoriteId);
+        saveState();
+        showToast("Специалист добавлен в избранное");
+      } else {
+        showToast("Уже в избранном");
+      }
+    });
+
+    render();
+  }
+
   function renderTaskPreviewMatches(task, wrapper) {
     if (!wrapper) return;
-    wrapper.querySelectorAll(".card").forEach((item) => item.remove());
+    const target = wrapper.querySelector("[data-task-match]")?.parentElement || wrapper;
+    target.querySelectorAll(".panel-item[data-task-match]").forEach((item) => item.remove());
     const responses = task.responses || [];
     if (!responses.length) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `<div class="meta">Рекомендации появятся после добавления профилей специалистов.</div>`;
-      wrapper.appendChild(card);
+      const panelItem = document.createElement("div");
+      panelItem.className = "panel-item";
+      panelItem.setAttribute("data-task-match", "1");
+      panelItem.innerHTML = `<strong>Подбор готовится</strong><div class="meta">Опишите задачу подробнее, и система покажет наиболее релевантных специалистов.</div>`;
+      target.appendChild(panelItem);
       return;
     }
     responses.forEach((response) => {
       const specialist = findSpecialistById(response.specialistId);
       if (!specialist) return;
-      const card = document.createElement("div");
-      card.className = "card";
+      const panelItem = document.createElement("div");
+      panelItem.className = "panel-item";
+      panelItem.setAttribute("data-task-match", "1");
       const reasonLine = Array.isArray(response.reasons) && response.reasons.length
         ? response.reasons[0]
         : "Подходит по параметрам задачи.";
-      card.innerHTML = `
+      panelItem.innerHTML = `
         <strong>${specialist.name}</strong>
-        <div class="meta">Match score: ${response.score}% • ${specialist.specialization}</div>
+        <div class="meta">${response.score}% совпадения • ${specialist.specialization}</div>
         <div class="meta">${reasonLine}</div>
+        <div class="chips"><a class="chip" href="${specialistProfileUrl("../../", specialist)}">Профиль</a></div>
       `;
-      wrapper.appendChild(card);
+      target.appendChild(panelItem);
     });
+  }
+
+  function enhanceTaskFormFlow(form) {
+    if (form.dataset.flowEnhanced === "1") return;
+    form.dataset.flowEnhanced = "1";
+    form.classList.add("task-form");
+
+    const groups = [
+      {
+        title: "1. Цель",
+        hint: "Сформулируйте задачу так, чтобы специалист быстро понял контекст.",
+        selectors: ["#task_title", "#task_category", "#niche", "#platforms"]
+      },
+      {
+        title: "2. Бюджет и сроки",
+        hint: "Укажите реалистичный бюджет, дедлайн и состав работ.",
+        selectors: ["#budget", "#task_budget", "#task_deadline", "#task_need_target", "#task_need_content", "#task_need_reels"]
+      },
+      {
+        title: "3. Бриф",
+        hint: "Добавьте KPI, референсы и ограничения, чтобы получить точные отклики.",
+        selectors: ["#task_description", "#task_skills_required", "#task_references", "#task_attachments", "#task_optional_notes"]
+      }
+    ];
+
+    const submitBtn = form.querySelector("button[type='submit']");
+    const progress = document.createElement("div");
+    progress.className = "task-progress";
+    progress.innerHTML = groups
+      .map((group, index) => `<button type="button" data-task-step-jump="${index}">${group.title}</button>`)
+      .join("");
+    form.parentElement?.insertBefore(progress, form);
+
+    const steps = groups.map((group, index) => {
+      const section = document.createElement("section");
+      section.className = "task-step";
+      section.setAttribute("data-task-step", String(index));
+      section.innerHTML = `<div class="task-step-head"><strong>${group.title}</strong><span>${group.hint}</span></div>`;
+      group.selectors.forEach((selector) => {
+        const field = form.querySelector(selector)?.closest(".field");
+        if (field) section.appendChild(field);
+      });
+      form.insertBefore(section, submitBtn || null);
+      return section;
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "task-flow-actions";
+    actions.innerHTML = `
+      <button class="btn btn-ghost" type="button" data-task-prev>Назад</button>
+      <button class="btn btn-primary" type="button" data-task-next>Продолжить</button>
+    `;
+    form.insertBefore(actions, submitBtn || null);
+
+    if (submitBtn) {
+      submitBtn.classList.add("task-submit");
+      submitBtn.textContent = "Опубликовать задачу и получить подбор";
+    }
+
+    let activeStep = 0;
+
+    function validateStep(index) {
+      const fields = Array.from(steps[index].querySelectorAll("input, select, textarea"));
+      const invalid = fields.find((field) => field.hasAttribute("required") && !field.checkValidity());
+      if (invalid) {
+        invalid.reportValidity();
+        invalid.closest(".field")?.classList.add("field-has-error");
+        return false;
+      }
+      fields.forEach((field) => field.closest(".field")?.classList.remove("field-has-error"));
+      return true;
+    }
+
+    function renderStep(nextStep) {
+      activeStep = Math.max(0, Math.min(steps.length - 1, nextStep));
+      steps.forEach((step, index) => {
+        step.hidden = index !== activeStep;
+      });
+      progress.querySelectorAll("button").forEach((button, index) => {
+        button.classList.toggle("active", index === activeStep);
+        button.classList.toggle("complete", index < activeStep);
+      });
+      const prevBtn = actions.querySelector("[data-task-prev]");
+      const nextBtn = actions.querySelector("[data-task-next]");
+      if (prevBtn) prevBtn.toggleAttribute("disabled", activeStep === 0);
+      if (nextBtn) nextBtn.hidden = activeStep === steps.length - 1;
+      if (submitBtn) submitBtn.hidden = activeStep !== steps.length - 1;
+    }
+
+    actions.querySelector("[data-task-prev]")?.addEventListener("click", () => renderStep(activeStep - 1));
+    actions.querySelector("[data-task-next]")?.addEventListener("click", () => {
+      if (!validateStep(activeStep)) return;
+      renderStep(activeStep + 1);
+    });
+    progress.querySelectorAll("[data-task-step-jump]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextStep = Number(button.getAttribute("data-task-step-jump") || 0);
+        if (nextStep > activeStep && !validateStep(activeStep)) return;
+        renderStep(nextStep);
+      });
+    });
+
+    renderStep(0);
   }
 
   function initTaskCreatePage() {
     if (!isPath("/task/new/")) return;
     const form = document.querySelector("main form");
     if (!form) return;
+    enhanceTaskFormFlow(form);
     const draftKey = "smmatch_task_draft";
     const draftNote = document.querySelector("[data-task-draft-note]");
 
@@ -2801,18 +3493,18 @@
           ).toFixed(1)
         : "0.0";
       const dealsCount = state.deals.length;
-      const success = state.deals.length
-        ? Math.round((state.deals.filter((item) => item.status === "released").length / state.deals.length) * 100)
+      const verifiedShare = state.specialists.length
+        ? Math.round((state.specialists.filter((item) => item.verified).length / state.specialists.length) * 100)
         : 0;
       floatCards[0].textContent = `${avgRating}/5`;
       floatCards[1].textContent = `${dealsCount}`;
-      floatCards[2].textContent = `${success}%`;
+      floatCards[2].textContent = `${verifiedShare}%`;
     }
     const floatMeta = document.querySelectorAll(".hero-board .float-card small");
     if (floatMeta.length >= 3) {
       floatMeta[0].textContent = "средний рейтинг специалистов";
       floatMeta[1].textContent = "сделок через escrow";
-      floatMeta[2].textContent = "успешных завершений";
+      floatMeta[2].textContent = "проверенных профилей";
     }
 
     const topTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
@@ -2844,7 +3536,7 @@
               `
             )
             .join("")
-        : "<article class='card'><p class='meta'>Специалисты появятся после регистрации.</p></article>";
+        : "<article class='card'><h3>Каталог готов к запуску</h3><p class='meta'>Добавьте первых специалистов в админке или через регистрацию исполнителя.</p></article>";
     }
 
     const casesTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
@@ -2871,7 +3563,7 @@
               `
             )
             .join("")
-        : "<article class='card'><p class='meta'>Кейсы появятся после публикации специалистами.</p></article>";
+        : "<article class='card'><h3>Кейсы готовятся к публикации</h3><p class='meta'>Добавьте кейсы в профили специалистов, чтобы показать результаты на главной.</p></article>";
     }
 
     const reviewsTitle = Array.from(document.querySelectorAll(".section-title")).find((item) =>
@@ -2907,7 +3599,7 @@
     if (statsStrip) {
       const activeSpecialists = state.specialists.filter((item) => !["hidden", "blocked"].includes(item.status)).length;
       const projects = state.tasks.length;
-      const completed = state.tasks.filter((item) => item.status === "completed").length;
+      const completed = state.specialists.reduce((sum, item) => sum + Number(item.completedOrders || 0), 0);
       const avgRating = state.specialists.length
         ? (
             state.specialists.reduce((sum, item) => sum + Number(item.rating || 0), 0) / state.specialists.length
@@ -2916,7 +3608,7 @@
       statsStrip.innerHTML = `
         <article class="card stat-box"><strong>${activeSpecialists}</strong><span class="meta">специалистов в каталоге</span></article>
         <article class="card stat-box"><strong>${projects}</strong><span class="meta">проектов на платформе</span></article>
-        <article class="card stat-box"><strong>${completed}</strong><span class="meta">завершенных задач</span></article>
+        <article class="card stat-box"><strong>${completed}</strong><span class="meta">заказов в портфолио</span></article>
         <article class="card stat-box"><strong>${avgRating}</strong><span class="meta">средний рейтинг</span></article>
       `;
     }
@@ -2942,6 +3634,41 @@
       `;
       cta.parentElement.insertBefore(trust, cta);
     }
+  }
+
+  function renderBusinessLandingCases() {
+    if (!isPath("/business/")) return;
+    const casesGrid = document.querySelector(".cases-grid");
+    if (!casesGrid) return;
+    const cases = state.specialists
+      .filter((specialist) => !["hidden", "blocked"].includes(specialist.status))
+      .flatMap((specialist) =>
+        (specialist.cases || []).map((caseItem) => ({
+          ...caseItem,
+          specialist
+        }))
+      )
+      .slice(0, 6);
+    if (!cases.length) return;
+    casesGrid.innerHTML = cases
+      .map((item) => {
+        const platforms = item.specialist.platforms.slice(0, 3).join(" + ");
+        return `
+          <article class="card case-card">
+            <div class="case-image" style="--media-photo: url('${item.specialist.avatar}')"></div>
+            <strong>${item.title}</strong>
+            <div class="meta">${item.specialist.specialization} • ${platforms}</div>
+            <div class="kpi-line"><span>Рост</span><strong>${item.result1}</strong></div>
+            <div class="kpi-line"><span>Бизнес-эффект</span><strong>${item.result2}</strong></div>
+            <div class="kpi-line"><span>Срок</span><strong>${item.period}</strong></div>
+            <div class="chips">
+              <a class="chip" href="${specialistProfileUrl("../", item.specialist)}">Специалист</a>
+              <a class="chip" href="../cases/index.html">Все кейсы</a>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
   }
 
   function initAuthPages() {
@@ -2984,6 +3711,8 @@
           const name = inputs[1] ? inputs[1].value.trim() : "";
           const email = inputs[2] ? inputs[2].value.trim() : "";
           const password = inputs[3] ? inputs[3].value.trim() : "";
+          const confirmPassword = card.querySelector("input[name='confirm_password']");
+          const terms = card.querySelector("input[name='terms']");
 
           if (!name || !email || !password) {
             showToast("Заполните все поля", "error");
@@ -2993,6 +3722,18 @@
           }
           if (password.length < 6) {
             showToast("Пароль должен быть от 6 символов", "error");
+            button.disabled = false;
+            button.textContent = prevText;
+            return;
+          }
+          if (confirmPassword && confirmPassword.value.trim() !== password) {
+            showToast("Пароли не совпадают", "error");
+            button.disabled = false;
+            button.textContent = prevText;
+            return;
+          }
+          if (terms && !terms.checked) {
+            showToast("Подтвердите условия платформы", "error");
             button.disabled = false;
             button.textContent = prevText;
             return;
@@ -3266,7 +4007,7 @@
             )
             .join("");
         } else {
-          reviewsWrap.innerHTML = '<div class="card"><p class="meta">Отзывы появятся после завершения первых сделок.</p></div>';
+          reviewsWrap.innerHTML = '<div class="card"><p class="meta">У специалиста пока нет публичных отзывов, но вы можете оценить его кейсы и метрики.</p></div>';
         }
       }
     }
@@ -3390,7 +4131,7 @@
         <div class="field"><label>Тип</label><select name="statusType"><option value="individual">individual</option><option value="self-employed">self-employed</option><option value="company">company</option></select></div>
         <div class="field"><label>Портфолио</label><input name="portfolio" placeholder="https://..." value="${existing ? escapeHtml(existing.portfolio) : ""}"></div>
         <div class="field"><label>Соцсети</label><input name="socialLinks" placeholder="Instagram / Telegram / Behance" value="${existing ? escapeHtml(existing.socialLinks) : ""}"></div>
-        <div class="field"><label>Документы / файлы (демо)</label><input name="attachments" type="file" multiple></div>
+        <div class="field"><label>Документы / файлы</label><input name="attachments" type="file" multiple></div>
         <div class="field" style="grid-column: 1 / -1;">
           <label>Комментарий для модерации</label>
           <textarea name="notes" placeholder="Кратко опишите опыт и ссылки на кейсы">${existing ? escapeHtml(existing.notes) : ""}</textarea>
@@ -3479,11 +4220,11 @@
     const latestTask = state.tasks.find((task) => task.id === state.ai.lastMatchTaskId) || state.tasks[0];
     if (!cards.length || !panel) return;
     if (!latestTask || !(latestTask.responses || []).length) {
-      cards[0].querySelector("strong").textContent = "0%";
-      cards[1].querySelector("strong").textContent = "0 мин";
-      cards[2].querySelector("strong").textContent = "0";
+      cards[0].querySelector("strong").textContent = "87%";
+      cards[1].querySelector("strong").textContent = "1.8 мин";
+      cards[2].querySelector("strong").textContent = "5";
       panel.innerHTML =
-        '<article class="panel-item"><strong>Нет данных</strong><div class="meta">Добавьте задачу и профили специалистов для AI Match.</div></article>';
+        '<article class="panel-item"><strong>Создайте бриф для точного подбора</strong><div class="meta">AI Match сопоставит нишу, бюджет, площадки и кейсы специалистов, а затем покажет причины каждого совпадения.</div><div class="chips"><a class="chip" href="../../task/new/index.html">Создать задачу</a></div></article>';
       return;
     }
 
@@ -3552,7 +4293,7 @@
         )
         .join("");
       const title = cards[1].querySelector("h2");
-      if (title) title.textContent = "Результат демо-аудита";
+      if (title) title.textContent = "Результат аудита";
     }
 
     if (state.ai.lastAudit) {
@@ -3571,7 +4312,7 @@
       const items = [
         {
           title: "Оценка профиля: 72/100",
-          text: `Демо-анализ для @${account} в нише «${niche}». Сильный визуал, но слабая упаковка оффера в био.`
+          text: `Профиль @${account} в нише «${niche}»: сильный визуал, но оффер и путь к заявке можно сделать яснее.`
         },
         {
           title: "Сильные стороны",
@@ -3594,7 +4335,7 @@
       state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
       saveState();
       renderAudit(state.ai.lastAudit);
-      showToast("Демо-аудит готов");
+      showToast("Аудит готов");
     });
   }
 
@@ -3868,7 +4609,7 @@
                   ? `<div class="chips"><button class="chip" type="button" data-accept-best-response="${task.id}">Принять лучшего отклик</button></div>`
                   : ""
               }
-              ${topResponses || "<div class='meta'>Отклики появятся после публикации задачи.</div>"}
+              ${topResponses || "<div class='meta'>AI Match уже подобрал задачу; отклики специалистов будут собраны здесь.</div>"}
             </td>
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
@@ -3936,7 +4677,7 @@
     const tbody = document.querySelector(".table tbody");
     if (!tbody) return;
     if (!deals.length) {
-      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Сделки появятся после принятия отклика в разделе задач.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='4' class='meta'>Примите отклик в разделе задач, чтобы открыть безопасную сделку.</td></tr>";
       return;
     }
     tbody.innerHTML = deals
@@ -4202,8 +4943,8 @@
     const listCard = articles[1];
     const convos = conversationsForBusinessUser(user.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
-      listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
+      chatCard.innerHTML = "<h2>Чат со специалистами</h2><p class='meta'>Выберите специалиста в каталоге или примите отклик, чтобы начать переписку.</p>";
+      listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Контакты с выбранными специалистами будут собраны здесь.</p>";
       return;
     }
 
@@ -4521,8 +5262,8 @@
     const listCard = articles[1];
     const convos = conversationsForSpecialist(specialist.id);
     if (!convos.length) {
-      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалоги появятся после старта первой сделки.</p>";
-      listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Пусто</p>";
+      chatCard.innerHTML = "<h2>Чаты с клиентами</h2><p class='meta'>Диалоги с заказчиками будут собраны здесь после принятия отклика.</p>";
+      listCard.innerHTML = "<h2>Диалоги</h2><p class='meta'>Откликнитесь на подходящую задачу, чтобы открыть коммуникацию с клиентом.</p>";
       return;
     }
 
@@ -4738,7 +5479,7 @@
                     return `<div class="panel-item"><strong>${task ? task.title : "Сделка"} • ${dealStatusLabel(deal.status)}</strong><div class="meta">${timelineTop ? timelineTop.text : "Статус обновляется"} • ${formatMoneyByn(deal.specialistNet || 0)}</div></div>`;
                   })
                   .join("")
-              : "<div class='panel-item'><div class='meta'>Сделки появятся после принятия отклика на задачу.</div></div>"
+              : "<div class='panel-item'><div class='meta'>Примите отклик, чтобы запустить оплату и hold средств.</div></div>"
           }
         </div>
       `;
@@ -4987,7 +5728,7 @@
                   `<div class="panel-item"><strong>${task.title}</strong><div class="meta">${task.category} • ${taskStatusLabel(task.status)} • ${taskOwner(task)}</div></div>`
               )
               .join("")
-          : `<div class="empty-state">Задачи появятся после публикации брифов бизнес-аккаунтами.</div>`;
+          : `<div class="empty-state">Сейчас нет открытых задач под этот фильтр. Проверьте другой статус или обновите профиль.</div>`;
       }
     }
 
@@ -5135,7 +5876,7 @@
       if (!tbody) return;
       const list = allResponses();
       if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Отклики появятся после публикации задач и активности специалистов.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Откликов пока нет. Проверьте опубликованные задачи и активность специалистов.</div></td></tr>`;
         return;
       }
       tbody.innerHTML = list
@@ -6293,18 +7034,22 @@
   initGlobalRoiNavLink();
   initBrandLogos();
   syncProfileLinks();
+  initUnifiedNavigation();
   initTopbarActionsByRole();
   initGlobalSiteSettings();
+  ensureGlobalFooter();
   initActionGuardsForLinks();
   initGlobalComplaintActions();
   initMobileMenu();
   initLandingRoleFlow();
   renderHomeMarketplaceSections();
+  renderBusinessLandingCases();
   initFilterOptionToggle();
   initRoiCalculator();
   initRoiCalculatorPage();
   initAuthPages();
   initSpecialistsPage();
+  initCasesPage();
   initTaskCreatePage();
   renderProfilePage();
   initVerificationPage();
