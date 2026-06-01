@@ -1651,6 +1651,30 @@ textarea {
   accent-color: var(--brand);
 }
 
+.password-strength {
+  display: grid;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.password-strength span {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--danger) 0 33%, rgba(255,255,255,0.08) 33% 100%);
+}
+
+.password-strength[data-level="2"] span {
+  background: linear-gradient(90deg, var(--warn) 0 66%, rgba(255,255,255,0.08) 66% 100%);
+}
+
+.password-strength[data-level="3"] span,
+.password-strength[data-level="4"] span {
+  background: linear-gradient(90deg, var(--ok), var(--brand-2));
+}
+
 .role-switch {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1751,6 +1775,24 @@ textarea {
   background: rgba(255, 255, 255, 0.025);
   color: #dce2ff;
   font-size: 0.82rem;
+}
+
+.case-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: 7px;
+  height: 58px;
+  padding: 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(187, 174, 255, 0.16);
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+}
+
+.case-chart span {
+  display: block;
+  border-radius: 999px 999px 5px 5px;
+  background: linear-gradient(180deg, rgba(46, 211, 154, 0.95), rgba(123, 108, 255, 0.72));
 }
 
 .status {

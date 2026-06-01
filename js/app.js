@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "smmatch_state_v1";
-  const STATE_VERSION = 4;
+  const STATE_VERSION = 5;
 
   const path = window.location.pathname;
   const isPath = (chunk) => path.includes(chunk);
@@ -390,6 +390,30 @@
         rating: 5,
         comment: "Понравилось, что кейсы, бюджет и коммуникация собраны в одном месте. Быстро выбрали исполнителя.",
         createdAt: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "review_demo_performance",
+        businessUserId,
+        specialistId: "spec_roman",
+        rating: 5,
+        comment: "Роман быстро навел порядок в рекламе: понятные гипотезы, отчет по CPL и спокойный контроль бюджета.",
+        createdAt: new Date(Date.now() - 34 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "review_demo_influence",
+        businessUserId,
+        specialistId: "spec_valeria",
+        rating: 5,
+        comment: "Интеграции с блогерами перестали быть лотереей: получили медиаплан, трекинг и понятный CPA.",
+        createdAt: new Date(Date.now() - 41 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "review_demo_telegram",
+        businessUserId,
+        specialistId: "spec_timur",
+        rating: 4,
+        comment: "Telegram-воронка стала заметно понятнее: появились рубрики, лид-магнит и регулярные заявки.",
+        createdAt: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000).toISOString()
       }
     ];
   }
@@ -448,6 +472,112 @@
           }
         ],
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "task_demo_beauty_ugc",
+        title: "UGC-креативы для beauty e-commerce",
+        category: "UGC creator",
+        niche: "Beauty",
+        budgetTier: "1500-3000 BYN",
+        budgetValue: 290,
+        budgetByn: 1750,
+        platforms: "TikTok + Instagram",
+        goals: "Собрать пакет креативов для рекламы и снизить стоимость покупки.",
+        description: "Нужны сценарии, съемка 8 UGC-роликов, монтаж и варианты hooks для тестов.",
+        deadline: "",
+        requiredSkills: ["ugc", "съемка", "монтаж"],
+        references: [],
+        attachments: [],
+        optionalNotes: "Важно показать продукт в использовании, без студийной постановки.",
+        needTarget: "Нет",
+        needContent: "Да",
+        needReels: "Да",
+        status: "published",
+        businessUserId,
+        assignedSpecialistId: null,
+        revisionCount: 0,
+        responses: [
+          {
+            id: "resp_demo_elena",
+            specialistId: "spec_elena",
+            score: 94,
+            reasons: ["Сильные UGC-кейсы", "Подходит по beauty-нише", "Вписывается в бюджет"],
+            strongestAreas: ["UGC", "креативы", "TikTok"],
+            estimatedCostByn: 1650,
+            priceByn: 1650,
+            deadlineDays: 9,
+            attachments: [],
+            status: "new",
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: "resp_demo_valeria",
+            specialistId: "spec_valeria",
+            score: 89,
+            reasons: ["Опыт с beauty-брендами", "Может подключить блогеров"],
+            strongestAreas: ["influencer marketing", "ugc"],
+            estimatedCostByn: 2300,
+            priceByn: 2300,
+            deadlineDays: 14,
+            attachments: [],
+            status: "new",
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ],
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: "task_demo_b2b_telegram",
+        title: "Telegram-воронка для B2B-сервиса",
+        category: "Контент-менеджер",
+        niche: "B2B",
+        budgetTier: "800-1500 BYN",
+        budgetValue: 230,
+        budgetByn: 1450,
+        platforms: "Telegram",
+        goals: "Запустить экспертный канал и получать заявки на презентацию продукта.",
+        description: "Нужны рубрики, контент-план, лид-магнит, прогрев и отчет по переходам.",
+        deadline: "",
+        requiredSkills: ["telegram", "b2b", "контент"],
+        references: [],
+        attachments: [],
+        optionalNotes: "Продукт сложный, важно писать простым языком.",
+        needTarget: "Не уверен",
+        needContent: "Да",
+        needReels: "Нет",
+        status: "published",
+        businessUserId,
+        assignedSpecialistId: null,
+        revisionCount: 0,
+        responses: [
+          {
+            id: "resp_demo_nikita",
+            specialistId: "spec_nikita",
+            score: 92,
+            reasons: ["B2B-опыт", "Telegram и кейсы", "Подходит по бюджету"],
+            strongestAreas: ["b2b", "кейсы", "лидогенерация"],
+            estimatedCostByn: 1750,
+            priceByn: 1750,
+            deadlineDays: 21,
+            attachments: [],
+            status: "new",
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: "resp_demo_timur",
+            specialistId: "spec_timur",
+            score: 90,
+            reasons: ["Telegram growth", "Воронки и посевы", "Близко к бюджету"],
+            strongestAreas: ["telegram", "воронки"],
+            estimatedCostByn: 1350,
+            priceByn: 1350,
+            deadlineDays: 18,
+            attachments: [],
+            status: "new",
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ],
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
       }
     ];
   }
@@ -624,6 +754,381 @@
         cases: [
           { title: "Beauty e-commerce", result1: "ROAS 4.1", result2: "CTR +46%", period: "9 недель" }
         ]
+      },
+      {
+        id: "spec_maria",
+        userId: null,
+        slug: "maria-belova",
+        name: "Мария Белова",
+        avatar: appUrl("assets/visuals/analytics-grid.svg"),
+        city: "Санкт-Петербург, Россия",
+        country: "Россия",
+        rating: 4.9,
+        reviewsCount: 31,
+        completedOrders: 58,
+        responseRate: 95,
+        responseTimeHours: 4,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "SMM для e-commerce",
+        experience: "senior",
+        description: "Контент, performance-креативы и Telegram-воронки для интернет-магазинов.",
+        about: "Соединяю контент, paid social и CRM-логику: делаю запуск измеримым от просмотра до покупки.",
+        priceByn: 2400,
+        platforms: ["Instagram", "Telegram", "VK"],
+        niches: ["ecommerce", "beauty", "спорт"],
+        skills: ["контент", "таргет", "аналитика", "воронки"],
+        stats: { er: "7.9%", ctr: "3.8%", cpm: "16 BYN", views: "182 000", followersGrowth: "+7 400", reachGrowth: "+260%" },
+        socials: {
+          instagram: "https://instagram.com/maria.ecom.smm",
+          tiktok: "",
+          telegram: "https://t.me/maria_ecom_smm",
+          behance: "https://www.behance.net/mariabelova"
+        },
+        cases: [
+          { title: "Fashion e-commerce", result1: "CAC -24%", result2: "+31% повторных продаж", period: "12 недель" },
+          { title: "Спортивный магазин", result1: "ROAS 3.7", result2: "+420 заказов", period: "3 месяца" }
+        ]
+      },
+      {
+        id: "spec_timur",
+        userId: null,
+        slug: "timur-nazarov",
+        name: "Тимур Назаров",
+        avatar: appUrl("assets/visuals/strategy-map.svg"),
+        city: "Астана, Казахстан",
+        country: "Казахстан",
+        rating: 4.7,
+        reviewsCount: 17,
+        completedOrders: 29,
+        responseRate: 89,
+        responseTimeHours: 5,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "Telegram growth strategist",
+        experience: "middle",
+        description: "Запуск и рост Telegram-каналов для экспертов, сервисов и локального бизнеса.",
+        about: "Строю контент-воронки в Telegram: лид-магниты, прогревы, посевы, аналитика удержания.",
+        priceByn: 1350,
+        platforms: ["Telegram", "VK"],
+        niches: ["недвижимость", "образование", "b2b"],
+        skills: ["telegram", "контент", "посевы", "воронки"],
+        stats: { er: "12.1%", ctr: "4.4%", cpm: "9 BYN", views: "64 000", followersGrowth: "+3 600", reachGrowth: "+118%" },
+        socials: {
+          instagram: "",
+          tiktok: "",
+          telegram: "https://t.me/timur_growth",
+          behance: ""
+        },
+        cases: [
+          { title: "Telegram для недвижимости", result1: "+2 900 подписчиков", result2: "43 заявки на показы", period: "7 недель" }
+        ]
+      },
+      {
+        id: "spec_elena",
+        userId: null,
+        slug: "elena-volkova",
+        name: "Елена Волкова",
+        avatar: appUrl("assets/visuals/camera-shot.svg"),
+        city: "Минск, Беларусь",
+        country: "Беларусь",
+        rating: 4.8,
+        reviewsCount: 22,
+        completedOrders: 37,
+        responseRate: 92,
+        responseTimeHours: 3,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "UGC producer",
+        experience: "middle",
+        description: "UGC-пакеты для рекламы: сценарии, кастинг, съемка, монтаж и тесты креативов.",
+        about: "Помогаю брендам быстро получать наборы UGC-креативов для A/B тестов и performance-кампаний.",
+        priceByn: 1650,
+        platforms: ["Instagram", "TikTok"],
+        niches: ["beauty", "ecommerce", "спорт"],
+        skills: ["ugc", "съемка", "монтаж", "креативы"],
+        stats: { er: "8.3%", ctr: "4.1%", cpm: "15 BYN", views: "119 000", followersGrowth: "+2 800", reachGrowth: "+174%" },
+        socials: {
+          instagram: "https://instagram.com/elena.ugc.pro",
+          tiktok: "https://www.tiktok.com/@elena.ugc.pro",
+          telegram: "",
+          behance: "https://www.behance.net/elenaugc"
+        },
+        cases: [
+          { title: "UGC для косметики", result1: "CTR +53%", result2: "CPA -19%", period: "5 недель" }
+        ]
+      },
+      {
+        id: "spec_roman",
+        userId: null,
+        slug: "roman-kuleshov",
+        name: "Роман Кулешов",
+        avatar: appUrl("assets/visuals/growth-chart.svg"),
+        city: "Москва, Россия",
+        country: "Россия",
+        rating: 4.9,
+        reviewsCount: 44,
+        completedOrders: 69,
+        responseRate: 98,
+        responseTimeHours: 2,
+        availabilityStatus: "busy",
+        verified: true,
+        specialization: "Performance SMM lead",
+        experience: "senior",
+        description: "Системный рост через paid social, креативную аналитику и unit-экономику.",
+        about: "Настраиваю связку рекламных кабинетов, контента и отчетности так, чтобы бизнес видел прибыль, а не только охваты.",
+        priceByn: 3200,
+        platforms: ["Instagram", "VK", "Telegram", "YouTube"],
+        niches: ["недвижимость", "ecommerce", "b2b"],
+        skills: ["таргет", "аналитика", "romi", "креативы"],
+        stats: { er: "5.8%", ctr: "4.7%", cpm: "22 BYN", views: "210 000", followersGrowth: "+5 100", reachGrowth: "+198%" },
+        socials: {
+          instagram: "https://instagram.com/roman.performance",
+          tiktok: "",
+          telegram: "https://t.me/roman_performance",
+          behance: ""
+        },
+        cases: [
+          { title: "Девелоперский проект", result1: "CPL -37%", result2: "126 квалифицированных лидов", period: "11 недель" }
+        ]
+      },
+      {
+        id: "spec_anastasia",
+        userId: null,
+        slug: "anastasia-orlova",
+        name: "Анастасия Орлова",
+        avatar: appUrl("assets/visuals/content-lab.svg"),
+        city: "Онлайн",
+        country: "СНГ",
+        rating: 4.8,
+        reviewsCount: 21,
+        completedOrders: 35,
+        responseRate: 94,
+        responseTimeHours: 4,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "Контент-директор",
+        experience: "senior",
+        description: "Редакционные системы, контент-планы и бренд-голос для сервисных компаний.",
+        about: "Выстраиваю контент как продукт: рубрики, tone of voice, продакшн-процесс, календарь и отчетность.",
+        priceByn: 2200,
+        platforms: ["Instagram", "Telegram", "VK"],
+        niches: ["образование", "b2b", "beauty"],
+        skills: ["стратегия", "контент", "tone of voice", "редактура"],
+        stats: { er: "9.6%", ctr: "2.8%", cpm: "13 BYN", views: "132 000", followersGrowth: "+4 900", reachGrowth: "+216%" },
+        socials: {
+          instagram: "https://instagram.com/anastasia.content",
+          tiktok: "",
+          telegram: "https://t.me/orlova_content",
+          behance: "https://www.behance.net/anastasiaorlova"
+        },
+        cases: [
+          { title: "Онлайн-школа", result1: "+64% заявок", result2: "ER 11.2%", period: "8 недель" }
+        ]
+      },
+      {
+        id: "spec_kirill",
+        userId: null,
+        slug: "kirill-sokolov",
+        name: "Кирилл Соколов",
+        avatar: appUrl("assets/visuals/reels-studio.svg"),
+        city: "Ереван, Армения",
+        country: "СНГ",
+        rating: 4.6,
+        reviewsCount: 13,
+        completedOrders: 24,
+        responseRate: 86,
+        responseTimeHours: 7,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "Short-video producer",
+        experience: "middle",
+        description: "Съемка и монтаж коротких роликов для экспертов, кафе и локальных брендов.",
+        about: "Делаю быстрый продакшн: сценарии, съемочные листы, монтаж, субтитры и адаптации под Reels/TikTok.",
+        priceByn: 1100,
+        platforms: ["Instagram", "TikTok", "YouTube"],
+        niches: ["кафе", "спорт", "образование"],
+        skills: ["reels", "съемка", "монтаж", "сценарии"],
+        stats: { er: "7.1%", ctr: "2.2%", cpm: "10 BYN", views: "88 000", followersGrowth: "+2 100", reachGrowth: "+151%" },
+        socials: {
+          instagram: "https://instagram.com/kirill.shortvideo",
+          tiktok: "https://www.tiktok.com/@kirill.shortvideo",
+          telegram: "",
+          behance: ""
+        },
+        cases: [
+          { title: "Локальная пекарня", result1: "+176% охватов", result2: "+51 предзаказ", period: "4 недели" }
+        ]
+      },
+      {
+        id: "spec_lola",
+        userId: null,
+        slug: "lola-karimova",
+        name: "Лола Каримова",
+        avatar: appUrl("assets/visuals/mobile-promo.svg"),
+        city: "Ташкент, Узбекистан",
+        country: "Узбекистан",
+        rating: 4.7,
+        reviewsCount: 18,
+        completedOrders: 32,
+        responseRate: 90,
+        responseTimeHours: 5,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "SMM для ресторанов",
+        experience: "middle",
+        description: "Контент, сторис и локальные инфлюенсеры для ресторанов и кофеен.",
+        about: "Фокусируюсь на посадочных сторис, меню-офферах, локальных блогерах и понятной аналитике бронирований.",
+        priceByn: 1450,
+        platforms: ["Instagram", "Telegram", "TikTok"],
+        niches: ["рестораны", "кафе", "beauty"],
+        skills: ["stories", "influencer marketing", "контент", "reels"],
+        stats: { er: "8.9%", ctr: "3.1%", cpm: "12 BYN", views: "101 000", followersGrowth: "+3 400", reachGrowth: "+187%" },
+        socials: {
+          instagram: "https://instagram.com/lola.restaurant.smm",
+          tiktok: "https://www.tiktok.com/@lola.restaurant.smm",
+          telegram: "https://t.me/lola_smm",
+          behance: ""
+        },
+        cases: [
+          { title: "Сеть кафе в Ташкенте", result1: "+72 брони/мес", result2: "ER 9.8%", period: "6 недель" }
+        ]
+      },
+      {
+        id: "spec_ksenia",
+        userId: null,
+        slug: "ksenia-larina",
+        name: "Ксения Ларина",
+        avatar: appUrl("assets/visuals/workspace-focus.svg"),
+        city: "Варшава, Польша",
+        country: "СНГ",
+        rating: 4.8,
+        reviewsCount: 20,
+        completedOrders: 38,
+        responseRate: 93,
+        responseTimeHours: 4,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "Personal brand SMM",
+        experience: "senior",
+        description: "Личные бренды экспертов: позиционирование, контент, прогрев и лидогенерация.",
+        about: "Упаковываю экспертность в понятные рубрики, кейсы и прогревы, которые приводят заявки на консультации.",
+        priceByn: 2600,
+        platforms: ["Instagram", "Telegram", "YouTube"],
+        niches: ["образование", "b2b", "недвижимость"],
+        skills: ["личный бренд", "стратегия", "контент", "прогрев"],
+        stats: { er: "11.3%", ctr: "3.4%", cpm: "17 BYN", views: "155 000", followersGrowth: "+6 100", reachGrowth: "+242%" },
+        socials: {
+          instagram: "https://instagram.com/ksenia.brand.smm",
+          tiktok: "",
+          telegram: "https://t.me/ksenia_brand",
+          behance: ""
+        },
+        cases: [
+          { title: "Эксперт по инвестициям", result1: "+94 заявки", result2: "12 продаж консультаций", period: "9 недель" }
+        ]
+      },
+      {
+        id: "spec_oleg",
+        userId: null,
+        slug: "oleg-mironov",
+        name: "Олег Миронов",
+        avatar: appUrl("assets/visuals/social-flow.svg"),
+        city: "Москва, Россия",
+        country: "Россия",
+        rating: 4.6,
+        reviewsCount: 16,
+        completedOrders: 28,
+        responseRate: 87,
+        responseTimeHours: 6,
+        availabilityStatus: "offline",
+        verified: true,
+        specialization: "VK Ads specialist",
+        experience: "middle",
+        description: "VK Ads и контент для локального бизнеса, образовательных проектов и сервисов.",
+        about: "Запускаю VK Ads с понятными гипотезами, креативами, UTM-метками и отчетом по заявкам.",
+        priceByn: 1300,
+        platforms: ["VK", "Telegram"],
+        niches: ["образование", "спорт", "b2b"],
+        skills: ["vk ads", "таргет", "аналитика", "креативы"],
+        stats: { er: "6.7%", ctr: "3.9%", cpm: "11 BYN", views: "72 000", followersGrowth: "+1 700", reachGrowth: "+136%" },
+        socials: {
+          instagram: "",
+          tiktok: "",
+          telegram: "https://t.me/oleg_vk_ads",
+          behance: ""
+        },
+        cases: [
+          { title: "Фитнес-клуб", result1: "CPL 8.1 BYN", result2: "186 лидов", period: "6 недель" }
+        ]
+      },
+      {
+        id: "spec_valeria",
+        userId: null,
+        slug: "valeria-gromova",
+        name: "Валерия Громова",
+        avatar: appUrl("assets/visuals/team-sync.svg"),
+        city: "Алматы, Казахстан",
+        country: "Казахстан",
+        rating: 4.9,
+        reviewsCount: 27,
+        completedOrders: 46,
+        responseRate: 96,
+        responseTimeHours: 3,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "Influencer marketing",
+        experience: "senior",
+        description: "Подбор блогеров, медиапланы, интеграции и аналитика CPA/ROMI.",
+        about: "Собираю инфлюенсер-кампании под бизнес-цели: от отбора блогеров до трекинга продаж и отчетности.",
+        priceByn: 2300,
+        platforms: ["Instagram", "TikTok", "Telegram"],
+        niches: ["beauty", "ecommerce", "рестораны"],
+        skills: ["influencer marketing", "аналитика", "ugc", "медиаплан"],
+        stats: { er: "9.8%", ctr: "3.7%", cpm: "18 BYN", views: "190 000", followersGrowth: "+4 600", reachGrowth: "+225%" },
+        socials: {
+          instagram: "https://instagram.com/valeria.influence",
+          tiktok: "https://www.tiktok.com/@valeria.influence",
+          telegram: "https://t.me/valeria_influence",
+          behance: ""
+        },
+        cases: [
+          { title: "Бьюти-бренд", result1: "CPA -28%", result2: "1.8 млн охвата", period: "8 недель" }
+        ]
+      },
+      {
+        id: "spec_nikita",
+        userId: null,
+        slug: "nikita-yakovlev",
+        name: "Никита Яковлев",
+        avatar: appUrl("assets/visuals/meeting-room.svg"),
+        city: "Онлайн",
+        country: "СНГ",
+        rating: 4.7,
+        reviewsCount: 15,
+        completedOrders: 26,
+        responseRate: 91,
+        responseTimeHours: 5,
+        availabilityStatus: "available",
+        verified: true,
+        specialization: "B2B social media",
+        experience: "middle",
+        description: "LinkedIn-like упаковка, Telegram и экспертный контент для B2B-команд.",
+        about: "Помогаю B2B-компаниям объяснять сложный продукт через кейсы, экспертные посты и лид-магниты.",
+        priceByn: 1750,
+        platforms: ["Telegram", "VK", "YouTube"],
+        niches: ["b2b", "образование", "недвижимость"],
+        skills: ["b2b", "контент", "кейсы", "лидогенерация"],
+        stats: { er: "7.5%", ctr: "2.9%", cpm: "14 BYN", views: "83 000", followersGrowth: "+2 200", reachGrowth: "+144%" },
+        socials: {
+          instagram: "",
+          tiktok: "",
+          telegram: "https://t.me/nikita_b2b_smm",
+          behance: ""
+        },
+        cases: [
+          { title: "B2B SaaS сервис", result1: "+38 заявок на демо", result2: "CTR +34%", period: "10 недель" }
+        ]
       }
     ];
   }
@@ -749,6 +1254,23 @@
         createdAt: nowIso()
       }));
     }
+    const demoSpecialists = buildMockSpecialists().map(normalizeSpecialistData);
+    demoSpecialists.forEach((demoSpecialist) => {
+      const existing = next.specialists.find((item) => item.id === demoSpecialist.id);
+      if (!existing) {
+        next.specialists.push({
+          ...demoSpecialist,
+          status: "active",
+          recommended: demoSpecialist.rating >= 4.8,
+          createdAt: nowIso()
+        });
+        return;
+      }
+      if (!existing.cases.length && demoSpecialist.cases.length) existing.cases = demoSpecialist.cases;
+      if (!existing.avatar) existing.avatar = demoSpecialist.avatar;
+      existing.completedOrders = Math.max(Number(existing.completedOrders || 0), Number(demoSpecialist.completedOrders || 0));
+      existing.reviewsCount = Math.max(Number(existing.reviewsCount || 0), Number(demoSpecialist.reviewsCount || 0));
+    });
     const alina = next.specialists.find((item) => item.id === "spec_alina");
     const demoSpecialistUser = next.users.find((item) => item.id === "user_demo_specialist");
     if (alina && demoSpecialistUser) {
@@ -796,6 +1318,14 @@
       next.tasks = buildDemoTasks(demoAccounts.business.id);
       next.ai.lastMatchTaskId = next.tasks[0].id;
       next.ui.selectedSpecialistId = "spec_alina";
+    }
+    if (demoAccounts.business) {
+      buildDemoTasks(demoAccounts.business.id).forEach((demoTask) => {
+        if (!next.tasks.some((task) => task.id === demoTask.id)) {
+          next.tasks.push(demoTask);
+        }
+      });
+      if (!next.ai.lastMatchTaskId) next.ai.lastMatchTaskId = "task_demo_cafe_reels";
     }
 
     next.deals = next.deals.map((deal) => ({
@@ -874,6 +1404,13 @@
     }));
     if (!next.reviews.length && demoAccounts.business) {
       next.reviews = buildDemoReviews(demoAccounts.business.id);
+    }
+    if (demoAccounts.business) {
+      buildDemoReviews(demoAccounts.business.id).forEach((demoReview) => {
+        if (!next.reviews.some((review) => review.id === demoReview.id)) {
+          next.reviews.push(demoReview);
+        }
+      });
     }
 
     next.withdrawals = next.withdrawals.map((item) => ({
@@ -2311,6 +2848,15 @@
     if (copyBtn) copyBtn.addEventListener("click", copyReport);
     if (calculateBtn) {
       calculateBtn.addEventListener("click", () => {
+        const requiredFields = Object.values(fields).filter(Boolean);
+        const missing = requiredFields.find((field) => field.value === "" || Number(field.value) < 0);
+        if (missing) {
+          missing.focus();
+          missing.closest(".field")?.classList.add("field-has-error");
+          showToast("Заполните поля калькулятора", "error");
+          return;
+        }
+        requiredFields.forEach((field) => field.closest(".field")?.classList.remove("field-has-error"));
         calculateBtn.disabled = true;
         const prevText = calculateBtn.textContent;
         calculateBtn.textContent = "Считаем...";
@@ -2460,6 +3006,7 @@
         <div>
           <h3>${specialist.name}</h3>
           <div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div>
+          <div class="meta">Опыт: ${specialist.experience === "senior" ? "Senior" : specialist.experience === "middle" ? "Middle" : "Junior"} • ${specialist.completedOrders} проектов</div>
           <div class="verified ${verificationState}">${verificationText}</div>
           <p class="meta">${specialist.description}</p>
           <div class="chips">
@@ -2716,7 +3263,7 @@
           : "Каталог специалистов формируется";
         const emptyText = state.specialists.length
           ? "Попробуйте снять часть фильтров или увеличить бюджет."
-          : "После регистрации и заполнения профилей карточки появятся здесь.";
+          : "Каталог готов к наполнению: добавьте специалистов через регистрацию или админку.";
         catalogGrid.innerHTML = `<article class="card"><h3>${emptyTitle}</h3><p class="meta">${emptyText}</p></article>`;
         if (loadMoreBtn) loadMoreBtn.style.display = "none";
         return;
@@ -2931,6 +3478,8 @@
           <strong>${item.title}</strong>
           <div class="meta">${specialist.name} • ${specialist.specialization}</div>
           <div class="meta">${specialist.city} • рейтинг ${specialist.rating.toFixed(1)}</div>
+          <p class="meta">Задача: выстроить понятный контент-процесс, усилить воронку заявок и показать измеримый результат по KPI.</p>
+          <div class="case-chart" aria-hidden="true"><span style="height: 38%"></span><span style="height: 56%"></span><span style="height: 78%"></span><span style="height: 100%"></span></div>
           <div class="kpi-line"><span>Результат</span><strong>${item.result1}</strong></div>
           <div class="kpi-line"><span>Дополнительно</span><strong>${item.result2}</strong></div>
           <div class="kpi-line"><span>Бюджет</span><strong>${formatMoneyByn(budget)}</strong></div>
@@ -2986,7 +3535,7 @@
         casesGrid.innerHTML = `
           <article class="card">
             <h3>Кейсы не найдены</h3>
-            <p class="meta">Измените фильтры или поисковый запрос. После публикации новых кейсов они появятся здесь.</p>
+            <p class="meta">Измените фильтры или поисковый запрос. В каталоге уже есть кейсы по другим нишам и платформам.</p>
           </article>
         `;
         if (loadMoreBtn) loadMoreBtn.style.display = "none";
@@ -3702,6 +4251,27 @@
           applyRoleSelection(roleFromQuery);
         }
 
+        const passwordInput = card.querySelector("input[type='password']");
+        if (passwordInput && !card.querySelector("[data-password-strength]")) {
+          const strength = document.createElement("div");
+          strength.className = "password-strength";
+          strength.setAttribute("data-password-strength", "1");
+          strength.innerHTML = "<span></span><strong>Надежность пароля</strong>";
+          passwordInput.closest(".field")?.appendChild(strength);
+          passwordInput.addEventListener("input", () => {
+            const value = passwordInput.value;
+            const score = [
+              value.length >= 6,
+              /[A-ZА-Я]/.test(value),
+              /\d/.test(value),
+              /[^a-zA-Zа-яА-Я0-9]/.test(value)
+            ].filter(Boolean).length;
+            strength.dataset.level = String(score);
+            strength.querySelector("strong").textContent =
+              score >= 3 ? "Надежный пароль" : score >= 2 ? "Средний пароль" : "Слабый пароль";
+          });
+        }
+
         button.addEventListener("click", () => {
           button.disabled = true;
           const prevText = button.textContent;
@@ -3903,6 +4473,63 @@
       return;
     }
 
+    root.innerHTML = `
+      <article class="card profile-header">
+        <div class="profile-avatar"></div>
+        <div>
+          <span class="pill">@${specialist.slug}</span>
+          <h1>${specialist.name}</h1>
+          <div class="meta">${specialist.city} • ${specialist.specialization}</div>
+          <div class="verified">Верифицированный профиль</div>
+          <p class="meta">${specialist.description}</p>
+          <div class="chips">${specialist.skills.map((skill) => `<span class="chip">${skill}</span>`).join("")}</div>
+        </div>
+        <div>
+          <div class="price">от ${formatMoneyByn(specialist.priceByn)} / мес</div>
+          <div class="hero-buttons">
+            <a class="btn btn-primary" href="${appUrl("dashboard/business/messages/index.html")}">Связаться</a>
+            <button class="btn btn-ghost" type="button" data-report-specialist>Пожаловаться</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>О специалисте</h2>
+        <p class="meta">${specialist.about}</p>
+      </article>
+
+      <article class="card">
+        <h2>Статистика</h2>
+        <div class="metric-grid">
+          <div class="metric"><strong>${specialist.stats.er}</strong><span class="meta">ER</span></div>
+          <div class="metric"><strong>${specialist.stats.views}</strong><span class="meta">просмотры</span></div>
+          <div class="metric"><strong>${specialist.stats.followersGrowth}</strong><span class="meta">рост аудитории</span></div>
+          <div class="metric"><strong>${specialist.completedOrders}</strong><span class="meta">завершенных проектов</span></div>
+          <div class="metric"><strong>${specialist.responseRate}%</strong><span class="meta">ответов</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Кейсы</h2>
+        <div class="cases-grid"></div>
+      </article>
+
+      <article class="card">
+        <h2>Отзывы</h2>
+        <div class="reviews"></div>
+      </article>
+
+      <article class="card">
+        <h2>Соцсети и портфолио</h2>
+        <div class="tabs">
+          <a class="tab">Instagram</a>
+          <a class="tab">TikTok</a>
+          <a class="tab">Telegram</a>
+          <a class="tab">Behance</a>
+        </div>
+      </article>
+    `;
+
     const header = document.querySelector(".profile-header");
     if (header) {
       const avatar = header.querySelector(".profile-avatar");
@@ -3935,7 +4562,8 @@
     }
 
     const about = Array.from(document.querySelectorAll("article.card")).find((card) =>
-      normalize(card.querySelector("h2")?.textContent).includes("about")
+      normalize(card.querySelector("h2")?.textContent).includes("about") ||
+      normalize(card.querySelector("h2")?.textContent).includes("о специалист")
     );
     if (about) {
       const p = about.querySelector(".meta");
@@ -4309,6 +4937,9 @@
         showToast("Укажите корректный username или ссылку Instagram", "error");
         return;
       }
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "Анализируем...";
       const items = [
         {
           title: "Оценка профиля: 72/100",
@@ -4332,10 +4963,14 @@
         }
       ];
 
-      state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
-      saveState();
-      renderAudit(state.ai.lastAudit);
-      showToast("Аудит готов");
+      window.setTimeout(() => {
+        state.ai.lastAudit = { username: account, niche, items, createdAt: nowIso() };
+        saveState();
+        renderAudit(state.ai.lastAudit);
+        button.disabled = false;
+        button.textContent = originalText;
+        showToast("Аудит готов");
+      }, 900);
     });
   }
 
@@ -4572,6 +5207,22 @@
         p.textContent = `Уведомление: ${item.title}`;
         latestMessagesCard.appendChild(p);
       });
+    }
+
+    const dashPanels = document.querySelector(".dash-panels");
+    if (dashPanels && !dashPanels.querySelector("[data-activity-feed]")) {
+      const feed = document.createElement("article");
+      feed.className = "card";
+      feed.setAttribute("data-activity-feed", "1");
+      const latestDeals = dealsForBusinessUser(user.id).slice(0, 3);
+      feed.innerHTML = `
+        <h2>Активность</h2>
+        <div class="panel-list">
+          ${tasks.slice(0, 3).map((task) => `<div class="panel-item"><strong>${taskStatusLabel(task.status)}</strong><div class="meta">${task.title} • ${formatMoneyByn(task.budgetByn || 0)}</div></div>`).join("")}
+          ${latestDeals.map((deal) => `<div class="panel-item"><strong>${dealStatusLabel(deal.status)}</strong><div class="meta">Сделка ${formatMoneyByn(deal.grossAmount)} • комиссия ${formatMoneyByn(deal.platformFee)}</div></div>`).join("")}
+        </div>
+      `;
+      dashPanels.appendChild(feed);
     }
   }
 
@@ -5117,6 +5768,22 @@
         node.textContent = `Уведомление: ${item.title}`;
         financePanel.appendChild(node);
       });
+    }
+
+    const dashPanels = document.querySelector(".dash-panels");
+    if (dashPanels && !dashPanels.querySelector("[data-specialist-activity]")) {
+      const activity = document.createElement("article");
+      activity.className = "card";
+      activity.setAttribute("data-specialist-activity", "1");
+      activity.innerHTML = `
+        <h2>Рабочая лента</h2>
+        <div class="panel-list">
+          <div class="panel-item"><strong>Профиль</strong><div class="meta">${specialist.responseRate}% ответов • ${specialist.responseTimeHours} ч среднее время ответа</div></div>
+          <div class="panel-item"><strong>Кейсы</strong><div class="meta">${specialist.cases.length} опубликованных кейсов • ${specialist.completedOrders} завершенных проектов</div></div>
+          <div class="panel-item"><strong>Новые задачи</strong><div class="meta">${incoming.length} релевантных брифов доступны для отклика</div></div>
+        </div>
+      `;
+      dashPanels.appendChild(activity);
     }
   }
 

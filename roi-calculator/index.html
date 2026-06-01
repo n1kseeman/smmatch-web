@@ -62,13 +62,13 @@
         <article class="card roi-input-card">
           <h2>Введите данные</h2>
           <div class="roi-field-grid">
-            <div class="field"><label for="smm_budget">Бюджет на SMM (BYN)</label><input id="smm_budget" name="smm_budget" type="number" placeholder="900" value="900"></div>
-            <div class="field"><label for="ads_budget">Бюджет на рекламу (BYN)</label><input id="ads_budget" name="ads_budget" type="number" placeholder="1100" value="1100"></div>
-            <div class="field"><label for="avg_check">Средний чек (BYN)</label><input id="avg_check" name="avg_check" type="number" placeholder="85" value="85"></div>
-            <div class="field"><label for="current_leads">Текущие заявки в месяц</label><input id="current_leads" name="current_leads" type="number" placeholder="90" value="90"></div>
-            <div class="field"><label for="growth_percent">Ожидаемый рост заявок (%)</label><input id="growth_percent" name="growth_percent" type="number" placeholder="30" value="30"></div>
-            <div class="field"><label for="conversion">Конверсия заявки в покупку (%)</label><input id="conversion" name="conversion" type="number" placeholder="18" value="18"></div>
-            <div class="field"><label for="margin">Маржинальность (%)</label><input id="margin" name="margin" type="number" placeholder="40" value="40"></div>
+            <div class="field"><label for="smm_budget">Бюджет на SMM (BYN)</label><input id="smm_budget" name="smm_budget" type="number" min="0" placeholder="900"></div>
+            <div class="field"><label for="ads_budget">Бюджет на рекламу (BYN)</label><input id="ads_budget" name="ads_budget" type="number" min="0" placeholder="1100"></div>
+            <div class="field"><label for="avg_check">Средний чек (BYN)</label><input id="avg_check" name="avg_check" type="number" min="0" placeholder="85"></div>
+            <div class="field"><label for="current_leads">Текущие заявки в месяц</label><input id="current_leads" name="current_leads" type="number" min="0" placeholder="90"></div>
+            <div class="field"><label for="growth_percent">Ожидаемый рост заявок (%)</label><input id="growth_percent" name="growth_percent" type="number" min="0" placeholder="30"></div>
+            <div class="field"><label for="conversion">Конверсия заявки в покупку (%)</label><input id="conversion" name="conversion" type="number" min="0" max="100" placeholder="18"></div>
+            <div class="field"><label for="margin">Маржинальность (%)</label><input id="margin" name="margin" type="number" min="0" max="100" placeholder="40"></div>
           </div>
           <button class="btn btn-primary" type="button" data-roi-calculate>Рассчитать прогноз</button>
         </article>
@@ -81,14 +81,14 @@
             </div>
 
             <div class="roi-metric-grid">
-              <article class="roi-metric"><span>Новые заявки</span><strong data-roi-value="new-leads">0</strong></article>
-              <article class="roi-metric"><span>Продажи</span><strong data-roi-value="sales">0</strong></article>
-              <article class="roi-metric"><span>Выручка</span><strong data-roi-value="revenue">0 BYN</strong></article>
-              <article class="roi-metric"><span>Прибыль</span><strong data-roi-value="profit">0 BYN</strong></article>
-              <article class="roi-metric"><span>CPL</span><strong data-roi-value="cpl">0 BYN</strong></article>
-              <article class="roi-metric"><span>CAC</span><strong data-roi-value="cac">0 BYN</strong></article>
-              <article class="roi-metric roi-accent-main"><span>ROI</span><strong data-roi-value="roi">0%</strong></article>
-              <article class="roi-metric"><span>Окупаемость</span><strong data-roi-value="payback">0 мес</strong></article>
+              <article class="roi-metric"><span>Новые заявки</span><strong data-roi-value="new-leads">—</strong></article>
+              <article class="roi-metric"><span>Продажи</span><strong data-roi-value="sales">—</strong></article>
+              <article class="roi-metric"><span>Выручка</span><strong data-roi-value="revenue">—</strong></article>
+              <article class="roi-metric"><span>Прибыль</span><strong data-roi-value="profit">—</strong></article>
+              <article class="roi-metric"><span>CPL</span><strong data-roi-value="cpl">—</strong></article>
+              <article class="roi-metric"><span>CAC</span><strong data-roi-value="cac">—</strong></article>
+              <article class="roi-metric roi-accent-main"><span>ROI</span><strong data-roi-value="roi">—</strong></article>
+              <article class="roi-metric"><span>Окупаемость</span><strong data-roi-value="payback">—</strong></article>
             </div>
 
             <div class="roi-state neutral" data-roi-state>Введите данные для расчета ROI.</div>
