@@ -1993,11 +1993,61 @@
     return user;
   }
 
-  function requestAuthForAction(message) {
+  function authUrl(relativePath, role) {
+    const url = new URL(appUrl(relativePath), window.location.origin);
+    const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    url.searchParams.set("next", next);
+    if (role) url.searchParams.set("role", role);
+    return url.toString();
+  }
+
+  function openAuthGate(message, role) {
+    let gate = document.querySelector("[data-auth-gate]");
+    if (!gate) {
+      gate = document.createElement("section");
+      gate.className = "auth-gate";
+      gate.setAttribute("data-auth-gate", "1");
+      gate.setAttribute("role", "dialog");
+      gate.setAttribute("aria-modal", "true");
+      gate.setAttribute("aria-labelledby", "auth-gate-title");
+      gate.innerHTML = `
+        <div class="auth-gate-card">
+          <button class="auth-gate-close" type="button" aria-label="Закрыть" data-auth-gate-close>×</button>
+          <p class="auth-gate-kicker">SMMatch</p>
+          <h2 id="auth-gate-title">Продолжим после входа</h2>
+          <p data-auth-gate-message></p>
+          <div class="auth-gate-actions">
+            <a class="btn btn-primary" data-auth-gate-login>Войти</a>
+            <a class="btn btn-ghost" data-auth-gate-register>Создать аккаунт</a>
+          </div>
+        </div>`;
+      document.body.appendChild(gate);
+      gate.addEventListener("click", (event) => {
+        if (event.target === gate || (event.target instanceof HTMLElement && event.target.closest("[data-auth-gate-close]"))) {
+          gate.classList.remove("show");
+          document.body.classList.remove("auth-gate-open");
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && gate.classList.contains("show")) {
+          gate.classList.remove("show");
+          document.body.classList.remove("auth-gate-open");
+        }
+      });
+    }
+
+    gate.querySelector("[data-auth-gate-message]").textContent = message || "Чтобы продолжить, войдите или создайте аккаунт.";
+    gate.querySelector("[data-auth-gate-login]").href = authUrl("auth/login/index.html");
+    gate.querySelector("[data-auth-gate-register]").href = authUrl("auth/register/index.html", role);
+    gate.classList.add("show");
+    document.body.classList.add("auth-gate-open");
+    window.requestAnimationFrame(() => gate.querySelector("[data-auth-gate-login]")?.focus());
+  }
+
+  function requestAuthForAction(message, role) {
     const user = currentUser();
     if (!user) {
-      showToast(message || "Сначала войдите или зарегистрируйтесь", "error");
-      window.setTimeout(redirectToLogin, 250);
+      openAuthGate(message, role);
       return null;
     }
     if (user.blocked) {
@@ -2011,7 +2061,7 @@
   }
 
   function requireBusinessForAction() {
-    const user = requestAuthForAction("Сначала войдите или зарегистрируйтесь");
+    const user = requestAuthForAction("Чтобы выполнить это действие, войдите как заказчик или создайте бизнес-аккаунт.", "business");
     if (!user) return null;
     if (user.role !== "business") {
       showToast("Это действие доступно бизнес-аккаунту", "error");
@@ -2021,7 +2071,7 @@
   }
 
   function requireSpecialistForAction() {
-    const user = requestAuthForAction("Сначала войдите или зарегистрируйтесь");
+    const user = requestAuthForAction("Чтобы выполнить это действие, войдите как специалист или создайте профиль исполнителя.", "specialist");
     if (!user) return null;
     if (user.role !== "specialist") {
       showToast("Это действие доступно аккаунту специалиста", "error");
@@ -2037,7 +2087,7 @@
       const trigger = target.closest("[data-report-type]");
       if (!trigger) return;
       event.preventDefault();
-      const reporter = requestAuthForAction("Сначала войдите, чтобы отправить жалобу");
+      const reporter = requestAuthForAction("Чтобы отправить жалобу, войдите или создайте аккаунт.");
       if (!reporter) return;
       const targetType = trigger.getAttribute("data-report-type") || "specialist";
       const targetId = trigger.getAttribute("data-report-id") || "";
@@ -2073,12 +2123,14 @@
   }
 
   function redirectToLogin() {
-    const next = `${window.location.pathname}${window.location.search}`;
-    window.location.href = `${appUrl("auth/login/index.html")}?next=${encodeURIComponent(next)}`;
+    window.location.href = authUrl("auth/login/index.html");
   }
 
   function requiredRoleForPath(pathname) {
     const normalizedPath = normalizePathname(pathname);
+    if (normalizedPath.includes("/task/new")) {
+      return "business";
+    }
     if (normalizedPath.includes("/dashboard/business/")) {
       return "business";
     }
@@ -2131,22 +2183,17 @@
       return false;
     }
 
-    const onBusinessOnlyRoute = isPath("/dashboard/business/");
-    const onSpecialistOnlyRoute = isPath("/dashboard/specialist/");
-    const onAdminOnlyRoute = isPath("/admin/");
-
-    if (user.role === "business" && onSpecialistOnlyRoute) {
-      window.location.href = appUrl("dashboard/business/index.html");
-      return false;
-    }
-
-    if (user.role === "specialist" && onBusinessOnlyRoute) {
-      window.location.href = appUrl("dashboard/specialist/index.html");
-      return false;
-    }
-
-    if (user.role !== "admin" && onAdminOnlyRoute) {
-      redirectToLogin();
+    const requiredRole = requiredRoleForPath(window.location.pathname);
+    if (requiredRole && user.role !== requiredRole) {
+      showToast(
+        requiredRole === "business"
+          ? "Эта страница доступна только заказчикам."
+          : requiredRole === "specialist"
+            ? "Эта страница доступна только специалистам."
+            : "Эта страница доступна только администраторам.",
+        "error"
+      );
+      window.location.href = defaultDashboardByRole(user.role);
       return false;
     }
 
@@ -2172,45 +2219,95 @@
       actions.insertBefore(link, actions.querySelector("[data-menu-btn]") || null);
     }
 
-    function addLogout() {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "btn btn-ghost keep-mobile";
-      button.textContent = "Выйти";
-      button.setAttribute("data-dynamic-action", "1");
-      button.addEventListener("click", () => {
-        state.currentUserId = null;
-        saveState();
-        window.location.href = appUrl("index.html");
-      });
-      actions.insertBefore(button, actions.querySelector("[data-menu-btn]") || null);
+    function addAccount(user) {
+      const link = document.createElement("a");
+      link.className = "account-button keep-mobile";
+      link.href = defaultDashboardByRole(user.role);
+      link.setAttribute("data-dynamic-action", "1");
+      link.setAttribute("aria-label", "Открыть личный кабинет");
+      link.setAttribute("title", "Личный кабинет");
+      link.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>`;
+      actions.insertBefore(link, actions.querySelector("[data-menu-btn]") || null);
     }
 
     const user = currentUser();
     if (!user) {
       addAction("Войти", "auth/login/index.html", "btn btn-ghost keep-mobile");
-      addAction("Разместить задачу", "task/new/index.html", "btn btn-primary keep-mobile");
+      addAction("Регистрация", "auth/register/index.html", "btn btn-primary keep-mobile");
       return;
     }
+    addAccount(user);
+  }
 
-    if (user.role === "business") {
-      addAction("Кабинет", "dashboard/business/index.html", "btn btn-ghost keep-mobile");
-      addAction("Разместить задачу", "task/new/index.html", "btn btn-primary keep-mobile");
-      addLogout();
-      return;
+  function initLandingHeaderActionsByRole() {
+    const actions = document.querySelector(".smm-home .sm-nav-actions");
+    const mobileNav = document.querySelector(".smm-home .sm-mobile-nav");
+    if (!actions && !mobileNav) return;
+
+    actions?.querySelectorAll("[data-landing-dynamic-action]").forEach((item) => item.remove());
+    mobileNav?.querySelectorAll("[data-landing-account]").forEach((item) => item.remove());
+
+    const user = currentUser();
+    if (actions) {
+      actions.querySelectorAll(".sm-login, .sm-button").forEach((item) => {
+        item.style.display = "none";
+      });
+      if (!user) {
+        const login = document.createElement("a");
+        login.className = "sm-login";
+        login.href = appUrl("auth/login/index.html");
+        login.textContent = "Войти";
+        login.setAttribute("data-landing-dynamic-action", "1");
+        const register = document.createElement("a");
+        register.className = "sm-button sm-button--small";
+        register.href = appUrl("auth/register/index.html");
+        register.textContent = "Регистрация";
+        register.setAttribute("data-landing-dynamic-action", "1");
+        actions.append(login, register);
+      } else {
+        const account = document.createElement("a");
+        account.className = "sm-account-button";
+        account.href = defaultDashboardByRole(user.role);
+        account.setAttribute("aria-label", "Открыть личный кабинет");
+        account.setAttribute("title", "Личный кабинет");
+        account.setAttribute("data-landing-dynamic-action", "1");
+        account.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>`;
+        actions.append(account);
+      }
     }
 
-    if (user.role === "admin") {
-      addAction("Админка", "admin/index.html", "btn btn-primary keep-mobile");
-      addLogout();
+    if (!mobileNav) return;
+    if (!user) {
+      const authLinks = document.createElement("div");
+      authLinks.className = "sm-mobile-auth";
+      authLinks.setAttribute("data-landing-account", "1");
+      authLinks.innerHTML = `<a href="${appUrl("auth/login/index.html")}">Войти</a><a class="is-primary" href="${appUrl("auth/register/index.html")}">Регистрация</a>`;
+      mobileNav.appendChild(authLinks);
       return;
     }
+    const accountLink = document.createElement("a");
+    accountLink.className = "sm-mobile-account";
+    accountLink.setAttribute("data-landing-account", "1");
+    accountLink.href = defaultDashboardByRole(user.role);
+    accountLink.innerHTML = `<span>Личный кабинет</span><strong>Открыть профиль →</strong>`;
+    mobileNav.appendChild(accountLink);
+  }
 
-    addAction("Кабинет", "dashboard/specialist/index.html", "btn btn-ghost keep-mobile");
-    const specialist = user.specialistId ? findSpecialistById(user.specialistId) : null;
-    const profilePath = specialist ? specialistProfileUrl("", specialist).replace(/^\//, "") : "u/username/index.html";
-    addAction("Мой профиль", profilePath, "btn btn-primary keep-mobile");
-    addLogout();
+  function initPublicMobileAuthAction() {
+    const mobileNav = document.querySelector("body.public-marketplace .mobile-nav");
+    if (!mobileNav) return;
+    mobileNav.querySelector("[data-mobile-auth-action]")?.remove();
+
+    const user = currentUser();
+    const row = document.createElement("div");
+    row.className = "mobile-nav-auth";
+    row.setAttribute("data-mobile-auth-action", "1");
+    if (!user) {
+      row.innerHTML = `<a href="${appUrl("auth/login/index.html")}">Войти</a><a class="is-primary" href="${appUrl("auth/register/index.html")}">Регистрация</a>`;
+    } else {
+      row.innerHTML = `<a class="is-account" href="${defaultDashboardByRole(user.role)}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>Личный кабинет</a>`;
+    }
+    mobileNav.appendChild(row);
   }
 
   function initUnifiedNavigation() {
@@ -2268,12 +2365,49 @@
       const link = target.closest("a");
       if (!link) return;
       const href = link.getAttribute("href") || "";
-      if (!href || href.startsWith("http") || href.startsWith("#")) return;
-      const needsAuth = link.hasAttribute("data-auth-action");
-      if (!needsAuth) return;
+      if (!href || href.startsWith("#")) return;
+      const destination = new URL(href, window.location.href);
+      if (destination.origin !== window.location.origin) return;
+      const requiredRole = requiredRoleForPath(destination.pathname);
+      const needsAuth = link.hasAttribute("data-auth-action") || Boolean(requiredRole);
+      if (!needsAuth || currentUser()) return;
       event.preventDefault();
-      requestAuthForAction();
+      requestAuthForAction(
+        requiredRole === "business"
+          ? "Чтобы разместить задачу, войдите как заказчик или создайте бизнес-аккаунт."
+          : "Чтобы выполнить это действие, войдите или создайте аккаунт.",
+        requiredRole || undefined
+      );
     });
+  }
+
+  function initRevealOnScrollHeader() {
+    const header = document.querySelector(".sm-nav-wrap, .topbar-wrap");
+    if (!header) return;
+
+    let lastScrollY = Math.max(0, window.scrollY);
+    let isQueued = false;
+    const updateHeader = () => {
+      const scrollY = Math.max(0, window.scrollY);
+      const menuIsOpen = document.body.classList.contains("menu-open");
+      if (menuIsOpen || scrollY < 24 || scrollY < lastScrollY) {
+        header.classList.remove("is-scroll-hidden");
+      } else if (scrollY - lastScrollY > 8 && scrollY > 96) {
+        header.classList.add("is-scroll-hidden");
+      }
+      lastScrollY = scrollY;
+      isQueued = false;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (isQueued) return;
+        isQueued = true;
+        window.requestAnimationFrame(updateHeader);
+      },
+      { passive: true }
+    );
   }
 
   function initGlobalRoiNavLink() {
@@ -7870,12 +8004,15 @@
   syncProfileLinks();
   initUnifiedNavigation();
   initTopbarActionsByRole();
+  initLandingHeaderActionsByRole();
   initGlobalTheme();
   initGlobalSiteSettings();
   ensureGlobalFooter();
   initActionGuardsForLinks();
   initGlobalComplaintActions();
   initMobileMenu();
+  initPublicMobileAuthAction();
+  initRevealOnScrollHeader();
   initLandingRoleFlow();
   renderHomeMarketplaceSections();
   renderBusinessLandingCases();
