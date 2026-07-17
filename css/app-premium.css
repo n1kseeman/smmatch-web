@@ -138,9 +138,14 @@ body:not(.smm-home) .roi-hero h1 { max-width: 760px; margin: 15px 0; font-size: 
 body:not(.smm-home) .page-poster { position: relative; height: clamp(180px, 22vw, 280px); overflow: hidden; margin: 4px 0 34px; border: 1px solid rgba(123, 108, 255, .3); border-radius: var(--radius-lg); background: #10142a; box-shadow: var(--shadow); }
 body:not(.smm-home) .page-poster::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6, 8, 22, .42), transparent 52%), linear-gradient(0deg, rgba(6, 8, 22, .4), transparent 58%); content: ""; }
 body:not(.smm-home) .page-poster img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.06) contrast(1.03); }
-body:not(.smm-home) .page-poster--team img { object-position: center 42%; }
-body:not(.smm-home) .page-poster--tools img { object-position: center 54%; }
-body:not(.smm-home) .page-poster--creator img { object-position: center 46%; }
+body:not(.smm-home) .page-poster--catalog img { object-position: center 44%; }
+body:not(.smm-home) .page-poster--cases img { object-position: center 52%; }
+body:not(.smm-home) .page-poster--business img { object-position: center 50%; }
+body:not(.smm-home) .page-poster--pricing img { object-position: center 50%; }
+body:not(.smm-home) .page-poster--safety img { object-position: center 49%; }
+body:not(.smm-home) .page-poster--verification img { object-position: center 43%; }
+body:not(.smm-home) .page-poster--brief img { object-position: center 47%; }
+body:not(.smm-home) .page-poster--profile img { object-position: center 42%; }
 body:not(.smm-home) .page-poster figcaption { position: absolute; z-index: 1; bottom: 18px; left: 20px; color: rgba(244, 247, 255, .86); font-family: Sora, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .045em; text-transform: uppercase; }
 body:not(.smm-home) .page-poster--compact { height: clamp(160px, 18vw, 220px); margin-top: 0; }
 body:not(.smm-home) .section { padding: 36px 0; }
