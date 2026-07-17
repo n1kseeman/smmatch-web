@@ -28,9 +28,53 @@
       if (brand.dataset.logoApplied === "1") return;
       const label = (brand.textContent || "SMMATCH").trim();
       brand.dataset.logoApplied = "1";
+      brand.classList.add("brand--has-image");
       brand.setAttribute("aria-label", label);
       brand.innerHTML = `<img class="brand-logo" src="${BRAND_LOGO_URL}" alt="${label}" loading="eager" decoding="async">`;
     });
+  }
+
+  const PAGE_POSTERS = [
+    {
+      matches: ["/specialists/", "/cases/", "/business/", "/blog/"],
+      image: "assets/posters/team-strategy.webp",
+      tone: "team",
+      label: "Командная работа над SMM-стратегией",
+    },
+    {
+      matches: ["/ai/", "/roi-calculator/", "/pricing/"],
+      image: "assets/posters/content-desk.webp",
+      tone: "tools",
+      label: "Инструменты для создания короткого контента",
+    },
+    {
+      matches: ["/task/", "/safety/", "/verification/"],
+      image: "assets/posters/creator-studio.webp",
+      tone: "creator",
+      label: "Создатель контента в студии",
+    },
+  ];
+
+  function initPagePosters() {
+    if (document.body.classList.contains("smm-home") || isAuthPage) return;
+    const definition = PAGE_POSTERS.find((item) => item.matches.some((match) => isPath(match)));
+    const main = document.querySelector("main.container");
+    const hero = main && main.querySelector(".page-hero, .roi-hero");
+    if (!definition || !main || main.dataset.posterApplied === "1") return;
+
+    const poster = document.createElement("figure");
+    poster.className = `page-poster page-poster--${definition.tone}${hero ? "" : " page-poster--compact"}`;
+    poster.dataset.pagePoster = "1";
+    poster.setAttribute("aria-hidden", "true");
+    poster.innerHTML = `<img src="${appUrl(definition.image)}" alt="" loading="lazy" decoding="async"><figcaption>${definition.label}</figcaption>`;
+    if (hero) {
+      hero.insertAdjacentElement("afterend", poster);
+    } else {
+      const host = main.querySelector(":scope > .card, :scope > article, :scope > section");
+      if (!host) return;
+      host.prepend(poster);
+    }
+    main.dataset.posterApplied = "1";
   }
 
   function normalizePathname(pathname) {
@@ -7793,6 +7837,7 @@
   initMobileFab();
   initQuickActions();
   initPageHeroVisuals();
+  initPagePosters();
   initCardVisualBoost();
   initMediaBlockVariations();
   initGlobalAnimations();

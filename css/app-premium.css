@@ -65,6 +65,9 @@ body:not(.smm-home) .topbar { min-height: var(--topbar-height); padding: 8px 0; 
 body:not(.smm-home) .brand { color: var(--app-text); font-family: Sora, Manrope, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .02em; }
 body:not(.smm-home) .brand::before { display: grid; width: 27px; height: 27px; margin-right: 9px; place-items: center; border-radius: 8px; background: linear-gradient(145deg, var(--app-primary), var(--app-cyan)); color: #fff; content: "S"; font-family: Sora, sans-serif; font-size: 13px; font-weight: 700; }
 body:not(.smm-home) .brand span { color: var(--app-primary); }
+body:not(.smm-home) .brand.brand--has-image { width: 108px; height: 44px; }
+body:not(.smm-home) .brand.brand--has-image::before { display: none; }
+body:not(.smm-home) .brand .brand-logo { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center; filter: drop-shadow(0 0 10px rgba(123, 108, 255, .22)); }
 body:not(.smm-home) .nav { gap: 24px; color: var(--app-muted); font-size: 13px; font-weight: 600; }
 body:not(.smm-home) .nav a { position: relative; opacity: 1; }
 body:not(.smm-home) .nav a::after { position: absolute; right: 0; bottom: -8px; left: 0; height: 2px; border-radius: 4px; transform: scaleX(0); transform-origin: right; background: var(--app-cyan); content: ""; transition: transform .2s ease; }
@@ -132,6 +135,14 @@ body:not(.smm-home) .status::before { box-shadow: 0 0 0 4px rgba(46, 211, 154, .
 body:not(.smm-home) .page-hero { padding: 62px 0 28px; }
 body:not(.smm-home) .page-hero h1,
 body:not(.smm-home) .roi-hero h1 { max-width: 760px; margin: 15px 0; font-size: clamp(38px, 5vw, 64px); line-height: 1.04; }
+body:not(.smm-home) .page-poster { position: relative; height: clamp(180px, 22vw, 280px); overflow: hidden; margin: 4px 0 34px; border: 1px solid rgba(123, 108, 255, .3); border-radius: var(--radius-lg); background: #10142a; box-shadow: var(--shadow); }
+body:not(.smm-home) .page-poster::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6, 8, 22, .42), transparent 52%), linear-gradient(0deg, rgba(6, 8, 22, .4), transparent 58%); content: ""; }
+body:not(.smm-home) .page-poster img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.06) contrast(1.03); }
+body:not(.smm-home) .page-poster--team img { object-position: center 42%; }
+body:not(.smm-home) .page-poster--tools img { object-position: center 54%; }
+body:not(.smm-home) .page-poster--creator img { object-position: center 46%; }
+body:not(.smm-home) .page-poster figcaption { position: absolute; z-index: 1; bottom: 18px; left: 20px; color: rgba(244, 247, 255, .86); font-family: Sora, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .045em; text-transform: uppercase; }
+body:not(.smm-home) .page-poster--compact { height: clamp(160px, 18vw, 220px); margin-top: 0; }
 body:not(.smm-home) .section { padding: 36px 0; }
 body:not(.smm-home) .section-title { font-family: Sora, sans-serif; font-size: clamp(28px, 3.7vw, 48px); font-weight: 600; letter-spacing: -.04em; }
 body:not(.smm-home) .hero-board,
@@ -223,6 +234,8 @@ body:not(.smm-home) .footer-grid { color: var(--app-muted); }
   body:not(.smm-home) .page-hero { padding: 42px 0 20px; }
   body:not(.smm-home) .page-hero h1,
   body:not(.smm-home) .roi-hero h1 { font-size: clamp(34px, 11vw, 48px); }
+  body:not(.smm-home) .page-poster { height: 176px; margin-bottom: 28px; border-radius: 16px; }
+  body:not(.smm-home) .page-poster figcaption { bottom: 14px; left: 15px; font-size: 10px; }
   body:not(.smm-home) .section { padding: 28px 0; }
   body:not(.smm-home) .card { --card-pad: 16px; }
   body:not(.smm-home) .hero-buttons .btn { min-height: 46px; }
