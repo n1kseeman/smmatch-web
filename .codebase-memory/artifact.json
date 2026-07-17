@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "041450e8aa8fda48bc0ef97c781c4c8592f13f84",
+    "indexed_at": "2026-07-17T09:27:30Z",
+    "project": "smmatch",
+    "nodes": 904,
+    "edges": 2263,
+    "original_size": 3473408,
+    "compressed_size": 735703,
+    "compression_level": 3
+}
