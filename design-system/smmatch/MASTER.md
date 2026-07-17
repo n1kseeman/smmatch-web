@@ -8,8 +8,8 @@
 
 **Project:** SMMatch
 **Generated:** 2026-07-17 12:02:13
-**Category:** Luxury/Premium Brand
-**Design Dials:** Variance 4/10 (Balanced / Modern) | Motion 3/10 (Subtle) | Density 3/10 (Spacious)
+**Category:** Modern Creator Marketplace
+**Design Dials:** Variance 4/10 (Balanced / Modern) | Motion 3/10 (Subtle) | Density 5/10 (Standard)
 
 ---
 
@@ -19,30 +19,29 @@
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#171513` | `--color-primary` |
+| Primary | `#060816` | `--color-primary` |
 | On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#655E56` | `--color-secondary` |
-| Accent/CTA | `#B36A21` | `--color-accent` |
-| Background | `#F4F0E9` | `--color-background` |
-| Foreground | `#171513` | `--color-foreground` |
-| Muted | `#E9E2D8` | `--color-muted` |
-| Border | `#DDD5CB` | `--color-border` |
+| Secondary | `#10142A` | `--color-secondary` |
+| Accent/CTA | `#7B6CFF` | `--color-accent` |
+| Background | `#060816` | `--color-background` |
+| Foreground | `#F4F7FF` | `--color-foreground` |
+| Muted | `#A9B1D0` | `--color-muted` |
+| Border | `#252B4B` | `--color-border` |
 | Destructive | `#DC2626` | `--color-destructive` |
-| Ring | `#1C1917` | `--color-ring` |
+| Ring | `#26C6FF` | `--color-ring` |
 
-**Color Notes:** Warm graphite + paper + restrained gold. Dark mode maps paper surfaces to graphite rather than inverting raw colors.
+**Color Notes:** Original SMMatch graphite, violet and cyan identity. Dark is the primary experience; light mode preserves the same accent pair.
 
 ### Typography
 
-- **Heading Font:** Calistoga
-- **Body Font:** Inter
-- **Metadata Font:** JetBrains Mono
-- **Mood:** premium, editorial, modern, clear, warm, precise
-- **Google Fonts:** [Calistoga + Inter + JetBrains Mono](https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap)
+- **Heading Font:** Sora
+- **Body Font:** Manrope
+- **Mood:** youthful, precise, modern, clear, creator-friendly, confident
+- **Google Fonts:** [Sora + Manrope](https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap)
 
 **CSS Import:**
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap');
 ```
 
 ### Spacing Variables
@@ -77,10 +76,10 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #171513;
+  background: linear-gradient(135deg, #7B6CFF, #8D4DFF);
   color: white;
   padding: 12px 24px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
@@ -94,10 +93,10 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #171513;
-  border: 1px solid #DDD5CB;
+  color: #F4F7FF;
+  border: 1px solid rgba(255,255,255,.09);
   padding: 12px 24px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
@@ -108,9 +107,9 @@
 
 ```css
 .card {
-  background: #FFFDF9;
-  border: 1px solid #DDD5CB;
-  border-radius: 18px;
+  background: #10142A;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 16px;
   padding: 24px;
   box-shadow: var(--shadow-md);
   transition: all 200ms ease;
@@ -128,16 +127,18 @@
 ```css
 .input {
   padding: 12px 16px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: #060816;
+  color: #F4F7FF;
+  border-radius: 11px;
   font-size: 16px;
   transition: border-color 200ms ease;
 }
 
 .input:focus {
-  border-color: #1C1917;
+  border-color: #26C6FF;
   outline: none;
-  box-shadow: 0 0 0 3px #1C191720;
+  box-shadow: 0 0 0 3px rgba(38,198,255,.13);
 }
 ```
 
@@ -150,7 +151,7 @@
 }
 
 .modal {
-  background: white;
+  background: #10142A;
   border-radius: 16px;
   padding: 32px;
   box-shadow: var(--shadow-xl);
@@ -163,13 +164,13 @@
 
 ## Style Guidelines
 
-**Style:** Editorial SaaS Marketplace
+**Style:** Dark Creator SaaS
 
-**Keywords:** warm paper, graphite, editorial serif, premium marketplace, restrained gold, product clarity, accessible contrast
+**Keywords:** graphite, violet, cyan, modern minimalism, creator economy, clear product UI, accessible contrast
 
-**Best For:** SMM marketplaces, B2B SaaS workspaces, specialist directories, client portals, operations dashboards
+**Best For:** SMM marketplaces, creator workspaces, specialist directories, client portals, AI tools and operations dashboards
 
-**Key Effects:** Paper surfaces, minimal warm gradients, 200ms control feedback, visible focus rings, WCAG AA contrast
+**Key Effects:** restrained violet/cyan gradient only for emphasis, 200ms control feedback, visible cyan focus rings, WCAG AA contrast
 
 ### Page Pattern
 
