@@ -22,9 +22,7 @@
     } catch {
       // The interface remains functional when storage is unavailable.
     }
-    setTheme(savedTheme === "dark" || savedTheme === "light"
-      ? savedTheme
-      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : "dark");
   }
 
   if (themeButton instanceof HTMLButtonElement) {

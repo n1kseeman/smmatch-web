@@ -2240,7 +2240,7 @@
     const site = state.settings && state.settings.site ? state.settings.site : defaultSiteSettings();
     const content = state.settings && state.settings.content ? state.settings.content : defaultContentSettings();
 
-    document.documentElement.style.setProperty("--brand", "#b36a21");
+    document.documentElement.style.setProperty("--brand", "#7b6cff");
     document.title = document.title.replace("SMMATCH", site.platformName || "SMMATCH");
 
     if (site.logoUrl) {
@@ -7718,9 +7718,7 @@
     } catch {
       // Theme preference is optional when browser storage is unavailable.
     }
-    applyTheme(savedTheme === "dark" || savedTheme === "light"
-      ? savedTheme
-      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    applyTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : "dark");
 
     controls.forEach((button) => {
       button.addEventListener("click", () => {
