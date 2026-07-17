@@ -2240,7 +2240,7 @@
     const site = state.settings && state.settings.site ? state.settings.site : defaultSiteSettings();
     const content = state.settings && state.settings.content ? state.settings.content : defaultContentSettings();
 
-    document.documentElement.style.setProperty("--brand", "#7b6cff");
+    document.documentElement.style.setProperty("--brand", "#b36a21");
     document.title = document.title.replace("SMMATCH", site.platformName || "SMMATCH");
 
     if (site.logoUrl) {
@@ -7682,6 +7682,59 @@
     });
   }
 
+  function initGlobalTheme() {
+    if (!document.body || document.body.classList.contains("smm-home")) return;
+
+    const controls = [];
+    const addControl = (parent, className, label) => {
+      if (!parent || parent.querySelector(`[data-theme-toggle="${className}"]`)) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `theme-toggle ${className}`;
+      button.dataset.themeToggle = className;
+      button.setAttribute("aria-label", label);
+      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>';
+      if (className === "mobile-theme-toggle") button.append("Тема");
+      parent.prepend(button);
+      controls.push(button);
+    };
+
+    addControl(document.querySelector(".topbar .actions"), "topbar-theme-toggle", "Включить тёмную тему");
+    addControl(document.querySelector(".mobile-nav"), "mobile-theme-toggle", "Включить тёмную тему");
+
+    const applyTheme = (theme) => {
+      document.body.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+      const isDark = theme === "dark";
+      controls.forEach((button) => {
+        button.setAttribute("aria-pressed", String(isDark));
+        button.setAttribute("aria-label", isDark ? "Включить светлую тему" : "Включить тёмную тему");
+      });
+    };
+
+    let savedTheme = null;
+    try {
+      savedTheme = window.localStorage.getItem("smmatch-theme");
+    } catch {
+      // Theme preference is optional when browser storage is unavailable.
+    }
+    applyTheme(savedTheme === "dark" || savedTheme === "light"
+      ? savedTheme
+      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+    controls.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+        applyTheme(nextTheme);
+        try {
+          window.localStorage.setItem("smmatch-theme", nextTheme);
+        } catch {
+          // The interface stays usable even if storage is blocked.
+        }
+      });
+    });
+  }
+
   function initMobileFab() {
     const user = currentUser();
     if (!user) return;
@@ -7703,6 +7756,7 @@
   syncProfileLinks();
   initUnifiedNavigation();
   initTopbarActionsByRole();
+  initGlobalTheme();
   initGlobalSiteSettings();
   ensureGlobalFooter();
   initActionGuardsForLinks();
