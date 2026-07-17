@@ -1,0 +1,3 @@
+-- Intentionally empty.
+-- Create test users through Supabase Auth so auth.users and public.users remain
+-- consistent via the on_auth_user_created trigger.

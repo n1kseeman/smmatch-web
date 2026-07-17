@@ -3,237 +3,192 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SMMATCH — Платформа поиска SMM-специалистов</title>
-  <meta name="description" content="Платформа для быстрого поиска проверенных digital-специалистов для бизнеса СНГ.">
+  <meta name="theme-color" content="#171513">
+  <title>SMMatch — проверенные SMM-специалисты для бизнеса</title>
+  <meta name="description" content="Находите SMM-специалистов через понятный бриф, проверенные профили и безопасную сделку.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/landing-premium.css">
 </head>
-<body>
-  <div class="topbar-wrap">
-    <header class="container topbar">
-      <a href="index.html" class="brand">SM<span>MATCH</span></a>
-      <nav class="nav">
-        <a class="active" href="index.html">Главная</a>
-        <a href="specialists/index.html">Специалисты</a>
-        <a href="cases/index.html">Кейсы</a>
+<body class="smm-home">
+  <a class="sm-skip-link" href="#content">Перейти к содержанию</a>
+
+  <header class="sm-nav-wrap">
+    <div class="sm-nav sm-container">
+      <a href="index.html" class="sm-brand" aria-label="SMMatch — главная">
+        <span class="sm-brand-mark" aria-hidden="true">S</span>
+        <span>SM<span>MATCH</span></span>
+      </a>
+      <nav class="sm-nav-links" aria-label="Основная навигация">
+        <a href="specialists/index.html">Каталог</a>
+        <a href="#how-it-works">Как это работает</a>
+        <a href="#safety">Безопасность</a>
         <a href="business/index.html">Для бизнеса</a>
-        <a href="ai/match/index.html">AI</a>
-        <a href="blog/index.html">Блог</a>
       </nav>
-      <div class="actions">
-        <a class="btn btn-ghost" href="auth/login/index.html">Войти</a>
-        <a class="btn btn-ghost" href="auth/register/index.html">Регистрация</a>
-        <a class="btn btn-primary" href="task/new/index.html">Разместить задачу</a>
-        <button class="btn btn-ghost mobile-menu-btn" data-menu-btn>Меню</button>
+      <div class="sm-nav-actions">
+        <a class="sm-login" href="auth/login/index.html">Войти</a>
+        <button class="sm-theme-toggle" data-theme-toggle type="button" aria-label="Включить тёмную тему" aria-pressed="false">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
+        </button>
+        <a class="sm-button sm-button--small" href="task/new/index.html">Разместить задачу</a>
+        <button class="sm-menu-button" data-menu-btn aria-label="Открыть меню" type="button">
+          <span></span><span></span>
+        </button>
       </div>
-    </header>
-    <div class="container mobile-nav" data-mobile-nav>
-      <a href="index.html">Главная</a>
-      <a href="specialists/index.html">Специалисты</a>
-      <a href="cases/index.html">Кейсы</a>
-      <a href="business/index.html">Для бизнеса</a>
-      <a href="ai/match/index.html">AI</a>
-      <a href="blog/index.html">Блог</a>
     </div>
-  </div>
+    <nav class="sm-mobile-nav sm-container" data-mobile-nav aria-label="Мобильная навигация">
+      <a href="specialists/index.html">Каталог специалистов</a>
+      <a href="#how-it-works">Как это работает</a>
+      <a href="#safety">Безопасная сделка</a>
+      <a href="business/index.html">Для бизнеса</a>
+      <a href="auth/login/index.html">Войти</a>
+    </nav>
+  </header>
 
-  <main class="container">
-    <section class="hero">
-      <div>
-        <span class="pill reveal">Платформа для поиска SMM-специалистов в СНГ</span>
-        <h1 class="reveal delay-1">Найдите SMM-специалиста, который реально даст результат</h1>
-        <p class="reveal delay-2">Реальные кейсы, проверенные специалисты, безопасная сделка и подбор под задачу за 5 минут. Упор на SMM, Reels/TikTok, таргет и короткие видео для Instagram, VK и Telegram.</p>
-        <div class="hero-buttons reveal delay-2">
-          <a class="btn btn-primary" href="specialists/index.html" data-landing-intent="business">Найти специалиста</a>
-          <a class="btn btn-ghost" href="dashboard/specialist/index.html" data-landing-intent="specialist">Я специалист</a>
-        </div>
-        <div class="hero-proof reveal delay-3">
-          <div class="avatars"><span></span><span></span><span></span><span></span></div>
-          <div class="meta">2 500+ специалистов уже в экосистеме SMMatch</div>
-        </div>
-      </div>
-      <aside class="hero-board reveal delay-2">
-        <div class="orbit"></div>
-        <div class="orbit orbit-2"></div>
-        <div class="float-card fc-1">
-          <strong>4.9 / 5</strong>
-          <small>средний рейтинг исполнителей</small>
-        </div>
-        <div class="float-card fc-2">
-          <strong>1 200+</strong>
-          <small>проектов через безопасную сделку</small>
-        </div>
-        <div class="float-card fc-3">
-          <strong>96%</strong>
-          <small>доля успешно завершенных задач</small>
-        </div>
-        <div class="platform-dot pd-1">
-          <img src="https://api.iconify.design/simple-icons:instagram.svg?color=%23ffffff" alt="Instagram">
-        </div>
-        <div class="platform-dot pd-2">
-          <img src="https://api.iconify.design/simple-icons:vk.svg?color=%23ffffff" alt="VK">
-        </div>
-        <div class="platform-dot pd-3">
-          <img src="https://api.iconify.design/simple-icons:tiktok.svg?color=%23ffffff" alt="TikTok">
-        </div>
-      </aside>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <span class="pill">Популярные услуги</span>
-        <h2 class="section-title">Что вам нужно?</h2>
-      </div>
-      <div class="grid-3">
-        <article class="card service-card"><div class="badge-icon">01</div><h3>Ведение Instagram</h3><p>Контент, сторис, рост вовлечения и лидов.</p></article>
-        <article class="card service-card"><div class="badge-icon">02</div><h3>Reels / TikTok</h3><p>Сценарии, продакшн и вирусные short-video.</p></article>
-        <article class="card service-card"><div class="badge-icon">03</div><h3>Таргет</h3><p>Meta, VK Ads и оптимизация стоимости заявки.</p></article>
-        <article class="card service-card"><div class="badge-icon">04</div><h3>Контент-план</h3><p>Система тем под цели бизнеса и сезонность.</p></article>
-        <article class="card service-card"><div class="badge-icon">05</div><h3>Съемка и монтаж</h3><p>Продакшн под рекламу, reels и stories.</p></article>
-        <article class="card service-card"><div class="badge-icon">06</div><h3>Telegram продвижение</h3><p>Канал, воронка и удержание аудитории.</p></article>
-        <article class="card service-card"><div class="badge-icon">07</div><h3>VK продвижение</h3><p>Контент, комьюнити и лидогенерация.</p></article>
-        <article class="card service-card"><div class="badge-icon">08</div><h3>UGC-контент</h3><p>Аутентичные ролики для ads и органики.</p></article>
-        <article class="card service-card"><div class="badge-icon">09</div><h3>Influencer Marketing</h3><p>Подбор блогеров и аналитика интеграций.</p></article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <span class="pill">Как это работает</span>
-        <h2 class="section-title">Простой путь к сильному SMM-маркетингу</h2>
-      </div>
-      <div class="steps">
-        <article class="card">
-          <h3>Для бизнеса</h3>
-          <div class="step-list">
-            <div class="step-item"><div class="step-index">1</div><div><strong>Оставляете задачу</strong><div class="meta">Мини-бриф по нише, бюджету и целям.</div></div></div>
-            <div class="step-item"><div class="step-index">2</div><div><strong>Получаете отклики</strong><div class="meta">Кандидаты с релевантными кейсами.</div></div></div>
-            <div class="step-item"><div class="step-index">3</div><div><strong>Сравниваете кейсы</strong><div class="meta">Фактические результаты и отзывы.</div></div></div>
-            <div class="step-item"><div class="step-index">4</div><div><strong>Начинаете работу</strong><div class="meta">С безопасной сделкой и поддержкой.</div></div></div>
+  <main id="content">
+    <section class="sm-hero">
+      <div class="sm-hero-noise" aria-hidden="true"></div>
+      <div class="sm-container sm-hero-grid">
+        <div class="sm-hero-copy">
+          <p class="sm-eyebrow"><span></span> Платформа для работы с SMM</p>
+          <h1>Найдите проверенного <em>SMM-специалиста</em> для вашего бизнеса</h1>
+          <p class="sm-hero-lead">Не тратьте недели на поиск. Опишите задачу — сравните сильных кандидатов по кейсам, подходу и условиям работы.</p>
+          <div class="sm-hero-actions">
+            <a class="sm-button sm-button--large" href="specialists/index.html">
+              Найти специалиста
+              <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+            </a>
+            <a class="sm-text-link" href="auth/register/index.html?role=specialist" data-landing-intent="specialist">Я специалист <span aria-hidden="true">↗</span></a>
           </div>
-        </article>
-        <article class="card">
-          <h3>Для специалистов</h3>
-          <div class="step-list">
-            <div class="step-item"><div class="step-index">1</div><div><strong>Создаете профиль</strong><div class="meta">Позиционирование и соцсети.</div></div></div>
-            <div class="step-item"><div class="step-index">2</div><div><strong>Загружаете кейсы</strong><div class="meta">До/после, метрики, период работы.</div></div></div>
-            <div class="step-item"><div class="step-index">3</div><div><strong>Получаете клиентов</strong><div class="meta">Заявки от бизнеса СНГ.</div></div></div>
-            <div class="step-item"><div class="step-index">4</div><div><strong>Развиваете рейтинг</strong><div class="meta">Отзывы, повторные заказы, активность.</div></div></div>
+          <div class="sm-hero-points" aria-label="Преимущества платформы">
+            <span><i aria-hidden="true">01</i>Проверка профилей</span>
+            <span><i aria-hidden="true">02</i>Отзывы после сделки</span>
+            <span><i aria-hidden="true">03</i>Работа в одном чате</span>
           </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <article class="card roi-teaser auto-reveal">
-        <div>
-          <span class="pill">Инструменты для бизнеса</span>
-          <h2 class="section-title">Посчитайте окупаемость вашего SMM</h2>
-          <p class="section-sub">Введите расходы, заявки и продажи — система автоматически покажет ROI, прибыль и эффективность продвижения.</p>
-          <a class="btn btn-primary" href="roi-calculator/index.html">Открыть калькулятор</a>
         </div>
-        <div class="roi-teaser-preview">
-          <div class="roi-mini-card"><small>ROI</small><strong>+230%</strong></div>
-          <div class="roi-mini-card"><small>CPL</small><strong>4.2 BYN</strong></div>
-          <div class="roi-mini-card"><small>Profit</small><strong>+4200 BYN</strong></div>
-          <div class="roi-mini-card"><small>Conversion</small><strong>18%</strong></div>
+
+        <div class="sm-match-board" aria-label="Пример подбора специалиста">
+          <div class="sm-board-top">
+            <span class="sm-live"><i></i> Подбор в работе</span>
+            <span class="sm-board-time">~ 2 мин</span>
+          </div>
+          <div class="sm-brief-card">
+            <div class="sm-brief-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+            </div>
+            <div><span>Новая задача</span><strong>Reels для fashion-бренда</strong></div>
+            <b>до 1 500 BYN</b>
+          </div>
+          <div class="sm-board-heading"><span>Подходят под задачу</span><a href="specialists/index.html">Все специалисты</a></div>
+          <div class="sm-candidate-list">
+            <article class="sm-candidate sm-candidate--featured">
+              <span class="sm-avatar sm-avatar--one">АС</span>
+              <div class="sm-candidate-copy"><strong>Анна Смирнова <i aria-label="Профиль проверен">✓</i></strong><span>Reels · Fashion · Creative</span></div>
+              <div class="sm-candidate-score"><b>98%</b><span>совпадение</span></div>
+            </article>
+            <article class="sm-candidate">
+              <span class="sm-avatar sm-avatar--two">МК</span>
+              <div class="sm-candidate-copy"><strong>Мария Ковалёва</strong><span>Content strategy · UGC</span></div>
+              <div class="sm-candidate-score"><b>94%</b><span>совпадение</span></div>
+            </article>
+            <article class="sm-candidate">
+              <span class="sm-avatar sm-avatar--three">ЕВ</span>
+              <div class="sm-candidate-copy"><strong>Егор Власов</strong><span>Монтаж · Motion · TikTok</span></div>
+              <div class="sm-candidate-score"><b>91%</b><span>совпадение</span></div>
+            </article>
+          </div>
+          <div class="sm-board-secure">
+            <span class="sm-lock" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3m-9 0h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/></svg></span>
+            <span><strong>Безопасная сделка</strong><small>Условия и результат фиксируются в одном месте</small></span>
+            <span class="sm-secure-check" aria-hidden="true">✓</span>
+          </div>
+          <div class="sm-board-note"><span>Новый отклик</span><strong>Портфолио и предложение уже внутри</strong></div>
         </div>
-      </article>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <span class="pill">Топ-специалисты</span>
-        <h2 class="section-title">Топ-специалисты для вашего бизнеса</h2>
       </div>
-      <div class="specialist-grid">
-        <article class="card">
-          <h3>Подбираем профили под ваш запрос</h3>
-          <p class="meta">Используйте фильтры и AI Match, чтобы быстро найти релевантного специалиста под нишу и бюджет.</p>
-        </article>
+      <div class="sm-container sm-signal-strip" aria-label="Возможности платформы">
+        <span>Подбор по задаче</span><i aria-hidden="true"></i><span>Прозрачные условия</span><i aria-hidden="true"></i><span>Работа без хаоса</span><i aria-hidden="true"></i><span>Поддержка платформы</span>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
-        <span class="pill">Реальные кейсы</span>
-        <h2 class="section-title">Кейсы с подтвержденными метриками</h2>
-      </div>
-      <div class="cases-grid">
-        <article class="card">
-          <p class="meta">В карточках кейсов показываются рост охватов, заявки и период работы. AI Match учитывает эти результаты при подборе.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <span class="pill">Отзывы бизнеса</span>
-        <h2 class="section-title">Отзывы компаний о работе через SMMatch</h2>
-      </div>
-      <div class="reviews">
-        <article class="card">
-          <p class="meta">После завершения сделки бизнес оставляет оценку и комментарий. Рейтинг влияет на видимость специалиста в каталоге.</p>
-        </article>
+    <section class="sm-section sm-section--categories" id="categories">
+      <div class="sm-container">
+        <div class="sm-section-head">
+          <div><p class="sm-kicker">КАТЕГОРИИ</p><h2>Точная экспертиза для задач, которые влияют на рост</h2></div>
+          <a class="sm-arrow-link" href="specialists/index.html">Весь каталог <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="sm-category-grid">
+          <a class="sm-category sm-category--dark" href="specialists/index.html?category=reels"><span class="sm-category-index">01</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 10-4 2.5L15 15v-5Z"/><rect x="3" y="5" width="18" height="14" rx="3"/></svg><strong>Reels / TikTok<br>монтаж</strong><i aria-hidden="true">↗</i></a>
+          <a class="sm-category" href="specialists/index.html?category=instagram"><span class="sm-category-index">02</span><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><strong>Ведение<br>Instagram</strong><i aria-hidden="true">↗</i></a>
+          <a class="sm-category sm-category--orange" href="specialists/index.html?category=stories"><span class="sm-category-index">03</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8m-8 3h5"/></svg><strong>Дизайн<br>сторис</strong><i aria-hidden="true">↗</i></a>
+          <a class="sm-category" href="specialists/index.html?category=target"><span class="sm-category-index">04</span><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg><strong>Таргет<br>и лиды</strong><i aria-hidden="true">↗</i></a>
+          <a class="sm-category sm-category--sand" href="specialists/index.html?category=content"><span class="sm-category-index">05</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8m-8 4h8m-8 4h5"/></svg><strong>Контент-<br>план</strong><i aria-hidden="true">↗</i></a>
+          <a class="sm-category sm-category--lavender" href="specialists/index.html?category=profile"><span class="sm-category-index">06</span><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0M4 4h16v16H4z"/></svg><strong>Упаковка<br>профиля</strong><i aria-hidden="true">↗</i></a>
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="stats-strip">
-        <article class="card stat-box"><strong>2 500+</strong><span class="meta">специалистов в каталоге</span></article>
-        <article class="card stat-box"><strong>8 000+</strong><span class="meta">завершенных проектов</span></article>
-        <article class="card stat-box"><strong>96%</strong><span class="meta">довольных клиентов</span></article>
-        <article class="card stat-box"><strong>4.9</strong><span class="meta">средняя оценка</span></article>
+    <section class="sm-section sm-process" id="how-it-works">
+      <div class="sm-container">
+        <div class="sm-process-intro"><p class="sm-kicker">КАК ЭТО РАБОТАЕТ</p><h2>От задачи до результата — без бесконечных созвонов</h2><p>Один понятный процесс, где каждый шаг виден и заказчику, и исполнителю.</p></div>
+        <ol class="sm-process-list">
+          <li><span>01</span><div><h3>Создайте задачу</h3><p>Опишите цель, сроки и бюджет — без сложного технического задания.</p></div></li>
+          <li><span>02</span><div><h3>Получите отклики</h3><p>Смотрите релевантные портфолио и предложения в одном потоке.</p></div></li>
+          <li><span>03</span><div><h3>Выберите исполнителя</h3><p>Сравните подходы, кейсы и отзывы, а не просто цену.</p></div></li>
+          <li><span>04</span><div><h3>Работайте безопасно</h3><p>Фиксируйте условия и общайтесь в защищённом рабочем пространстве.</p></div></li>
+        </ol>
       </div>
     </section>
 
-    <section class="section">
-      <div class="cta">
-        <h2>Найдите специалиста под ваш бизнес уже сегодня</h2>
-        <p class="meta">Разместите задачу и получите отклики от лучших специалистов в течение 24 часов.</p>
-        <div><a class="btn btn-primary" href="task/new/index.html">Разместить задачу</a></div>
+    <section class="sm-section sm-section--trust" id="safety">
+      <div class="sm-container sm-trust-grid">
+        <div class="sm-trust-copy"><p class="sm-kicker">СИСТЕМА ДОВЕРИЯ</p><h2>Не просто каталог.<br><em>Рабочая среда.</em></h2><p>Мы сделали важные части совместной работы понятными ещё до старта проекта.</p><a class="sm-button sm-button--light" href="safety/index.html">Как работает защита <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></div>
+        <div class="sm-trust-cards">
+          <article class="sm-trust-card sm-trust-card--main"><span class="sm-card-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5.2 3.4 8.7 8 10 4.6-1.3 8-4.8 8-10V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><p>Проверенные специалисты</p><strong>Профиль, навыки и портфолио — в одном стандарте</strong></article>
+          <article class="sm-trust-card"><span class="sm-card-number">01</span><h3>Безопасная сделка</h3><p>Условия проекта видны обеим сторонам и остаются в истории работы.</p></article>
+          <article class="sm-trust-card"><span class="sm-card-number">02</span><h3>Отзывы и рейтинг</h3><p>Оценка появляется только после завершённой работы.</p></article>
+          <article class="sm-trust-card"><span class="sm-card-number">03</span><h3>Встроенный чат</h3><p>Обсуждение, материалы и договорённости не теряются в мессенджерах.</p></article>
+        </div>
       </div>
+    </section>
+
+    <section class="sm-section sm-section--statement">
+      <div class="sm-container sm-statement-grid">
+        <div><p class="sm-kicker">ДЛЯ БИЗНЕСА И СПЕЦИАЛИСТОВ</p><h2>Лучшие SMM-проекты начинаются с <em>правильного совпадения.</em></h2></div>
+        <div class="sm-statement-side"><p>Не нужно выбирать между «быстро» и «качественно». SMMatch помогает сформулировать задачу, увидеть сильных исполнителей и начать работу уверенно.</p><a class="sm-arrow-link" href="task/new/index.html">Создать задачу <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+
+    <section class="sm-section sm-faq" id="faq">
+      <div class="sm-container sm-faq-grid">
+        <div><p class="sm-kicker">FAQ</p><h2>Всё важное —<br>до старта работы</h2><p>Если вопроса нет в списке, команда поддержки поможет разобраться.</p><a class="sm-text-link" href="safety/index.html">О правилах платформы <span aria-hidden="true">↗</span></a></div>
+        <div class="sm-faq-list">
+          <details open><summary>Как выбрать подходящего специалиста?<span aria-hidden="true">+</span></summary><p>Сравнивайте кейсы в нужной нише, опыт с форматом контента, подход к задаче и детали предложения. Платформа собирает их в одном месте.</p></details>
+          <details><summary>Как защищены договорённости?<span aria-hidden="true">+</span></summary><p>Задача, бюджет, сроки и обсуждение остаются в рабочем пространстве проекта — их не нужно собирать по разным чатам.</p></details>
+          <details><summary>Можно ли стать исполнителем?<span aria-hidden="true">+</span></summary><p>Да. Создайте профиль, добавьте навыки и кейсы, а затем откликайтесь на подходящие проекты.</p></details>
+          <details><summary>Что делать, если нужна помощь?<span aria-hidden="true">+</span></summary><p>Откройте раздел безопасности или обратитесь к команде платформы из рабочего кабинета.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="sm-container sm-final-cta">
+      <div class="sm-final-orb" aria-hidden="true"></div>
+      <p class="sm-kicker">SMMATCH</p><h2>Найдите человека, который усилит ваш бизнес</h2><p>Начните с каталога или расскажите нам о задаче — без лишних звонков и обязательств.</p>
+      <div><a class="sm-button sm-button--large" href="specialists/index.html">Найти специалиста <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a><a class="sm-button sm-button--outline" href="auth/register/index.html?role=specialist" data-landing-intent="specialist">Стать исполнителем</a></div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div>
-        <a href="index.html" class="brand">SM<span>MATCH</span></a>
-        <p class="meta">Платформа для быстрого поиска проверенных digital-специалистов для бизнеса СНГ.</p>
-      </div>
-      <div>
-        <h4>Платформа</h4>
-        <ul>
-          <li><a href="specialists/index.html">Специалисты</a></li>
-          <li><a href="cases/index.html">Кейсы</a></li>
-          <li><a href="blog/index.html">Блог</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Для бизнеса</h4>
-        <ul>
-          <li><a href="business/index.html">Как это работает</a></li>
-          <li><a href="safety/index.html">Безопасная сделка</a></li>
-          <li><a href="task/new/index.html">Создать задачу</a></li>
-          <li><a href="dashboard/business/index.html">Кабинет бизнеса</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Для специалистов</h4>
-        <ul>
-          <li><a href="u/username/index.html">Профиль</a></li>
-          <li><a href="verification/index.html">Верификация</a></li>
-          <li><a href="pricing/index.html">Тарифы</a></li>
-          <li><a href="dashboard/specialist/index.html">Кабинет специалиста</a></li>
-          <li><a href="ai/content-generator/index.html">AI инструменты</a></li>
-        </ul>
-      </div>
+  <footer class="sm-footer">
+    <div class="sm-container sm-footer-grid">
+      <div><a href="index.html" class="sm-brand"><span class="sm-brand-mark" aria-hidden="true">S</span><span>SM<span>MATCH</span></span></a><p>Платформа для спокойной и прозрачной работы бизнеса со специалистами по социальным медиа.</p></div>
+      <div><h3>Платформа</h3><a href="specialists/index.html">Каталог специалистов</a><a href="cases/index.html">Кейсы</a><a href="blog/index.html">Блог</a></div>
+      <div><h3>Документы</h3><a href="safety/index.html">Правила платформы</a><a href="#faq">Поддержка</a><a href="pricing/index.html">Тарифы</a></div>
+      <div class="sm-footer-meta"><span>© SMMatch, 2026</span><span>Сделано для сильных SMM-команд</span></div>
     </div>
   </footer>
 
+  <script src="js/landing.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
