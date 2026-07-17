@@ -17,6 +17,7 @@
     menuButton.setAttribute("aria-expanded", "false");
     mobileNav.classList.remove("show");
     mobileNav.setAttribute("aria-hidden", "true");
+    root?.classList.remove("menu-open");
   };
 
   menuButton.setAttribute("aria-expanded", "false");
@@ -26,6 +27,7 @@
     menuButton.classList.toggle("is-open", isOpen);
     menuButton.setAttribute("aria-expanded", String(isOpen));
     mobileNav.setAttribute("aria-hidden", String(!isOpen));
+    root?.classList.toggle("menu-open", isOpen);
   });
   mobileNav.addEventListener("click", (event) => {
     if (event.target instanceof HTMLAnchorElement) closeMenu();

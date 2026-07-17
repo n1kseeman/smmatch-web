@@ -1151,3 +1151,266 @@ body.public-marketplace .footer .meta {
     transition: none !important;
   }
 }
+
+/* Account access, contrast and mobile touch targets. */
+body.smm-home[data-theme="light"] {
+  --sm-bg: #060816;
+  --sm-surface: #10142a;
+  --sm-surface-2: #151a34;
+  --sm-text: #f4f7ff;
+  --sm-muted: #a7b0cf;
+  --sm-line: rgba(255, 255, 255, .1);
+  color-scheme: dark;
+  background: radial-gradient(700px circle at 0 -8%, rgba(123, 108, 255, .2), transparent 60%), radial-gradient(600px circle at 100% 5%, rgba(38, 198, 255, .12), transparent 58%), var(--sm-bg);
+}
+
+.smm-home .sm-nav-wrap,
+body.public-marketplace .topbar-wrap {
+  transition: transform .22s ease, box-shadow .22s ease;
+  will-change: transform;
+}
+
+.smm-home .sm-nav-wrap.is-scroll-hidden,
+body.public-marketplace .topbar-wrap.is-scroll-hidden {
+  transform: translateY(-110%);
+}
+
+.account-button,
+.sm-account-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  flex: 0 0 42px;
+  border: 1px solid rgba(162, 148, 255, .46);
+  border-radius: 50%;
+  background: rgba(123, 108, 255, .12);
+  color: #f6f4ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.account-button svg,
+.sm-account-button svg,
+.mobile-nav-auth svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+}
+
+.account-button:hover,
+.sm-account-button:hover {
+  border-color: #7fddff;
+  background: rgba(38, 198, 255, .16);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.auth-gate {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 4, 15, .76);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.auth-gate.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.auth-gate-card {
+  position: relative;
+  width: min(100%, 440px);
+  border: 1px solid rgba(164, 149, 255, .32);
+  border-radius: 24px;
+  padding: 32px;
+  background: linear-gradient(145deg, #151a34, #0b0f22);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .48), inset 0 1px 0 rgba(255, 255, 255, .08);
+  color: #f6f7ff;
+}
+
+.auth-gate-kicker {
+  margin: 0 0 9px;
+  color: #7fddff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.auth-gate h2 {
+  margin: 0;
+  color: #fff;
+  font-family: Sora, Manrope, sans-serif;
+  font-size: clamp(23px, 5vw, 30px);
+  letter-spacing: -.045em;
+}
+
+.auth-gate p:not(.auth-gate-kicker) {
+  margin: 13px 0 0;
+  color: #b7c0dc;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.auth-gate-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.auth-gate-actions .btn {
+  min-height: 46px;
+  justify-content: center;
+}
+
+.auth-gate-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-gate-close:hover { background: rgba(255, 255, 255, .14); }
+
+.mobile-nav-auth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.mobile-nav-auth a,
+body.public-marketplace .mobile-nav .mobile-nav-auth a {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, .04);
+  color: #f4f7ff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mobile-nav-auth a.is-primary,
+.mobile-nav-auth a.is-account {
+  border-color: rgba(123, 108, 255, .62);
+  background: rgba(123, 108, 255, .2);
+}
+
+.mobile-nav-auth a.is-account { grid-column: 1 / -1; }
+
+.smm-home .sm-mobile-account {
+  display: grid;
+  gap: 3px;
+  min-height: 62px;
+  margin-top: 8px;
+  border-bottom: 0;
+  padding: 14px 0 0;
+  color: #f4f7ff;
+}
+
+.smm-home .sm-mobile-account span { color: #9da8c8; font-size: 12px; font-weight: 600; }
+.smm-home .sm-mobile-account strong { color: #7fddff; font-size: 14px; }
+
+.smm-home .sm-mobile-auth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.smm-home .sm-mobile-auth a {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, .04);
+  color: #f4f7ff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.smm-home .sm-mobile-auth a.is-primary {
+  border-color: rgba(123, 108, 255, .62);
+  background: rgba(123, 108, 255, .2);
+}
+
+@media (max-width: 680px) {
+  .smm-home .sm-nav,
+  body.public-marketplace .topbar {
+    min-height: 64px;
+  }
+
+  .smm-home .sm-nav-actions .sm-account-button,
+  body.public-marketplace .actions .account-button {
+    display: grid !important;
+    width: 42px;
+    height: 42px;
+  }
+
+  .smm-home .sm-mobile-nav,
+  body.public-marketplace .mobile-nav {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .smm-home .sm-mobile-nav a,
+  body.public-marketplace .mobile-nav a {
+    min-height: 52px;
+    padding: 15px 0;
+    font-size: 15px;
+  }
+
+  body.public-marketplace .page-hero {
+    gap: 12px;
+    padding: 38px 0 26px;
+  }
+
+  body.public-marketplace .page-hero h1 {
+    font-size: clamp(32px, 10.2vw, 42px);
+    line-height: 1.04;
+  }
+
+  body.public-marketplace .page-hero p { font-size: 15px; line-height: 1.6; }
+
+  .auth-gate { align-items: end; padding: 12px; }
+  .auth-gate-card { border-radius: 22px; padding: 28px 20px 20px; }
+  .auth-gate-actions { grid-template-columns: 1fr; gap: 9px; margin-top: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smm-home .sm-nav-wrap,
+  body.public-marketplace .topbar-wrap,
+  .account-button,
+  .sm-account-button,
+  .auth-gate { transition: none !important; }
+}
