@@ -20,6 +20,11 @@
     return new URL(relativePath, appRootUrl).pathname;
   }
 
+  if (isPath("/ai/") || isPath("/blog/")) {
+    window.location.replace(appUrl("index.html"));
+    return;
+  }
+
   const BRAND_LOGO_URL = appUrl("assets/brand/logo-nav-clean.png");
 
   function initBrandLogos() {
@@ -36,28 +41,63 @@
 
   const PAGE_POSTERS = [
     {
-      matches: ["/specialists/", "/cases/", "/business/", "/blog/"],
-      image: "assets/posters/team-strategy.webp",
-      tone: "team",
-      label: "Командная работа над SMM-стратегией",
+      route: "specialists/index.html",
+      image: "assets/posters/v2/specialists-catalog.webp",
+      tone: "catalog",
+      label: "Сильные специалисты для задач бизнеса",
     },
     {
-      matches: ["/ai/", "/roi-calculator/", "/pricing/"],
-      image: "assets/posters/content-desk.webp",
-      tone: "tools",
-      label: "Инструменты для создания короткого контента",
+      route: "cases/index.html",
+      image: "assets/posters/v2/cases-results.webp",
+      tone: "cases",
+      label: "Проекты, за которыми стоят измеримые результаты",
     },
     {
-      matches: ["/task/", "/safety/", "/verification/"],
-      image: "assets/posters/creator-studio.webp",
-      tone: "creator",
-      label: "Создатель контента в студии",
+      route: "business/index.html",
+      image: "assets/posters/v2/business-collab.webp",
+      tone: "business",
+      label: "Спокойная работа бизнеса и специалиста",
+    },
+    {
+      route: "pricing/index.html",
+      image: "assets/posters/v2/pricing-plan.webp",
+      tone: "pricing",
+      label: "Понятные условия до начала проекта",
+    },
+    {
+      route: "safety/index.html",
+      image: "assets/posters/v2/safety-deal.webp",
+      tone: "safety",
+      label: "Договорённости и оплата под защитой",
+    },
+    {
+      route: "verification/index.html",
+      image: "assets/posters/v2/verification-studio.webp",
+      tone: "verification",
+      label: "Проверка личности, опыта и портфолио",
+    },
+    {
+      route: "task/new/index.html",
+      image: "assets/posters/v2/task-brief.webp",
+      tone: "brief",
+      label: "Один бриф вместо десятка разрозненных сообщений",
+    },
+    {
+      route: "u/username/index.html",
+      image: "assets/posters/v2/specialist-portrait.webp",
+      tone: "profile",
+      label: "Опыт, кейсы и подход специалиста в одном профиле",
     },
   ];
 
   function initPagePosters() {
     if (document.body.classList.contains("smm-home") || isAuthPage) return;
-    const definition = PAGE_POSTERS.find((item) => item.matches.some((match) => isPath(match)));
+    const currentPath = normalizePathname(window.location.pathname);
+    const definition = PAGE_POSTERS.find((item) => {
+      const routePath = normalizePathname(appPath(item.route));
+      const directoryPath = routePath.replace(/\/index\.html$/, "");
+      return currentPath === routePath || currentPath === directoryPath;
+    });
     const main = document.querySelector("main.container");
     const hero = main && main.querySelector(".page-hero, .roi-hero");
     if (!definition || !main || main.dataset.posterApplied === "1") return;
@@ -2183,9 +2223,8 @@
       ["Специалисты", "specialists/index.html", ["/specialists/"]],
       ["Кейсы", "cases/index.html", ["/cases/"]],
       ["Для бизнеса", "business/index.html", ["/business/"]],
-      ["AI", "ai/match/index.html", ["/ai/"]],
-      ["ROI", "roi-calculator/index.html", ["/roi-calculator/"]],
-      ["Блог", "blog/index.html", ["/blog/"]]
+      ["Безопасность", "safety/index.html", ["/safety/"]],
+      ["Тарифы", "pricing/index.html", ["/pricing/"]]
     ];
     const current = normalizePathname(window.location.pathname);
     nav.innerHTML = links
@@ -2350,7 +2389,7 @@
   }
 
   function ensureGlobalFooter() {
-    if (document.querySelector("footer.footer")) return;
+    if (document.querySelector("footer.footer, footer.sm-footer")) return;
     if (isPath("/auth/") || isPath("/admin/")) return;
     const footer = document.createElement("footer");
     footer.className = "footer";
@@ -2365,7 +2404,7 @@
           <ul>
             <li><a href="${appUrl("specialists/index.html")}">Специалисты</a></li>
             <li><a href="${appUrl("cases/index.html")}">Кейсы</a></li>
-            <li><a href="${appUrl("roi-calculator/index.html")}">ROI-калькулятор</a></li>
+            <li><a href="${appUrl("business/index.html")}">Для бизнеса</a></li>
           </ul>
         </div>
         <div>
@@ -2520,7 +2559,8 @@
         { href: appUrl("specialists/index.html"), label: "Специалисты" },
         { href: appUrl("cases/index.html"), label: "Кейсы" },
         { href: appUrl("business/index.html"), label: "Для бизнеса" },
-        { href: appUrl("blog/index.html"), label: "Блог" }
+        { href: appUrl("safety/index.html"), label: "Безопасность" },
+        { href: appUrl("pricing/index.html"), label: "Тарифы" }
       ];
       const source = navLinks.length
         ? navLinks.map((link) => ({ href: link.getAttribute("href") || "#", label: (link.textContent || "").trim() }))
@@ -4041,7 +4081,7 @@
         if (secondPanel && previewTitle) {
           renderTaskPreviewMatches(task, previewTitle.parentElement);
         }
-        showToast("Задача опубликована. AI Match обновлен.");
+        showToast("Задача опубликована. Подбор специалистов обновлён.");
         form.reset();
         setDraftNote("Черновик очищен");
         window.setTimeout(() => {
@@ -4169,7 +4209,7 @@
       const fallback = [
         { date: nowIso(), rating: 5, comment: "Быстро нашли специалиста под запуск Reels. Результат в заявках уже в первый месяц." },
         { date: nowIso(), rating: 5, comment: "Удобная безопасная сделка и прозрачный чат по проекту. Вся коммуникация внутри платформы." },
-        { date: nowIso(), rating: 4, comment: "Понравился AI Match и фильтры по нише. Подобрали релевантного эксперта под наш бюджет." }
+        { date: nowIso(), rating: 4, comment: "Понравились точный подбор и фильтры по нише. Нашли релевантного эксперта под наш бюджет." }
       ];
       const source = reviewItems.length
         ? reviewItems.map((item) => ({ date: item.createdAt, rating: item.rating, comment: item.comment }))
@@ -5304,7 +5344,7 @@
                   ? `<div class="chips"><button class="chip" type="button" data-accept-best-response="${task.id}">Принять лучшего отклик</button></div>`
                   : ""
               }
-              ${topResponses || "<div class='meta'>AI Match уже подобрал задачу; отклики специалистов будут собраны здесь.</div>"}
+              ${topResponses || "<div class='meta'>Задача опубликована; отклики специалистов будут собраны здесь.</div>"}
             </td>
             <td>${task.niche}</td>
             <td>${formatMoneyByn(task.budgetByn || 0)}</td>
@@ -7793,7 +7833,6 @@
   }
 
   if (!enforceSessionAndRole()) return;
-  initGlobalRoiNavLink();
   initBrandLogos();
   syncProfileLinks();
   initUnifiedNavigation();
@@ -7816,9 +7855,6 @@
   initTaskCreatePage();
   renderProfilePage();
   initVerificationPage();
-  initAiMatchPage();
-  initAiAuditPage();
-  initAiContentPage();
   renderBusinessOverview();
   renderBusinessTasks();
   renderBusinessFavorites();
@@ -7836,9 +7872,6 @@
   initResponsiveTableObserver();
   initMobileFab();
   initQuickActions();
-  initPageHeroVisuals();
   initPagePosters();
-  initCardVisualBoost();
-  initMediaBlockVariations();
   initGlobalAnimations();
 })();
