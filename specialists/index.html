@@ -9,8 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/app-premium.css">
+  <link rel="stylesheet" href="../css/public-refresh.css">
 </head>
-<body>
+<body class="public-marketplace specialists-page">
   <div class="topbar-wrap">
     <header class="container topbar">
       <a href="../index.html" class="brand">SM<span>MATCH</span></a>
@@ -20,7 +21,6 @@
         <a href="../cases/index.html">Кейсы</a>
         <a href="../business/index.html">Для бизнеса</a>
         <a href="../safety/index.html">Безопасность</a>
-        <a href="../pricing/index.html">Тарифы</a>
       </nav>
       <div class="actions">
         <a class="btn btn-ghost" href="../dashboard/specialist/index.html">Я специалист</a>
@@ -34,7 +34,6 @@
       <a href="../cases/index.html">Кейсы</a>
       <a href="../business/index.html">Для бизнеса</a>
       <a href="../safety/index.html">Безопасность</a>
-      <a href="../pricing/index.html">Тарифы</a>
     </div>
   </div>
 
@@ -45,8 +44,12 @@
       <p>Фильтруйте по категориям, платформам, городу, стоимости, опыту и индустрии. Все карточки содержат рейтинг, verified, кейсы и ключевые метрики.</p>
     </section>
 
-    <section class="section layout">
+    <section class="section layout catalog-layout">
       <aside class="card sidebar">
+        <div class="filters-heading">
+          <div class="filters-heading-top"><div><span class="pill">Настройка поиска</span><h2>Фильтры</h2></div><button class="filters-close" data-close-filters type="button" aria-label="Закрыть фильтры"><span aria-hidden="true">×</span></button></div>
+          <p class="meta">Выберите только важное — результаты обновятся автоматически.</p>
+        </div>
         <div class="filter-group">
           <h4>Поиск</h4>
           <input data-specialists-search type="search" placeholder="Имя, навык или описание">
@@ -118,11 +121,13 @@
         </div>
       </aside>
 
-      <div class="catalog-grid">
-        <article class="card">
-          <h3>Подбираем специалистов под ваш запрос</h3>
-          <p class="meta">Используйте фильтры по нише, опыту и бюджету — список обновляется автоматически.</p>
-        </article>
+      <div class="catalog-content">
+        <div class="catalog-grid">
+          <article class="card">
+            <h3>Подбираем специалистов под ваш запрос</h3>
+            <p class="meta">Используйте фильтры по нише, опыту и бюджету — список обновляется автоматически.</p>
+          </article>
+        </div>
       </div>
     </section>
   </main>

@@ -810,7 +810,7 @@
         userId: null,
         slug: "sabina-askarova",
         name: "Сабина Аскарова",
-        avatar: appUrl("assets/avatars/portrait-05.webp"),
+        avatar: appUrl("assets/avatars/portrait-17.webp"),
         city: "Ташкент, Узбекистан",
         country: "Узбекистан",
         rating: 4.9,
@@ -947,7 +947,7 @@
         userId: null,
         slug: "roman-kuleshov",
         name: "Роман Кулешов",
-        avatar: appUrl("assets/avatars/portrait-09.webp"),
+        avatar: appUrl("assets/avatars/portrait-05.webp"),
         city: "Москва, Россия",
         country: "Россия",
         rating: 4.9,
@@ -981,7 +981,7 @@
         userId: null,
         slug: "anastasia-orlova",
         name: "Анастасия Орлова",
-        avatar: appUrl("assets/avatars/portrait-10.webp"),
+        avatar: appUrl("assets/avatars/portrait-09.webp"),
         city: "Онлайн",
         country: "СНГ",
         rating: 4.8,
@@ -1015,7 +1015,7 @@
         userId: null,
         slug: "kirill-sokolov",
         name: "Кирилл Соколов",
-        avatar: appUrl("assets/avatars/portrait-11.webp"),
+        avatar: appUrl("assets/avatars/portrait-10.webp"),
         city: "Ереван, Армения",
         country: "СНГ",
         rating: 4.6,
@@ -1049,7 +1049,7 @@
         userId: null,
         slug: "lola-karimova",
         name: "Лола Каримова",
-        avatar: appUrl("assets/avatars/portrait-12.webp"),
+        avatar: appUrl("assets/avatars/portrait-11.webp"),
         city: "Ташкент, Узбекистан",
         country: "Узбекистан",
         rating: 4.7,
@@ -1351,7 +1351,11 @@
         return;
       }
       if (!existing.cases.length && demoSpecialist.cases.length) existing.cases = demoSpecialist.cases;
-      if (!existing.avatar || existing.avatar.includes("/assets/visuals/")) {
+      if (
+        !existing.avatar ||
+        existing.avatar.includes("/assets/visuals/") ||
+        existing.avatar.includes("/assets/avatars/portrait-")
+      ) {
         existing.avatar = demoSpecialist.avatar;
       }
       existing.completedOrders = Math.max(Number(existing.completedOrders || 0), Number(demoSpecialist.completedOrders || 0));
@@ -2185,7 +2189,7 @@
     const user = currentUser();
     if (!user) {
       addAction("Войти", "auth/login/index.html", "btn btn-ghost keep-mobile");
-      addAction("Регистрация", "auth/register/index.html", "btn btn-primary keep-mobile");
+      addAction("Разместить задачу", "task/new/index.html", "btn btn-primary keep-mobile");
       return;
     }
 
@@ -2225,8 +2229,7 @@
       ["Специалисты", "specialists/index.html", ["/specialists/"]],
       ["Кейсы", "cases/index.html", ["/cases/"]],
       ["Для бизнеса", "business/index.html", ["/business/"]],
-      ["Безопасность", "safety/index.html", ["/safety/"]],
-      ["Тарифы", "pricing/index.html", ["/pricing/"]]
+      ["Безопасность", "safety/index.html", ["/safety/"]]
     ];
     const current = normalizePathname(window.location.pathname);
     nav.innerHTML = links
@@ -2245,7 +2248,15 @@
     const mobileNav = document.querySelector("[data-mobile-nav]");
     if (mobileNav) {
       mobileNav.innerHTML = links
-        .map(([label, relativePath]) => `<a href="${appUrl(relativePath)}">${label}</a>`)
+        .map(([label, relativePath, matches]) => {
+          const active = matches.some((match) => {
+            if (match === "/") return current === "/";
+            return current === match || current.includes(match);
+          })
+            ? ' class="active"'
+            : "";
+          return `<a${active} href="${appUrl(relativePath)}">${label}</a>`;
+        })
         .join("");
     }
   }
@@ -2421,7 +2432,7 @@
           <h4>Специалистам</h4>
           <ul>
             <li><a href="${appUrl("verification/index.html")}">Верификация</a></li>
-            <li><a href="${appUrl("pricing/index.html")}">Тарифы</a></li>
+            <li><a href="${appUrl("pricing/index.html")}">Комиссия и условия</a></li>
             <li><a href="${appUrl("dashboard/specialist/index.html")}">Рабочий кабинет</a></li>
           </ul>
         </div>
@@ -2561,8 +2572,7 @@
         { href: appUrl("specialists/index.html"), label: "Специалисты" },
         { href: appUrl("cases/index.html"), label: "Кейсы" },
         { href: appUrl("business/index.html"), label: "Для бизнеса" },
-        { href: appUrl("safety/index.html"), label: "Безопасность" },
-        { href: appUrl("pricing/index.html"), label: "Тарифы" }
+        { href: appUrl("safety/index.html"), label: "Безопасность" }
       ];
       const source = navLinks.length
         ? navLinks.map((link) => ({ href: link.getAttribute("href") || "#", label: (link.textContent || "").trim() }))
@@ -2637,8 +2647,9 @@
       if (event.key === "Escape") closeMenu();
     });
 
+    const menuBreakpoint = document.body.classList.contains("public-marketplace") ? 960 : 1180;
     window.addEventListener("resize", () => {
-      if (window.innerWidth > 760) closeMenu();
+      if (window.innerWidth > menuBreakpoint) closeMenu();
     });
   }
 
@@ -3080,54 +3091,45 @@
       : specialist.verified
         ? "Верифицирован"
         : "Не верифицирован";
-    const socialEntries = [
-      ["Instagram", specialist.socials.instagram],
-      ["TikTok", specialist.socials.tiktok],
-      ["Telegram", specialist.socials.telegram],
-      ["Portfolio", specialist.socials.behance]
-    ].filter((item) => item[1]);
+    const tags = [...new Set([...(specialist.platforms || []), ...(specialist.skills || [])])].slice(0, 5);
     return `
       <article class="card catalog-card">
-        <div class="avatar" style="--media-photo: url('${specialist.avatar}')"></div>
-        <div>
-          <h3>${specialist.name}</h3>
-          <div class="meta">${specialist.specialization} • ${specialist.city} • ${ratingText}</div>
-          <div class="meta">Опыт: ${specialist.experience === "senior" ? "Senior" : specialist.experience === "middle" ? "Middle" : "Junior"} • ${specialist.completedOrders} проектов</div>
-          <div class="verified ${verificationState}">${verificationText}</div>
-          <p class="meta">${specialist.description}</p>
-          <div class="chips">
-            ${specialist.platforms.slice(0, 3).map((item) => `<span class="chip">${item}</span>`).join("")}
+        <div class="catalog-card-head">
+          <div class="avatar" role="img" aria-label="Фото ${specialist.name}" style="--media-photo: url('${specialist.avatar}')"></div>
+          <div class="catalog-identity">
+            <h3>${specialist.name}</h3>
+            <div class="catalog-role">${specialist.specialization}</div>
+            <div class="catalog-location">${specialist.city} · ${specialist.experience === "senior" ? "Senior" : specialist.experience === "middle" ? "Middle" : "Junior"}</div>
           </div>
-          <div class="chips">
-            ${specialist.skills.slice(0, 3).map((item) => `<span class="chip">${item}</span>`).join("")}
-          </div>
-          <div class="chips">
-            ${
-              socialEntries.length
-                ? socialEntries
-                    .slice(0, 2)
-                    .map((item) => `<a class="chip" href="${item[1]}" target="_blank" rel="noopener noreferrer">${item[0]}</a>`)
-                    .join("")
-                : '<span class="chip">Нет публичных ссылок</span>'
-            }
-          </div>
+          <button class="catalog-favorite" data-add-favorite="${specialist.id}" type="button" aria-label="Добавить ${specialist.name} в избранное">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20.5S4 16 4 9.5A4.5 4.5 0 0 1 12 6.7a4.5 4.5 0 0 1 8 2.8c0 6.5-8 11-8 11Z"/></svg>
+          </button>
         </div>
-        <div class="catalog-side">
-          <div>
+        <div class="catalog-verification">
+          <div class="verified ${verificationState}">${verificationText}</div>
+          <div class="catalog-rating">Рейтинг ${ratingText}</div>
+        </div>
+        <p class="catalog-description">${specialist.description}</p>
+        <div class="catalog-tags">
+          ${tags.map((item) => `<span class="chip">${item}</span>`).join("")}
+        </div>
+        <div class="catalog-metrics">
+          <span><strong>${specialist.completedOrders}</strong>проектов</span>
+          <span><strong>${specialist.responseRate}%</strong>ответов</span>
+          <span><strong>~${specialist.responseTimeHours} ч</strong>${availabilityStatusLabel(specialist.availabilityStatus)}</span>
+        </div>
+        <div class="catalog-card-footer">
+          <div class="catalog-price-row">
             <div class="price">от ${formatMoneyByn(specialist.priceByn)} / мес</div>
             <div class="meta">${specialist.cases.length} кейсов</div>
           </div>
-          <div class="catalog-metrics">
-            <span>Заказов: ${specialist.completedOrders}</span>
-            <span>Ответов: ${specialist.responseRate}%</span>
-            <span>Ответ: ~${specialist.responseTimeHours} ч</span>
-            <span>Статус: ${availabilityStatusLabel(specialist.availabilityStatus)}</span>
-          </div>
-          <div class="chips">
+          <div class="catalog-card-actions">
             <a class="btn btn-primary" href="${specialistProfileUrl(rootPrefix, specialist)}" data-open-profile="${specialist.id}">Профиль</a>
-            <button class="btn btn-ghost" data-contact-specialist="${specialist.id}" type="button">Связаться</button>
-            <button class="btn btn-ghost" data-invite-specialist="${specialist.id}" type="button">Пригласить</button>
-            <button class="btn btn-ghost" data-add-favorite="${specialist.id}" type="button">В избранное</button>
+            <button class="btn btn-ghost" data-contact-specialist="${specialist.id}" type="button">Написать</button>
+          </div>
+          <div class="catalog-secondary-actions">
+            <button data-invite-specialist="${specialist.id}" type="button">Пригласить в задачу →</button>
+            <span class="meta">Ответ ~${specialist.responseTimeHours} ч</span>
           </div>
         </div>
       </article>
@@ -3148,30 +3150,54 @@
     let renderCount = 6;
     let currentSort = "relevance";
     document.querySelectorAll(".filter-group .option.active").forEach((item) => item.classList.remove("active"));
+    const categoryFromUrl = normalize(new URLSearchParams(window.location.search).get("category") || "");
+    const categoryAliases = {
+      reels: "reels maker",
+      instagram: "smm",
+      stories: "дизайнер",
+      target: "таргетолог",
+      content: "контент-менеджер",
+      profile: "smm"
+    };
+    const initialCategory = categoryAliases[categoryFromUrl];
+    if (initialCategory) {
+      const categoryOption = Array.from(document.querySelectorAll("[data-filter-group='categories'] .option"))
+        .find((item) => normalize(item.textContent) === initialCategory);
+      if (categoryOption) categoryOption.classList.add("active");
+    }
     if (priceRange) priceRange.value = "3000";
 
     const controls = document.createElement("div");
-    controls.className = "chips specialists-toolbar";
+    controls.className = "specialists-toolbar";
     controls.innerHTML = `
-      <label class="chip">Сортировка:
-        <select data-specialists-sort>
-          <option value="relevance">По релевантности</option>
-          <option value="rating">По рейтингу</option>
-          <option value="priceAsc">Сначала дешевле</option>
-          <option value="priceDesc">Сначала дороже</option>
-          <option value="orders">По заказам</option>
-        </select>
-      </label>
-      <button class="chip" type="button" data-reset-specialists>Сбросить фильтры</button>
-      <button class="chip" type="button" data-load-more-specialists>Показать ещё</button>
+      <div class="catalog-summary"><strong data-specialists-count>Подбираем профили</strong><span>Проверенные специалисты под вашу задачу</span></div>
+      <div class="catalog-toolbar-actions">
+        <label class="catalog-sort"><span>Сортировка</span>
+          <select data-specialists-sort>
+            <option value="relevance">По релевантности</option>
+            <option value="rating">По рейтингу</option>
+            <option value="priceAsc">Сначала дешевле</option>
+            <option value="priceDesc">Сначала дороже</option>
+            <option value="orders">По заказам</option>
+          </select>
+        </label>
+        <button class="catalog-reset" type="button" data-reset-specialists>Сбросить</button>
+      </div>
     `;
     const mainContainer = catalogGrid.parentElement;
     if (mainContainer && !mainContainer.querySelector("[data-specialists-sort]")) {
       mainContainer.insertBefore(controls, catalogGrid);
     }
+    if (mainContainer && !mainContainer.querySelector("[data-load-more-specialists]")) {
+      const loadMoreWrap = document.createElement("div");
+      loadMoreWrap.className = "catalog-load-more";
+      loadMoreWrap.innerHTML = '<button class="btn btn-ghost" type="button" data-load-more-specialists>Показать ещё</button>';
+      mainContainer.appendChild(loadMoreWrap);
+    }
     const sortSelect = document.querySelector("[data-specialists-sort]");
     const loadMoreBtn = document.querySelector("[data-load-more-specialists]");
     const resetBtn = document.querySelector("[data-reset-specialists]");
+    const resultsCount = document.querySelector("[data-specialists-count]");
     let firstRenderDone = false;
     let filtersBackdrop = null;
 
@@ -3183,7 +3209,7 @@
         <button class="btn btn-primary" type="button" data-open-filters>Фильтры</button>
       `;
       const insertAfter = mainContainer && mainContainer.querySelector("[data-specialists-sort]")
-        ? mainContainer.querySelector("[data-specialists-sort]").closest(".chips")
+        ? mainContainer.querySelector("[data-specialists-sort]").closest(".specialists-toolbar")
         : null;
       if (insertAfter && insertAfter.parentElement) {
         insertAfter.parentElement.insertBefore(mobileTools, insertAfter.nextSibling);
@@ -3207,6 +3233,8 @@
 
       const openBtn = mobileTools.querySelector("[data-open-filters]");
       if (openBtn) openBtn.addEventListener("click", openFilters);
+      const closeBtn = sidebar.querySelector("[data-close-filters]");
+      if (closeBtn) closeBtn.addEventListener("click", closeFilters);
       filtersBackdrop.addEventListener("click", closeFilters);
 
       if (!sidebar.querySelector("[data-filters-actions]")) {
@@ -3237,7 +3265,7 @@
         if (event.key === "Escape") closeFilters();
       });
       window.addEventListener("resize", () => {
-        if (window.innerWidth > 760) closeFilters();
+        if (window.innerWidth > 1100) closeFilters();
       });
     }
 
@@ -3246,10 +3274,12 @@
         .map(
           () => `
             <article class="card catalog-card">
-              <div class="avatar"></div>
-              <div>
+              <div class="catalog-card-head">
+                <div class="avatar"></div>
+                <div>
                 <h3>Загрузка...</h3>
                 <div class="meta">Подбираем специалистов под ваши фильтры</div>
+                </div>
               </div>
             </article>
           `
@@ -3343,6 +3373,10 @@
         return b.rating - a.rating || a.priceByn - b.priceByn;
       });
 
+      if (resultsCount) {
+        resultsCount.textContent = `${filtered.length} ${filtered.length === 1 ? "специалист" : "специалистов"}`;
+      }
+
       if (!filtered.length) {
         const emptyTitle = state.specialists.length
           ? "Ничего не найдено"
@@ -3351,7 +3385,10 @@
           ? "Попробуйте снять часть фильтров или увеличить бюджет."
           : "Каталог готов к наполнению: добавьте специалистов через регистрацию или админку.";
         catalogGrid.innerHTML = `<article class="card"><h3>${emptyTitle}</h3><p class="meta">${emptyText}</p></article>`;
-        if (loadMoreBtn) loadMoreBtn.style.display = "none";
+        if (loadMoreBtn) {
+          loadMoreBtn.style.display = "none";
+          if (loadMoreBtn.parentElement) loadMoreBtn.parentElement.style.display = "none";
+        }
         return;
       }
 
@@ -3361,6 +3398,9 @@
         .join("");
       if (loadMoreBtn) {
         loadMoreBtn.style.display = filtered.length > visible.length ? "inline-flex" : "none";
+        if (loadMoreBtn.parentElement) {
+          loadMoreBtn.parentElement.style.display = filtered.length > visible.length ? "flex" : "none";
+        }
       }
     }
 
@@ -3479,6 +3519,25 @@
     let currentSort = "rating";
     let verifiedOnly = false;
     let selectedNiche = "all";
+    const casePosters = [
+      "assets/posters/v2/reels-edit.webp",
+      "assets/posters/v2/social-strategy.webp",
+      "assets/posters/v2/stories-design.webp",
+      "assets/posters/v2/paid-social.webp",
+      "assets/posters/v2/content-plan.webp",
+      "assets/posters/v2/profile-branding.webp",
+      "assets/posters/v2/business-collab.webp",
+      "assets/posters/v2/cases-results.webp",
+      "assets/posters/v2/safety-deal.webp",
+      "assets/posters/v2/task-brief.webp",
+      "assets/posters/v2/pricing-plan.webp",
+      "assets/posters/v2/specialist-portrait.webp",
+      "assets/posters/v2/specialists-catalog.webp",
+      "assets/posters/v2/verification-studio.webp",
+      "assets/posters/creator-studio.webp",
+      "assets/posters/team-strategy.webp",
+      "assets/posters/content-desk.webp"
+    ].map(appUrl);
 
     const mainContainer = casesGrid.parentElement;
     if (mainContainer && !mainContainer.querySelector("[data-cases-controls]")) {
@@ -3486,13 +3545,13 @@
       controls.className = "section";
       controls.setAttribute("data-cases-controls", "1");
       controls.innerHTML = `
-        <article class="card">
+        <article class="card cases-controls-card">
           <div class="field">
             <label for="cases-search">Поиск кейсов</label>
             <input id="cases-search" data-cases-search type="search" placeholder="Ниша, специалист, результат">
           </div>
-          <div class="chips specialists-toolbar">
-            <label class="chip">Сортировка:
+          <div class="cases-toolbar">
+            <label class="chip"><span>Сортировка</span>
               <select data-cases-sort>
                 <option value="rating">По рейтингу специалиста</option>
                 <option value="orders">По количеству заказов</option>
@@ -3503,7 +3562,7 @@
             <button class="chip" type="button" data-cases-verified>Только verified</button>
             <button class="chip" type="button" data-load-more-cases>Показать ещё</button>
           </div>
-          <div class="chips" data-cases-niches></div>
+          <div class="cases-niches" data-cases-niches></div>
         </article>
       `;
       mainContainer.insertBefore(controls, casesGrid);
@@ -3527,7 +3586,8 @@
             period: caseItem.period || "Период не указан",
             specialist
           }))
-        );
+        )
+        .map((item, index) => ({ ...item, poster: casePosters[index % casePosters.length] }));
     }
 
     function renderNicheFilters(items) {
@@ -3560,24 +3620,20 @@
       const budget = Number(item.budgetByn || specialist.priceByn || 0);
       return `
         <article class="card case-card">
-          <div class="case-image" style="--media-photo: url('${specialist.avatar}')"></div>
-          <strong>${item.title}</strong>
-          <div class="meta">${specialist.name} • ${specialist.specialization}</div>
-          <div class="meta">${specialist.city} • рейтинг ${specialist.rating.toFixed(1)}</div>
-          <p class="meta">Задача: выстроить понятный контент-процесс, усилить воронку заявок и показать измеримый результат по KPI.</p>
-          <div class="case-chart" aria-hidden="true"><span style="height: 38%"></span><span style="height: 56%"></span><span style="height: 78%"></span><span style="height: 100%"></span></div>
-          <div class="kpi-line"><span>Результат</span><strong>${item.result1}</strong></div>
-          <div class="kpi-line"><span>Дополнительно</span><strong>${item.result2}</strong></div>
-          <div class="kpi-line"><span>Бюджет</span><strong>${formatMoneyByn(budget)}</strong></div>
-          <div class="kpi-line"><span>Площадки</span><strong>${platforms || "SMM"}</strong></div>
-          <div class="kpi-line"><span>Период</span><strong>${item.period}</strong></div>
-          <div class="before-after">
-            <span>До: разрозненные публикации</span>
-            <span>После: система контента и лиды</span>
+          <div class="case-image" role="img" aria-label="Визуал кейса ${item.title}" style="--media-photo: url('${item.poster}')"></div>
+          <div class="case-topline"><span>${platforms || "SMM"}</span><span class="verified">Проверенный профиль</span></div>
+          <h3>${item.title}</h3>
+          <div class="case-author">${specialist.name} · ${specialist.specialization}</div>
+          <div class="case-results">
+            <div><span>Результат</span><strong>${item.result1}</strong></div>
+            <div><span>Бизнес-эффект</span><strong>${item.result2}</strong></div>
           </div>
-          <div class="chips">
-            <a class="chip" href="${specialistProfileUrl("../", specialist)}" data-open-profile-case="${specialist.id}">Профиль</a>
-            <button class="chip" type="button" data-add-favorite-case="${specialist.id}">В избранное</button>
+          <div class="case-card-footer">
+            <div><div class="price">${formatMoneyByn(budget)}</div><div class="meta">${item.period} · рейтинг ${specialist.rating.toFixed(1)}</div></div>
+            <div class="chips">
+              <a class="chip" href="${specialistProfileUrl("../", specialist)}" data-open-profile-case="${specialist.id}">Профиль</a>
+              <button class="chip" type="button" data-add-favorite-case="${specialist.id}">Сохранить</button>
+            </div>
           </div>
         </article>
       `;
@@ -4275,6 +4331,14 @@
     if (!isPath("/business/")) return;
     const casesGrid = document.querySelector(".cases-grid");
     if (!casesGrid) return;
+    const businessPosters = [
+      "assets/posters/v2/business-collab.webp",
+      "assets/posters/v2/cases-results.webp",
+      "assets/posters/v2/paid-social.webp",
+      "assets/posters/v2/social-strategy.webp",
+      "assets/posters/v2/content-plan.webp",
+      "assets/posters/v2/reels-edit.webp"
+    ].map(appUrl);
     const cases = state.specialists
       .filter((specialist) => !["hidden", "blocked"].includes(specialist.status))
       .flatMap((specialist) =>
@@ -4283,22 +4347,28 @@
           specialist
         }))
       )
-      .slice(0, 6);
+      .slice(0, 6)
+      .map((item, index) => ({ ...item, poster: businessPosters[index] }));
     if (!cases.length) return;
     casesGrid.innerHTML = cases
       .map((item) => {
         const platforms = item.specialist.platforms.slice(0, 3).join(" + ");
         return `
           <article class="card case-card">
-            <div class="case-image" style="--media-photo: url('${item.specialist.avatar}')"></div>
-            <strong>${item.title}</strong>
-            <div class="meta">${item.specialist.specialization} • ${platforms}</div>
-            <div class="kpi-line"><span>Рост</span><strong>${item.result1}</strong></div>
-            <div class="kpi-line"><span>Бизнес-эффект</span><strong>${item.result2}</strong></div>
-            <div class="kpi-line"><span>Срок</span><strong>${item.period}</strong></div>
-            <div class="chips">
-              <a class="chip" href="${specialistProfileUrl("../", item.specialist)}">Специалист</a>
-              <a class="chip" href="../cases/index.html">Все кейсы</a>
+            <div class="case-image" role="img" aria-label="Визуал кейса ${item.title}" style="--media-photo: url('${item.poster}')"></div>
+            <div class="case-topline"><span>${platforms}</span><span class="verified">Проверенный профиль</span></div>
+            <h3>${item.title}</h3>
+            <div class="case-author">${item.specialist.name} · ${item.specialist.specialization}</div>
+            <div class="case-results">
+              <div><span>Рост</span><strong>${item.result1}</strong></div>
+              <div><span>Бизнес-эффект</span><strong>${item.result2}</strong></div>
+            </div>
+            <div class="case-card-footer">
+              <div><div class="price">${item.period}</div><div class="meta">Срок работы</div></div>
+              <div class="chips">
+                <a class="chip" href="${specialistProfileUrl("../", item.specialist)}">Профиль</a>
+                <a class="chip" href="../cases/index.html">Все кейсы</a>
+              </div>
             </div>
           </article>
         `;
@@ -7770,53 +7840,14 @@
 
   function initGlobalTheme() {
     if (!document.body || document.body.classList.contains("smm-home")) return;
-
-    const controls = [];
-    const addControl = (parent, className, label) => {
-      if (!parent || parent.querySelector(`[data-theme-toggle="${className}"]`)) return;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = `theme-toggle ${className}`;
-      button.dataset.themeToggle = className;
-      button.setAttribute("aria-label", label);
-      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>';
-      if (className === "mobile-theme-toggle") button.append("Тема");
-      parent.prepend(button);
-      controls.push(button);
-    };
-
-    addControl(document.querySelector(".topbar .actions"), "topbar-theme-toggle", "Включить тёмную тему");
-    addControl(document.querySelector(".mobile-nav"), "mobile-theme-toggle", "Включить тёмную тему");
-
-    const applyTheme = (theme) => {
-      document.body.dataset.theme = theme;
-      document.documentElement.style.colorScheme = theme;
-      const isDark = theme === "dark";
-      controls.forEach((button) => {
-        button.setAttribute("aria-pressed", String(isDark));
-        button.setAttribute("aria-label", isDark ? "Включить светлую тему" : "Включить тёмную тему");
-      });
-    };
-
-    let savedTheme = null;
+    document.body.dataset.theme = "dark";
+    document.documentElement.style.colorScheme = "dark";
+    document.querySelectorAll("[data-theme-toggle], .theme-toggle").forEach((control) => control.remove());
     try {
-      savedTheme = window.localStorage.getItem("smmatch-theme");
+      window.localStorage.removeItem("smmatch-theme");
     } catch {
-      // Theme preference is optional when browser storage is unavailable.
+      // Dark mode stays active even when browser storage is unavailable.
     }
-    applyTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : "dark");
-
-    controls.forEach((button) => {
-      button.addEventListener("click", () => {
-        const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
-        applyTheme(nextTheme);
-        try {
-          window.localStorage.setItem("smmatch-theme", nextTheme);
-        } catch {
-          // The interface stays usable even if storage is blocked.
-        }
-      });
-    });
   }
 
   function initMobileFab() {
