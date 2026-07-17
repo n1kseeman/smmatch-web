@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
-    "commit": "32e8d620ba7482d35eb7fe3b974b2b26eb67ecd0",
-    "indexed_at": "2026-07-17T13:16:53Z",
+    "commit": "cdd718b5ec8ca3b6e80eae87f067185943bdf55d",
+    "indexed_at": "2026-07-17T14:24:58Z",
     "project": "smm",
-    "nodes": 939,
-    "edges": 2258,
-    "original_size": 3473408,
-    "compressed_size": 742330,
+    "nodes": 938,
+    "edges": 2200,
+    "original_size": 3407872,
+    "compressed_size": 736065,
     "compression_level": 3
 }

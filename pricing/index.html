@@ -3,30 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Монетизация и тарифы — SMMATCH</title>
+  <title>Комиссия и условия — SMMATCH</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/app-premium.css">
+  <link rel="stylesheet" href="../css/public-refresh.css">
 </head>
-<body>
-  <div class="topbar-wrap"><header class="container topbar"><a href="../index.html" class="brand">SM<span>MATCH</span></a><nav class="nav"><a href="../index.html">Главная</a><a href="../safety/index.html">Безопасность</a><a href="../verification/index.html">Верификация</a><a class="active" href="../pricing/index.html">Тарифы</a></nav></header></div>
-  <main class="container section">
-    <section class="page-hero"><span class="pill">Монетизация платформы</span><h1>Прозрачная комиссия 10% с каждой безопасной сделки</h1><p>SMMatch удерживает фиксированные 10% только после успешного завершения проекта. Без скрытых платежей.</p></section>
-    <section class="grid-3">
-      <article class="card"><h3>Безопасная сделка</h3><p class="meta">Escrow-холд, защита платежей, история проекта и арбитраж.</p><div class="price">10% комиссии</div></article>
-      <article class="card"><h3>Для бизнеса</h3><p class="meta">Внутренний чат, контроль доработок, споры и проверенные специалисты.</p><div class="price">0 BYN за размещение задачи</div></article>
-      <article class="card"><h3>Для специалистов</h3><p class="meta">Доступ к задачам, безопасные выплаты, wallet и история сделок.</p><div class="price">0 BYN за регистрацию</div></article>
+<body class="public-marketplace pricing-page">
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav" aria-label="Основная навигация"><a href="../index.html">Главная</a><a href="../specialists/index.html">Специалисты</a><a href="../cases/index.html">Кейсы</a><a href="../business/index.html">Для бизнеса</a><a href="../safety/index.html">Безопасность</a></nav>
+      <div class="actions"><a class="btn btn-ghost" href="../auth/login/index.html">Войти</a><a class="btn btn-primary" href="../task/new/index.html">Разместить задачу</a><button class="btn btn-ghost mobile-menu-btn" data-menu-btn type="button">Меню</button></div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav><a href="../index.html">Главная</a><a href="../specialists/index.html">Специалисты</a><a href="../cases/index.html">Кейсы</a><a href="../business/index.html">Для бизнеса</a><a href="../safety/index.html">Безопасность</a></div>
+  </div>
+  <main class="container">
+    <section class="page-hero"><span class="pill">Комиссия и условия</span><h1>Простая модель без платных тарифов</h1><p>Размещение задачи и регистрация бесплатны. Комиссия платформы возникает только внутри завершённой безопасной сделки — поэтому этот раздел не занимает место в главном меню.</p></section>
+
+    <section class="section pricing-grid">
+      <article class="card pricing-card pricing-card--accent"><div><span class="value-index">01</span><h3>Безопасная сделка</h3><p>Рабочее пространство, история этапов, поддержка и разбор спорных ситуаций.</p></div><div class="price">10% комиссии</div></article>
+      <article class="card pricing-card"><div><span class="value-index">02</span><h3>Для бизнеса</h3><p>Поиск специалистов, сравнение профилей и размещение задачи без подписки.</p></div><div class="price">0 BYN за старт</div></article>
+      <article class="card pricing-card"><div><span class="value-index">03</span><h3>Для специалистов</h3><p>Профиль, отклики, рабочий чат и история проектов без абонентской платы.</p></div><div class="price">0 BYN за профиль</div></article>
     </section>
-    <section class="card">
-      <h2>Что включает комиссия платформы</h2>
-      <div class="step-list">
-        <div class="step-item"><div class="step-index">1</div><div><strong>Escrow и hold</strong><div class="meta">Средства защищены до приемки результата.</div></div></div>
-        <div class="step-item"><div class="step-index">2</div><div><strong>Споры и модерация</strong><div class="meta">Если работа не принята, можно открыть спор и приложить доказательства.</div></div></div>
-        <div class="step-item"><div class="step-index">3</div><div><strong>Верификация и антифрод</strong><div class="meta">Проверка исполнителей, журналы действий и безопасная коммуникация.</div></div></div>
+
+    <section class="section">
+      <div class="section-head"><span class="pill">Что входит</span><h2 class="section-title">Комиссия поддерживает рабочую инфраструктуру</h2></div>
+      <div class="public-flow">
+        <article><span>01 / ПРОЕКТ</span><h3>Единые условия</h3><p>Задача, бюджет, срок и критерии результата сохраняются в карточке проекта.</p></article>
+        <article><span>02 / ЧАТ</span><h3>История общения</h3><p>Материалы и решения не теряются в личных мессенджерах.</p></article>
+        <article><span>03 / КОНТРОЛЬ</span><h3>Статусы и этапы</h3><p>Обе стороны видят, где находится проект и какое действие ожидается.</p></article>
+        <article><span>04 / ПОДДЕРЖКА</span><h3>Разбор споров</h3><p>При разногласиях решение принимается по зафиксированной истории работы.</p></article>
       </div>
     </section>
+
+    <section class="section"><article class="card support-banner"><div><span class="pill">Начать бесплатно</span><h2>Сначала найдите подходящего человека — условия сделки обсудите после</h2></div><a class="btn btn-primary" href="../specialists/index.html">Открыть каталог</a></article></section>
   </main>
   <script src="../js/app.js"></script>
 </body>

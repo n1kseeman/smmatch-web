@@ -9,30 +9,56 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/app-premium.css">
+  <link rel="stylesheet" href="../css/public-refresh.css">
 </head>
-<body>
-  <div class="topbar-wrap"><header class="container topbar"><a href="../index.html" class="brand">SM<span>MATCH</span></a><nav class="nav"><a href="../index.html">Главная</a><a class="active" href="../safety/index.html">Безопасность</a><a href="../verification/index.html">Верификация</a><a href="../pricing/index.html">Тарифы</a></nav></header></div>
-  <main class="container section">
-    <section class="page-hero"><span class="pill">Trust & Safety</span><h1>Безопасная сделка для бизнеса и специалистов</h1><p>Деньги холдятся до подтверждения этапа работ. Это снижает риски и повышает доверие на рынке СНГ.</p></section>
-    <section class="steps">
-      <article class="card"><h3>1. Резерв платежа</h3><p class="meta">Клиент переводит сумму на платформу.</p></article>
-      <article class="card"><h3>2. Выполнение этапа</h3><p class="meta">Специалист выполняет задачи и предоставляет отчет.</p></article>
-      <article class="card"><h3>3. Подтверждение</h3><p class="meta">Клиент принимает этап или отправляет на доработку.</p></article>
-      <article class="card"><h3>4. Выплата</h3><p class="meta">После подтверждения деньги переводятся исполнителю.</p></article>
-    </section>
-    <section class="grid-3">
-      <article class="card"><h3>Доработки</h3><p class="meta">До 2 бесплатных раундов правок внутри сделки. Если согласия нет, можно открыть спор.</p></article>
-      <article class="card"><h3>Арбитраж</h3><p class="meta">При споре средства остаются в холде до решения модерации и фиксации результата.</p></article>
-      <article class="card"><h3>Анти-обход</h3><p class="meta">Платформа ограничивает передачу прямых контактов в чате до завершения безопасной сделки.</p></article>
-    </section>
-    <section class="card">
-      <h2>Как работает защита</h2>
-      <div class="step-list">
-        <div class="step-item"><div class="step-index">1</div><div><strong>Escrow-механика</strong><div class="meta">Оплата фиксируется и переводится в hold, пока работа не принята.</div></div></div>
-        <div class="step-item"><div class="step-index">2</div><div><strong>История действий</strong><div class="meta">Все статусы проекта, чаты и таймлайн сделки сохраняются внутри платформы.</div></div></div>
-        <div class="step-item"><div class="step-index">3</div><div><strong>Прозрачные выплаты</strong><div class="meta">После приемки система автоматически распределяет 10% комиссии платформы и 90% исполнителю.</div></div></div>
+<body class="public-marketplace safety-page">
+  <div class="topbar-wrap">
+    <header class="container topbar">
+      <a href="../index.html" class="brand">SM<span>MATCH</span></a>
+      <nav class="nav" aria-label="Основная навигация">
+        <a href="../index.html">Главная</a><a href="../specialists/index.html">Специалисты</a><a href="../cases/index.html">Кейсы</a><a href="../business/index.html">Для бизнеса</a><a class="active" href="../safety/index.html">Безопасность</a>
+      </nav>
+      <div class="actions"><a class="btn btn-ghost" href="../auth/login/index.html">Войти</a><a class="btn btn-primary" href="../task/new/index.html">Разместить задачу</a><button class="btn btn-ghost mobile-menu-btn" data-menu-btn type="button">Меню</button></div>
+    </header>
+    <div class="container mobile-nav" data-mobile-nav><a href="../index.html">Главная</a><a href="../specialists/index.html">Специалисты</a><a href="../cases/index.html">Кейсы</a><a href="../business/index.html">Для бизнеса</a><a class="active" href="../safety/index.html">Безопасность</a></div>
+  </div>
+  <main class="container">
+    <section class="page-hero"><span class="pill">Безопасность</span><h1>Работа, в которой договорённости не теряются</h1><p>Задача, этапы, переписка и результат собраны в одном пространстве. Это даёт обеим сторонам понятную историю проекта и снижает риск спорных ситуаций.</p></section>
+
+    <section class="section safety-lead-grid">
+      <article class="card feature-card-large">
+        <span class="pill">Контроль на каждом шаге</span>
+        <h2>Прозрачный процесс важнее обещаний</h2>
+        <p>До старта стороны видят объём работы, сроки и ожидаемый результат. Во время проекта решения фиксируются в чате, а завершение этапа подтверждается заказчиком.</p>
+        <div class="feature-actions"><a class="btn btn-primary" href="../task/new/index.html">Создать защищённую задачу</a><a class="btn btn-ghost" href="../verification/index.html">О верификации</a></div>
+      </article>
+      <div class="value-stack">
+        <article class="card value-card"><span class="value-index">01</span><div><h3>Проверяемый профиль</h3><p>Опыт, кейсы и ключевые данные специалиста собраны по единому стандарту.</p></div></article>
+        <article class="card value-card"><span class="value-index">02</span><div><h3>История проекта</h3><p>Сообщения, материалы и изменения статусов остаются привязаны к конкретной работе.</p></div></article>
+        <article class="card value-card"><span class="value-index">03</span><div><h3>Понятная эскалация</h3><p>Если стороны не согласны, спор рассматривается по фактам из рабочего пространства.</p></div></article>
       </div>
     </section>
+
+    <section class="section">
+      <div class="section-head"><span class="pill">Безопасная сделка</span><h2 class="section-title">Как проходит проект</h2></div>
+      <div class="public-flow">
+        <article><span>01 / УСЛОВИЯ</span><h3>Фиксируем задачу</h3><p>Бюджет, срок, объём работ и критерии результата согласованы до старта.</p></article>
+        <article><span>02 / РАБОТА</span><h3>Ведём проект</h3><p>Специалист отправляет материалы и отчёты внутри рабочего чата.</p></article>
+        <article><span>03 / ПРИЁМКА</span><h3>Проверяем этап</h3><p>Заказчик принимает результат или формулирует понятные замечания.</p></article>
+        <article><span>04 / ЗАВЕРШЕНИЕ</span><h3>Закрываем сделку</h3><p>После подтверждения проект переходит в историю, а стороны оставляют отзывы.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span class="pill">Система доверия</span><h2 class="section-title">Что защищает обе стороны</h2></div>
+      <div class="safety-protection-grid">
+        <article class="card protection-card"><div><span class="value-index">A</span><h3>Доработки без хаоса</h3><p>Замечания относятся к согласованному результату и остаются в контексте этапа.</p></div><a class="chip" href="../task/new/index.html">Создать задачу →</a></article>
+        <article class="card protection-card"><div><span class="value-index">B</span><h3>Спор по фактам</h3><p>Модерация видит зафиксированные условия, сообщения, файлы и историю статусов.</p></div><a class="chip" href="../pricing/index.html">Комиссия и условия →</a></article>
+        <article class="card protection-card"><div><span class="value-index">C</span><h3>Отзывы после работы</h3><p>Рейтинг формируется по завершённым проектам, а не по случайным обещаниям.</p></div><a class="chip" href="../specialists/index.html">Проверить каталог →</a></article>
+      </div>
+    </section>
+
+    <section class="section"><article class="card support-banner"><div><span class="pill">Нужна помощь?</span><h2>Поддержка поможет разобраться до старта и во время проекта</h2></div><a class="btn btn-primary" href="../auth/login/index.html">Перейти в аккаунт</a></article></section>
   </main>
   <script src="../js/app.js"></script>
 </body>
