@@ -19,29 +19,30 @@
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#1C1917` | `--color-primary` |
+| Primary | `#171513` | `--color-primary` |
 | On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#44403C` | `--color-secondary` |
-| Accent/CTA | `#A16207` | `--color-accent` |
-| Background | `#FAFAF9` | `--color-background` |
-| Foreground | `#0C0A09` | `--color-foreground` |
-| Muted | `#E8ECF0` | `--color-muted` |
-| Border | `#D6D3D1` | `--color-border` |
+| Secondary | `#655E56` | `--color-secondary` |
+| Accent/CTA | `#B36A21` | `--color-accent` |
+| Background | `#F4F0E9` | `--color-background` |
+| Foreground | `#171513` | `--color-foreground` |
+| Muted | `#E9E2D8` | `--color-muted` |
+| Border | `#DDD5CB` | `--color-border` |
 | Destructive | `#DC2626` | `--color-destructive` |
 | Ring | `#1C1917` | `--color-ring` |
 
-**Color Notes:** Premium black + gold accent [Accent adjusted from #CA8A04 for WCAG 3:1]
+**Color Notes:** Warm graphite + paper + restrained gold. Dark mode maps paper surfaces to graphite rather than inverting raw colors.
 
 ### Typography
 
-- **Heading Font:** Satoshi
-- **Body Font:** General Sans
-- **Mood:** premium, modern, clean, sophisticated, versatile, balanced
-- **Google Fonts:** [Satoshi + General Sans](https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap)
+- **Heading Font:** Calistoga
+- **Body Font:** Inter
+- **Metadata Font:** JetBrains Mono
+- **Mood:** premium, editorial, modern, clear, warm, precise
+- **Google Fonts:** [Calistoga + Inter + JetBrains Mono](https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap)
 
 **CSS Import:**
 ```css
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Calistoga&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
 ```
 
 ### Spacing Variables
@@ -76,10 +77,10 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #A16207;
+  background: #171513;
   color: white;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
@@ -93,10 +94,10 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #1C1917;
-  border: 2px solid #1C1917;
+  color: #171513;
+  border: 1px solid #DDD5CB;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-weight: 600;
   transition: all 200ms ease;
   cursor: pointer;
@@ -107,8 +108,9 @@
 
 ```css
 .card {
-  background: #FAFAF9;
-  border-radius: 12px;
+  background: #FFFDF9;
+  border: 1px solid #DDD5CB;
+  border-radius: 18px;
   padding: 24px;
   box-shadow: var(--shadow-md);
   transition: all 200ms ease;
@@ -161,13 +163,13 @@
 
 ## Style Guidelines
 
-**Style:** Soft UI Evolution
+**Style:** Editorial SaaS Marketplace
 
-**Keywords:** Evolved soft UI, better contrast, modern aesthetics, subtle depth, accessibility-focused, improved shadows, hybrid
+**Keywords:** warm paper, graphite, editorial serif, premium marketplace, restrained gold, product clarity, accessible contrast
 
-**Best For:** Modern enterprise apps, SaaS platforms, health/wellness, modern business tools, professional, hybrid
+**Best For:** SMM marketplaces, B2B SaaS workspaces, specialist directories, client portals, operations dashboards
 
-**Key Effects:** Improved shadows (softer than flat, clearer than neumorphism), modern (200-300ms), focus visible, WCAG AA/AAA
+**Key Effects:** Paper surfaces, minimal warm gradients, 200ms control feedback, visible focus rings, WCAG AA contrast
 
 ### Page Pattern
 
