@@ -2226,10 +2226,10 @@
     }
     const links = [
       ["Главная", "index.html", ["/index.html", "/"]],
-      ["Специалисты", "specialists/index.html", ["/specialists/"]],
-      ["Кейсы", "cases/index.html", ["/cases/"]],
-      ["Для бизнеса", "business/index.html", ["/business/"]],
-      ["Безопасность", "safety/index.html", ["/safety/"]]
+      ["Специалисты", "specialists/index.html", ["/specialists"]],
+      ["Кейсы", "cases/index.html", ["/cases"]],
+      ["Для бизнеса", "business/index.html", ["/business"]],
+      ["Безопасность", "safety/index.html", ["/safety"]]
     ];
     const current = normalizePathname(window.location.pathname);
     nav.innerHTML = links
